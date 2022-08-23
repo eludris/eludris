@@ -13,7 +13,7 @@ COPY ./src ./src
 RUN rm ./target/release/deps/eludris*
 RUN cargo build --release
 
-FROM alpine:latest
+FROM debian:buster-slim
 
 COPY --from=build /eludris/target/release/eludris /usr/src/eludris
 
