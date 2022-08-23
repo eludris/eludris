@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+  bot:
+    container_name: eludris
+    env_file: .env
+    restart: always
+
+    environment:
+      - DATABASE_URL=mysql://root:root@maraidb/eludris
+      - REDIS_URL=redis://redis/1
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  mariadb:
+      image: mariadb:latest
+
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_ROOT_HOST=%
+        - MYSQL_DATABASE=eludris
+
+      volumes:
+        - ./migrations:/docker-entrypoint-initdb.d
+
+  redis:
+    image: "redis:alpine"
+
+    command: redis-server
+
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf

@@ -11,7 +11,7 @@ This file is changed every while with new changes and additions appearing.
 ## Overview
 
 The goal is to provide a uniquely fresh but not totally new experience focused
-around programming but also any other topic / interest whilst being secure, free 
+around programming but also any other topic / interest whilst being secure, free
 (as in monetary value), free (as in freedom), privacy respecting, open source
 and decentralized without inconveniencing users who may not have anything to do
 with the aforementioned topics.
@@ -48,7 +48,7 @@ HOWEVER that limitation is broken upon multiple instances, refer to the
 You can follow people or send them a friend request.
 
 You also gain some sort of karma like point creativity called social credits
-depending on how well you are generally received, how much you interact with 
+depending on how well you are generally received, how much you interact with
 people and so on.
 
 - Bots done *right*
