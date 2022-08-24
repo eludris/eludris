@@ -1,8 +1,7 @@
-//! Client mappings.
+//! Client models.
 
 use rocket::{
     futures::stream::SplitSink,
-    serde::{Deserialize, Serialize},
     tokio::{net::TcpStream, sync::Mutex},
 };
 use std::{net::SocketAddr, sync::Arc};
@@ -16,10 +15,3 @@ pub struct Client {
 }
 
 pub type Clients = Arc<Mutex<Vec<Client>>>;
-
-/// A struct representing a message a client sent via the rest api.
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ClientMessage {
-    author: String,
-    content: String,
-}

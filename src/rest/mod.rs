@@ -24,7 +24,7 @@ pub async fn start(clients: Clients, db: Arc<Mutex<MySqlPool>>) -> Result<(), ro
     .expect("Couldn't create CorsOptions struct.");
 
     // The rest API.
-    let _ = rocket::build()
+    rocket::build()
         .mount("/", routes![messages::index])
         .manage(clients)
         .manage(db)
