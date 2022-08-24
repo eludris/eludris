@@ -19,7 +19,7 @@ use crate::{
 };
 
 /// A simple function that check's if a client's last ping was over 20 seconds ago and closes the
-/// websocket if so.
+/// gateway connection if so.
 async fn check_connection(last_ping: Arc<Mutex<u32>>) {
     loop {
         if (*last_ping.lock().await + 20) < now_timestamp() {
@@ -50,7 +50,7 @@ async fn handle_connection(addr: SocketAddr, stream: TcpStream, clients: Clients
 
     let handle_rx = async {
         while let Some(msg) = rx.next().await {
-            log::debug!("New websocket message:\n{:#?}", msg);
+            log::debug!("New gateway message:\n{:#?}", msg);
             match msg {
                 Ok(data) => match data {
                     Message::Ping(x) => {
@@ -89,14 +89,18 @@ async fn handle_connection(addr: SocketAddr, stream: TcpStream, clients: Clients
 
 /// A function that starts & handles the gatway.
 pub async fn start(clients: Clients) {
-    let ws_address = env::var("WS_ADDRESS").unwrap_or_else(|_| "0.0.0.0:5000".to_string());
-    let socket = TcpListener::bind(&ws_address)
+    let gateway_address = format!(
+        "{}:{}",
+        env::var("gateway_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string()),
+        env::var("gateway_PORT").unwrap_or_else(|_| "5000".to_string())
+    );
+    let socket = TcpListener::bind(&gateway_address)
         .await
-        .unwrap_or_else(|_| panic!("Couldn't start a websocket on {}", ws_address));
-    log::info!("ws server started");
+        .unwrap_or_else(|_| panic!("Couldn't start a websocket on {}", gateway_address));
+    log::info!("Gateway started at {}", gateway_address);
 
     while let Ok((stream, addr)) = socket.accept().await {
-        log::info!("New connection");
+        log::info!("New connection on ip {}", addr);
         task::spawn(handle_connection(addr, stream, clients.clone()));
     }
 }

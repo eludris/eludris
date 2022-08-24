@@ -3,6 +3,7 @@
 use rand::{thread_rng, Rng};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[allow(dead_code)]
 const BIGINT_LIMIT: u32 = 4294967295; // Biggest 32-bit number.
 
 /// A function that returns the current UNIX timestamp with eludris' custom epoch.
@@ -15,6 +16,7 @@ pub fn now_timestamp() -> u32 {
 }
 
 /// A function that generates an id based on a provided sequence number.
+#[allow(dead_code)]
 pub fn generate_id(sequence: u16) -> u64 {
     let now = now_timestamp();
     let timestamp = now % BIGINT_LIMIT;

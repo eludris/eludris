@@ -9,8 +9,10 @@ services:
     environment:
       - DATABASE_URL=mysql://root:root@mariadb/eludris
       - REDIS_URL=redis://redis/1
-      - ROCKET_ADDRESS=0.0.0.0
-      - RUST_LOG=debug
+
+    ports:
+      - "8000:8000"
+      - "9000:9000"
 
     build:
       context: .
