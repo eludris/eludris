@@ -4,7 +4,7 @@ services:
   eludris:
     container_name: eludris
     env_file: .env
-    restart: always
+    restart: unless-stopped
 
     environment:
       - DATABASE_URL=mysql://root:root@mariadb/eludris

@@ -1,7 +1,7 @@
-FROM rust:1.61 as build
+FROM ekidd/rust-musl-builder:stable as builder
 
 RUN USER=root cargo new --bin eludris
-WORKDIR /eludris
+WORKDIR ./eludris
 
 COPY Cargo.lock Cargo.toml ./
 
@@ -10,12 +10,13 @@ RUN rm src/*.rs
 
 COPY ./src ./src
 
-RUN rm ./target/release/deps/eludris*
+RUN rm ./target/x86_64-unknown-linux-musl/release/deps/eludris*
 RUN cargo build --release
 
-FROM debian:buster-slim
 
-COPY --from=build /eludris/target/release/eludris /usr/src/eludris
+FROM alpine:latest
+
+COPY --from=builder /home/rust/src/eludris/target/x86_64-unknown-linux-musl/release/eludris /bin/eludris
 
 # Don't forget to also publish these ports in the docker-compose.yml file.
 ARG REST_PORT=8000
@@ -30,4 +31,5 @@ ENV GATEWAY_ADDRESS 0.0.0.0
 ENV GATEWAY_PORT $GATEWAY_PORT
 ENV RUST_LOG debug
 
-CMD ["/usr/src/eludris"]
+CMD ["/bin/eludris"]
+
