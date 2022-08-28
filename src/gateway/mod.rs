@@ -13,6 +13,9 @@ use crate::models::client::{Client, Clients};
 /// disconnected.
 const TIMEOUT_DURATION: Duration = Duration::from_secs(20);
 
+/// The minimum duration of time which can get a client disconnected for spamming gateway pings.
+const PING_RATELIMIT_RESET: Duration = Duration::from_secs(2);
+
 /// A simple function that check's if a client's last ping was over TIMEOUT_DURATION seconds ago and
 /// closes the gateway connection if so.
 async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
@@ -51,8 +54,8 @@ async fn handle_connection(addr: SocketAddr, stream: TcpStream, clients: Clients
                 Ok(data) => match data {
                     Message::Ping(x) => {
                         let mut last_ping = last_ping.lock().await;
-                        if Instant::now().duration_since(*last_ping) < Duration::from_secs(2) {
-                            // A simple form of gateawy ratelimiting.
+                        if Instant::now().duration_since(*last_ping) < PING_RATELIMIT_RESET {
+                            // A simple form of gateway ratelimiting.
                             log::info!("Disconnected a client: {}, reason: Ping ratelimit", addr);
                             break;
                         }
