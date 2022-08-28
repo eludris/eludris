@@ -50,7 +50,13 @@ async fn handle_connection(addr: SocketAddr, stream: TcpStream, clients: Clients
             match msg {
                 Ok(data) => match data {
                     Message::Ping(x) => {
-                        *last_ping.lock().await = Instant::now();
+                        let mut last_ping = last_ping.lock().await;
+                        if Instant::now().duration_since(*last_ping) < Duration::from_secs(2) {
+                            // A simple form of gateawy ratelimiting.
+                            log::info!("Disconnected a client: {}, reason: Ping ratelimit", addr);
+                            break;
+                        }
+                        *last_ping = Instant::now();
                         tx.lock()
                             .await
                             .send(Message::Pong(x))
