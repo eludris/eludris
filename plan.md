@@ -1,199 +1,123 @@
 # Eludris
 
-This markdown file is dedicated to explaining and organizing how the features
-and components of Eludris will work.
-
-If a line starts with [STC] (Subject To Change) it hasn't been fully decided on
-and can be altered or straight up removed at any given point in time.
+This markdown file is dedicated to explaining and organising how the features and components of Eludris will work.
 
 This file is changed every while with new changes and additions appearing.
 
 ## Overview
 
-The goal is to provide a uniquely fresh but not totally new experience focused
-around programming but also any other topic / interest whilst being secure, free
-(as in monetary value), free (as in freedom), privacy respecting, open source
-and decentralized without inconveniencing users who may not have anything to do
-with the aforementioned topics.
+The goal is to provide a uniquely fresh but not totally new experience focused around programming but also any other topic / interest whilst being secure, free (as in monetary value), free (as in freedom), privacy respecting, open source and decentralised without inconveniencing users who may not have anything to do with the aforementioned topics.
+
+Additionally and as with anything Eludris related modifying the source code or making your own clients, libraries and tooling around Eludris and such is more than welcome ~~as long as you respect the license anyway~~.
+
+Here are the core takeaways:
 
 - You can create communities.
 
-Communities can be an either a messaging community, a post community or both.
+Communities can be an either message based, post based or both.
 
-Messaging communities work like how a discord server would.
+Message based communities work like how a Discord server does with there being different channels of different types and members being able to send -you guessed it- messages.
 
-Post communities work like how a reddit subreddit would.
+Post based communities work like how a Reddit subreddit does with member being able to create different types of posts, vote on them and leave comments.
+
+**Both** community types have shared features however, like roles, nicknames and so on.
 
 Communities can be either public or private.
 
-Communities can get manually reviewed by a staff member to get verified if requested
-by the community's owner.
+Communities can get manually reviewed by a staff member to get verified if requested by the community's owner.
 
-Verified communities can claim a namespace getting their own url invite and are indexed
-in a list to be easily discoverable.
+Verified communities can claim a namespace getting their own URL invite and are indexed in a list to be easily discover-able, doing that however adds more restrictions upon them however
+(like no End-To-End-Encryption, stricter moderation and so on).
 
-Verified communities have more restrictions upon them however
-(like no e2ee, stricter moderation and so on).
-
-A community can get unverified at any point in time if they break the Eludris
-EULA, TOS or instance rules, that however can be appealed and unjustified
-unverification will not happen.
+A community can get unverified at any point in time if they break the Eludris EULA, Terms of Service or instance rules, that however can be appealed and, unjustified unverification will not happen.
 
 - Accounts are unique.
 
-Much like reddit and twitter only one person can have a specific account name,
-HOWEVER that limitation is broken upon multiple instances, refer to the
-[federation](#federation) section.
+Much like Reddit and Twitter only one person can have a specific account name, *however* that limitation is broken upon multiple instances, refer to the [federation](#federation) section for more information on the matter.
 
-You can follow people or send them a friend request.
+You can follow people or send them friend requests.
 
-You also gain some sort of karma like point creativity called social credits
-depending on how well you are generally received, how much you interact with
-people and so on.
+You can also gain a Reddit Karma like form of point creatively called Social Credit by the Eludris Team, you gain it by getting more up-votes on your posts, spending time interacting with people, getting rewarded by instance moderators or through events.
 
 - Bots done *right*
 
-[STC] Bots will be user accounts (like you'd see on reddit or twitter) which
-would mean that they wouldn't have any api limitation because if you can do
-something malicious with a bot account you can do it with a user account so I
-think we should focus on making all types of accounts relatively unexploitable.
+Bots will be user accounts like you'd see on Reddit or twitter which would mean that they wouldn't have any bot-specific API limitations, however you have to set your bot as one for it to get verified.
 
-Discord style application commands will be available, however unlike discord
-they will not be forced upon people and will have more utilities.
+Verification for bots only means that the bot and it's owner will be given a little neat badge of honour.
 
-Also from Discord, buttons and more message components will be available to
-give bot developers more room and tools to make cool stuff.
+Discord style application commands will be available, however unlike discord they will not be forced upon people and will have more utilities, uses and will be more flexible, additionally buttons and more message components will be available to give bot developers more room and tools to make cool stuff.
 
 ## Tokens
 
-About tokens, other than having your signup email and password for every request
-you make to `/auth` you get a session token, you ideally should have one session
-token for every browser / app you use with your Eludris instance which makes it
-possible to invalidate them easily if they ever get compromised.
+About tokens, to be able to make API requests and connect to the Eludris gateway you will need a token, Eludris uses JWT tokens with a cryptographically secure pseudo-random string with HC128 as a secret, to get a Token you send an HTTP request to `/auth` with your email and password.
+
+Tokens work on a per-session basis which means that you have to generate a Token for every client you use to make it easy to invalidate any sessions without impacting others.
 
 Changing your password automatically invalidates all your tokens.
 
-Upon connecting to the gateway (Pandemonium) and sending an auth request, you
-get a Pandemonium token which unlike your other tokens or password aren't
-hashed to reduces the load on the server for every request you send, you can
-still use your session token but if you're going to connect to Pandemonium,
-it's recommended to use the provided Pandemonium token.
+## End-To-End-Encryption
 
-Pandemonium tokens are stored temporarily in the cache and are deleted after the
-client disconnects meaning you can't reuse a Pandemonium token after you disconnect.
+End to End encryption will be available in private communities, private GDMs (group direct messages) and direct messages (DMs) between friends.
 
-### Structure
-
-A structure of a token is extremely simple.
-
-It consists of three major parts seperated by periods ("."), the aforementioned parts
-being:
-
-The user's ID Base 64, The Unix timestamp of the token generation, 64 characters
-generated with cryptographically secure random number generation (namely HC-128).
-
-## End To End Encryption (e2ee)
-
-End to End encryption will be available in private communities, group encrypted
-group chats and DMs between friends.
-
-### E2EE Implementation
+### End-To-End-Encryption Implementation
 
 For starters, all users have a personal public key and private key.
 
-Events with encrypted data (message, post, etc) have an extra field in their
-payload, the `pubkey` field which contains the public key the message's content
-was encrypted with so that the corresponding private key would be fetched from the
-user's public-private key pairs and requested if the current one is invalid.
+Events with encrypted data (message, post, etc) have an extra field in their payload, the `pubkey` field which contains the public key the message's content was encrypted with so that the corresponding private key would be fetched from the user's public-private key pairs and requested if the current one is invalid.
 
-As for storing public-private key pairs, storing them locally causes alot of
-extra complexity esspecially with sharing and syncing them so each user has a
-super key pair that their keys are encrypted with without the instance knowing
-the private key, the instance gives the user all the public and private keys
-(encrypted by the public key) on connecting to Pandemonium, the instance never
-has access to the un-encrypted key pairs at any point in time.
+As for storing public-private key pairs, storing them locally causes a lot of extra complexity especially with sharing and syncing keys and issues with a client being offline when it's given a key so each user has a super key pair that their keys are encrypted with without the instance knowing the private key, the instance gives the user all the public and private keys
+(encrypted by the public key) on connecting to Pandemonium, the instance never has access to the non-encrypted key pairs at any point in time.
 
-To further increase the security each instance marks all session's (besides the first)
-as untrusted and essentially rats it out to everyone, a user can verify their session
-from their original session in which they security pass on the super key pair to
+To further increase the security each instance marks all session's (besides the first) as untrusted and essentially rats it out to everyone, a user can verify their session from their original session in which they securely pass on the super key pair to
 the new instance.
 
 #### DMs
 
-This one is quite simple, upon a friend request getting accepted and two users
-becoming friends, the user who accepted the friend request sends a payload with
-a public key and a private key for the DM, both encrypted using the other user's
+This one is quite simple, upon a friend request getting accepted and two users becoming friends, the user who accepted the friend request sends a payload with a public key and a private key for the DM, both encrypted using the other user's
 public key.
 
-After that all messages sent in this DM is encrypted using the DM's public key and
-are decrypted with their private key which is stored on the instance **encrypted**
-with the each user's super public-private key pair along with their other keys.
+After that all messages sent in this DM is encrypted using the DM's public key and are encrypted with their private key which is stored on the instance **encrypted** with the each user's super public-private key pair along with their other keys.
 
-A user can also request they get a new key from the other end which will entirely
-scrap the old pair of keys and generate new ones in case the old ones get
-compromised or they didn't reach the other user for any reason.
+A user can also request they get a new key from the other end which will entirely scrap the old pair of keys and generate new ones in case the old ones get compromised.
 
 #### Group DMs
 
-Group DMs can be encrypted too, they work in a simmilar fashion, the host sends the
-room's public and private keys to all the starting participants on room creation
+Group DMs can be encrypted too, they work in a similar fashion, the host sends the room's public and private keys to all the starting participants on room creation
 encrypted with their public keys.
 
-Any user can request they get the private and public keys of the room again in which
-any available user would just encrypt it using the request's user's public key and
-send it back.
+Any user can request they get the private and public keys of the room again in which any available user would just encrypt it using the request's user's public key and send it back. Upon a new user joining the GDM they could just request the room's keys.
 
-Upon a new user joining the GroupDM they could just request the room's keys.
-
-The room's key's can also be re-generated by the DM's host.
+The room's key's can also be re-generated by the GDM's host.
 
 #### Private Communities
 
-Privtate communities work simmilarly to how Group DMs work with the addition that
-the posts may also be encrypted but follow the same foundations.
+Private communities work similarly to how Group DMs work with the addition that the posts may also be encrypted but follow the same foundations.
 
 ## Federation
 
-Eludris will be federated, meaning anyone can host their own instance and they
-can communicate with other instances so that any user on one instance can
-interact with others on any other instance.
+Eludris will be federated, meaning anyone can host their own instance and instances can communicate with other instances so that any user on one instance can interact with others on any other instance.
 
 ### Side note about federation
 
-Making your own implementation in the language you prefer is actually encouraged,
-same with forking this one and adding new stuff to it, just make sure to give your
-new features an id and name so that clients that work with multiple instances can
-use your features & not break if you made substantial changes, incidentally everything
-included in this implementation is called `base` and has an id of `0`, all other
-implementations should at least have them.
+Making your own implementation in the language you prefer is actually encouraged, same with forking this one and adding new stuff to it, just make sure to give your new features an id and name so that clients that work with multiple instances can
+use your features & not break if you made substantial changes, incidentally everything included in the official Eludris implementation at Eludris/eludris is called `base` and has an id of `0`, all other implementations should at least have them.
 
-Features are acquired by sending a `GET` request to an instance's `/` route besides
-the other elements of the `info` payload.
+Features are acquired by sending a `GET` request to an instance's `/` route besides the other elements of the `info` payload.
 
-### [STC] Federation Implementation
+### Federation Implementation
 
 All routes where other instances can request / submit data will have an
-additional `/external` route (like `/external/this/channels/:channelid/`).
+additional `/external` route (like `/external/this/channels/:channel_id/`).
 
 For info about how IDs are created read [this](#ids).
 
 `/external` routes will follow specific rules, these being:
 
-A new instance (one the home instance has never seen before) will have to
-first send an `identify` payload, this payload is simple as it just provides
-a shared **private** key that both instances can indentify each other with (in
-case an instance's domain get's compromised) and the instance's id.
+A new instance (one the home instance has never seen before) will have to first send an `identify` payload, this payload is simple as it just provides a shared **private** key that both instances can identify each other with (in case an instance's domain get's compromised) and the instance's id.
 
-`/external` routes will take both http requests payloads and Pandemonium payloads
-in the form of http requests (let's say an instance A has a community with a
-channel that has user's from other instances, one of which is B when a user from
-instance B sends a message to `B's domain/external/A's ID/channels/:channelid/
-messages` B will send the rest api message payload to `A's domain/external/
-A's ID/channels/:channelid/message`, and when a user from instance A send's a
-message the opposite will happen with A sending a request to B's external route).
+`/external` routes will take both Oprish payloads and Pandemonium payloads in the form of HTTP requests (let's say an instance A has a community with a channel that has user's from other instances, one of which is B, when a user from instance B sends a message to `B's domain/external/A's ID/channels/:channel_id/messages`, B will send the Oprish message payload to `A's domain/external/this/channels/:channelid/message`, and when a user from instance A sends a message the opposite will happen with A sending a request to B's external route).
 
-I'm sure this implementation has some edge cases which may cause some issues but
-I'm hoping to iron them out and doccument them here once I encounter them.
+I'm sure this implementation has some edge cases which may cause some issues but I'm hoping to iron them out and document them here once we encounter them.
 
 ## Miscellaneous info
 
@@ -228,50 +152,30 @@ An instance ID is a 24 bit (3 byte) number, structured likes so.
 16 bit (2 byte) partial unix timestamp.
 ```
 
-T: The first 16 bits of the current unix timestamp (also with the Eludris) epoch.
+T: The first 16 bits of the current Unix timestamp (also with the Eludris) epoch.
 
 N: The 8 bits representing the first character in the instance name.
 
 ### Redis
 
-Eludris uses a non persistent redis instance to store data that should be really
-fast to fetch and is ephemeral like Pandemonium tokens and the ratelimiting data.
+Eludris uses a non persistent Redis instance to store data that should be really fast to fetch and is ephemeral like rate-limit info.
 
-Here's the structure of the two redis keys:
-
-- token:\<user-id>
+Here's the structure of currently available keys:
 - ratelimit:\<user-id>:\<method>:\<route>
-
-### Stack
-
-- [Rust](https://rust-lang.org) Programming Language.
-  - [rocket](https://rocket.rs) Rest Api Framework.
-  - [tokio-tungstenite](https://github.com/snapview/tokio-tungstenite)
-    Pandemonium (gateway)
-  Handler.
-  - [sqlx](https://github.com/launchbadge/sqlx) SQL Query handler.
-
-  Note:
-
-     > We were planning to use async-diesel but since diesel doesn't play well
-     with MariaDB (mainly the diesel-cli) we switched to sqlx and the database will
-     be mapped manually.
-  - [redis-rs](https://github.com/mitsuhiko/redis-rs) Crate for interfacing with
-  redis.
-
-- [MariaDB](https://mariadb.org) Database.
-- [Redis](https://redis.io) Cache for [Pandemonium tokens](#tokens) & ratelimit info.
 
 ### Internal names
 
 Some of the Eludris components have names that are used internally by the
-Eludris dev team or are referenced directly in the source code.
+Eludris team or are referenced directly in the source code.
 
 Here are some of these names:
 
 - Das Ding: The Eludris logo.
 - Thang: The Eludris mascot.
-- Pandemonium: The Eludris Websocket based gatway.
+- Oprish: The Eludris RESTful API.
+- Pandemonium: The Eludris websocket based gateway.
+- Effis: The Eludris file server, proxy and CDN.
+- Todel: The Eludris model and shared logic crate.
 - Carnage: The official Eludris frontend.
 
 ## API Spec
