@@ -8,7 +8,7 @@ This file is changed every while with new changes and additions appearing.
 
 The goal is to provide a uniquely fresh but not totally new experience focused around programming but also any other topic / interest whilst being secure, free (as in monetary value), free (as in freedom), privacy respecting, open source and decentralised without inconveniencing users who may not have anything to do with the aforementioned topics.
 
-Additionally and as with anything Eludris related modifying the source code or making your own clients, libraries and tooling around Eludris and such is more than welcome ~~as long as you respect the license anyway~~.
+Additionally and as with anything Eludris related, modifying the source code or making your own clients, libraries and tooling around Eludris and such is more than welcome ~~as long as you respect the license anyway~~.
 
 Here are the core takeaways:
 
