@@ -102,7 +102,7 @@ Eludris will be federated, meaning anyone can host their own instance and instan
 Making your own implementation in the language you prefer is actually encouraged, same with forking this one and adding new stuff to it, just make sure to give your new features an id and name so that clients that work with multiple instances can
 use your features & not break if you made substantial changes, incidentally everything included in the official Eludris implementation at Eludris/eludris is called `base` and has an id of `0`, all other implementations should at least have them.
 
-Features are acquired by sending a `GET` request to an instance's `/` route besides the other elements of the `info` payload.
+Features are acquired by sending a `GET` request to an instance's `/` route besides the other elements of the [info](#info) payload.
 
 ### Federation Implementation
 
@@ -178,8 +178,101 @@ Here are some of these names:
 - Todel: The Eludris model and shared logic crate.
 - Carnage: The official Eludris frontend.
 
+## How It Works
+
+Now, Eludris is split into 4 main parts which if you have read this far in would have an idea of, they are:
+- Oprish: The Eludris RESTful API.
+- Pandemonium: The Eludris websocket based gateway.
+- Effis: The Eludris file server, proxy and CDN.
+- Todel: The Eludris model and shared logic crate.
+
+These tiny micro-services are tied together using Apache Kafka and the docker-compose in eludris/eludris, how they actually work is as follows:
+
+Oprish waits for HTTP requests from clients, does validation and authentication to make sure that everything is right, then dispatches an event to the Apache Kafka topic which Pandemonium listens to and determines who to dispatch the event to.
+
+When a user connects to Pandemonium it fetches the relative data about the user such as what communities it's in or what roles and permissions it has which allows it to provide data when the client connects besides the End-To-End-Encryption keys and also allows it to filter what events each client gets delivered.
+
+Effis is responsible for handling files and being a CDN besides being a media proxy which means that it stores files and attachments (and their related info), serves them and also can generate embed previews from links.
+
+Todel is a lib crate that houses all the Eludris models and shared logic for Oprish, Pandemonium and Effis to reuse and rely on.
+
 ## API Spec
 
-### Payloads
+This section discusses how the Eludris v0.2.0 API will work from a client point of view.
 
-### Routes
+### Models
+
+#### Feature
+
+A model representing a set of features an Eludris instance may have.
+
+The point of this model is to make it so that different clients can work for different instances with different features without anything breaking.
+
+Anything in the official implementation of Eludris (present at Eludris/eludris) is under the feature `base` and has an id of `0`
+
+|field|type|description|
+|---|---|---|
+|name|`String`|The name of this set of features|
+|id|`u32`|The ID of this set of features|
+
+#### Info
+
+A model representing an Eludris instance's info.
+
+|field|type|description|
+|---|---|---|
+|instance_name|`String`|The name of this instance|
+|features|`HashMap<u32, String>`|The features this instance has|
+
+#### Message 
+
+A model representing an Eludris message.
+
+|field|type|description|
+|---|---|---|
+|author|`String`|The name of the user who sent this message|
+|content|`String`|The content of the message|
+
+### Oprish HTTP Methods
+
+#### Get Instance Info
+
+Route:
+`/`
+
+Method:
+`GET`
+
+URL parameters:
+None
+
+Request JSON:
+None
+
+Response JSON:
+An [info](#info) object
+
+#### Send A Message
+
+Route:
+`/messages/`
+
+Method:
+`POST`
+
+URL parameters:
+None
+
+Request JSON:
+A [message](#message) object
+
+Response JSON:
+A [message](#message) object
+
+#### Interacting With Pandemonium
+
+To actually be able to properly use Eludris you will need to establish a Pandemonium connection which is essentially the programming equivalent of sending yourself straight to hell's boiler room.
+
+Contrary to how it may seem, going to hell is actually very easy, all you need to do is connect to the websocket and send a Ping frame every 20 seconds and tada! Pandemonium will start sending you events.
+
+The current payload you can get as of Eludris v0.2.0 is a [message](#message) payload.
