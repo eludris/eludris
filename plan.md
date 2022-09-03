@@ -65,7 +65,7 @@ For starters, all users have a personal public key and private key.
 
 Events with encrypted data (message, post, etc) have an extra field in their payload, the `pubkey` field which contains the public key the message's content was encrypted with so that the corresponding private key would be fetched from the user's public-private key pairs and requested if the current one is invalid.
 
-As for storing public-private key pairs, storing them locally causes a lot of extra complexity especially with sharing and syncing keys and issues with a client being offline when it's given a key so each user has a super key pair that their keys are encrypted with without the instance knowing the private key, the instance gives the user all the public and private keys
+As for storing public-private key pairs, storing them locally causes a lot of extra complexity especially with sharing and syncing keys and issues with a client being offline when it's given a key, so each user has a super key pair that their keys are encrypted with without the instance knowing the private key, the instance gives the user all the public and private keys
 (encrypted by the public key) on connecting to Pandemonium, the instance never has access to the non-encrypted key pairs at any point in time.
 
 To further increase the security each instance marks all session's (besides the first) as untrusted and essentially rats it out to everyone, a user can verify their session from their original session in which they securely pass on the super key pair to
