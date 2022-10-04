@@ -1,0 +1,17 @@
+instance_name = "" # This is required, has to be over 0 characters long.
+
+# You can uncomment the sections that you want and change their config values,
+# this is just the defaults.
+
+# With ratelimits, reset_after is the number of seconds between every bucket reset.
+
+# [oprish.ratelimits]
+# info = { reset_after = 5, limit = 2}
+# message_create = { reset_after = 5, limit = 10}
+
+# [pandemonium]
+# ratelimit = { reset_after = 10, limit = 5}
+
+# [effis]
+# file_size = "100MB"
+# ratelimit = { reset_after = 10, limit = 25, file_size_limit = "200MB"}

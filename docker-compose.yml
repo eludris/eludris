@@ -10,6 +10,7 @@ services:
       BROKERS: kafka
       # God have mercy
       ROCKET_DATABASES: "{redis-cache={url=\"redis://keydb\"}}"
+      DB_URL: "mysql://root:root@mariadb/eludris"
 
     ports:
       - "7159:7159"
@@ -27,6 +28,7 @@ services:
       BROKERS: kafka
       # Now for redis url
       REDIS_URL: redis://keydb # Syke
+      DB_URL: "mysql://root:root@mariadb/eludris"
 
     ports:
       - "7160:7160"
@@ -38,3 +40,11 @@ services:
   keydb:
     image: eqalpha/keydb
     restart: unless-stopped
+
+  mariadb:
+      image: mariadb:latest
+
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_ROOT_HOST=%
+        - MYSQL_DATABASE=eludris
