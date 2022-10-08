@@ -14,8 +14,8 @@ Congratulations, you've now successfully deployed your Eludris instance!
 
 ## Default Ports
 
-Oprish: 7159
+[Oprish](https://github.com/eludris/oprish) (HTTP API): 7159
 
-Pandemonium: 7160
+[Pandemonium](https://github.com/eludris/pandemonium) (WS API/ Gateway): 7160
 
-Effis: 7161
+[Effis](https://github.com/eludris/effis) (File server, CDN and proxy): 7161
