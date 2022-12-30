@@ -57,6 +57,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          # Multiple packages.
+          logout: false
 
       - name: Build and Push
         uses: docker/build-push-action@v3
