@@ -44,7 +44,7 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,prefix=
             type=sha,format=long,prefix=
-
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'next') }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
