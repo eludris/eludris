@@ -7,18 +7,18 @@ x-pull-policy:
 services:
   oprish:
     <<: *pull-policy
-    image: ghcr.io/Eludris/oprish
+    image: ghcr.io/eludris/oprish
     ports:
       - ${OPRISH_PORT:-7159}:7159
 
   pandemonium:
     <<: *pull-policy
-    image: ghcr.io/Eludris/pandemonium
+    image: ghcr.io/eludris/pandemonium
     ports:
       - ${PANDEMONIUM_PORT:-7160}:7160
 
   effis:
     <<: *pull-policy
-    image: ghcr.io/Eludris/effis
+    image: ghcr.io/eludris/effis
     ports:
       - ${EFFIS_PORT:-7161}:7161
