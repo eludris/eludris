@@ -17,4 +17,4 @@ deadpool-redis = "0.10.2"
 rocket_db_pools = { version = "0.1.0-rc.2", features = ["deadpool_redis"] }
 dotenv = "0.15.0"
 anyhow = "1.0.66"
-tokio = { version = "1.22.0", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.23.1", features = ["rt-multi-thread", "macros"] }

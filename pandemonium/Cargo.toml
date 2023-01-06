@@ -16,5 +16,5 @@ log = "0.4.17"
 serde = { version = "1.0.144", features = ["derive"] }
 serde_json = "1.0.85"
 todel = { features = ["logic"], version = "0.3.0", path = "../todel" }
-tokio = { version = "1.21.0", features = ["macros", "rt-multi-thread", "net", "sync", "time"] }
+tokio = { version = "1.23.1", features = ["macros", "rt-multi-thread", "net", "sync", "time"] }
 tokio-tungstenite = { version = "0.17.2", features = ["rustls"] }
