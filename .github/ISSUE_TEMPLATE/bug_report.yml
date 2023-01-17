@@ -20,9 +20,9 @@ body:
   - type: checkboxes
     label: Checks
     options:
-      - Have you checked the documentation?
+      - label: Have you checked the documentation?
         required: true
-      - Have you checked other issues to make sure this is not a duplicate?
+      - label: Have you checked other issues to make sure this is not a duplicate?
         required: true
 
   - type: textarea
