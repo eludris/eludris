@@ -1,0 +1,33 @@
+name: Bug Report
+description: Report any bugs you encounter.
+body:
+  - type: textarea
+    attributes:
+      label: What is the issue?
+      description: Insert a detailed description of what your issue is
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: What is the issue with?
+      options:
+        - Deployment
+        - Effiw
+        - 
+
+  - type: checkboxes
+    label: Checks
+    options:
+      - Have you checked the documentation?
+        required: true
+      - Have you checked other issues to make sure this is not a duplicate?
+        required: true
+
+  - type: textarea
+    attributes:
+      label: Minimum Reproduction
+      description: Insert any code or steps to produce this issue.
+    validations:
+      required: true
+      
