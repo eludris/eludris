@@ -8,7 +8,7 @@ body:
       required: true
 
   - type: textarea
-    atttributes:
+    attributes:
       label: Why?
       description: Explain why you want this to be added
     validations:
