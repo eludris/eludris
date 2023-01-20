@@ -13,7 +13,6 @@ body:
       label: What is the issue with?
       options:
         - Deployment
-        - Effiw
         - Effis
         - Eludris
 
@@ -29,7 +28,7 @@ body:
   - type: textarea
     attributes:
       label: Minimum Reproduction
-      description: Insert any code or steps to produce this issue.
+      description: Insert any code or steps to help reproduce this issue.
     validations:
       required: true
       
