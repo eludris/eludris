@@ -14,7 +14,9 @@ body:
       options:
         - Deployment
         - Effis
-        - Eludris
+        - Todel
+        - Pandemonium
+        - Oprish
 
   - type: checkboxes
     attributes:
