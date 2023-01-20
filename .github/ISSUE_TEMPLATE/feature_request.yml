@@ -1,0 +1,20 @@
+name: Feature Request
+description: Request a feature that you would like Eludris to support
+body:
+  - type: input
+    attributes:
+      label: What would you like to be added?
+    validations:
+      required: true
+
+  - type: textarea
+    atttributes:
+      label: Why?
+      description: Explain why you want this to be added
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Examples
+      description: Add any examples (photos, videos, etc.) of your feature
