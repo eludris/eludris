@@ -29,7 +29,7 @@ body:
 
   - type: textarea
     attributes:
-      label: Minimum Reproduction
+      label: Minimum Reproducible Sample/Code
       description: Insert any code or steps to help reproduce this issue.
     validations:
       required: true
