@@ -17,7 +17,7 @@ in rust that's easy to deploy and configure while striving to be *truly **yours*
 Eludris tries to combine the best parts of other popular social media platforms
 such as Discord, Reddit, Twitter and so on while not being one or the other.
 
-### Were currently at version 0.3.2, click [here](https://eludris.github.io/docs/changelog0.3.2.html) to check the changelog
+### We're currently at version 0.3.2, click [here](https://eludris.github.io/docs/changelog0.3.2.html) to check the changelog
 
 ## Deployment
 
