@@ -1,0 +1,69 @@
+name: Build CLI Binary
+
+on:
+  push:
+  pull_request:
+  release:
+    types:
+      - published
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.event_name == 'release' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest] #, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Cache Rust Dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release -p eludris
+      # Windows scripting isn't the same.
+      # - name: Get Variables (Windows)
+      #   run: |
+      #     echo "$env:GITHUB_ENV"
+      #     echo ("TAG=" + $env:GITHUB_REF.replace('refs/tags/', '')) >> $env:GITHUB_ENV
+      #     echo "PATH=eludris.exe" >> $env:GITHUB_ENV
+      #     echo "OS=Windows" >> $env:GITHUB_ENV
+      #   if: matrix.os == 'windows-latest'
+      - name: Get Variables (MacOS)
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "PATH=eludris" >> $GITHUB_ENV
+          echo "OS=MacOS" >> $GITHUB_ENV
+        if: matrix.os == 'macos-latest'
+      - name: Get Variables (Linux)
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "PATH=eludris" >> $GITHUB_ENV
+          echo "OS=Linux-GNU" >> $GITHUB_ENV
+        if: matrix.os == 'ubuntu-latest'
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.OS }}-eludris
+          path: target/release/${{ env.PATH }}
+      - name: Update Release
+        if: github.event_name == 'release'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: target/release/${{ env.PATH }}
+          tag: ${{ github.ref }}
+          overwrite: true
+          asset_name: eludris-${{ env.TAG }}-${{ env.OS }}-x86_64
