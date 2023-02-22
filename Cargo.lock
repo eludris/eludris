@@ -3241,11 +3241,20 @@ dependencies = [
  "serde_with",
  "sha256",
  "sqlx 0.5.13",
+ "todel_codegen",
  "tokio",
  "toml",
  "tree_magic",
  "ubyte",
  "url",
+]
+
+[[package]]
+name = "todel_codegen"
+version = "0.3.2"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]
