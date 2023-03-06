@@ -3,6 +3,8 @@
 #[cfg(feature = "logic")]
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+pub extern crate todel_codegen;
 
 pub mod conf;
 #[cfg(feature = "http")]
