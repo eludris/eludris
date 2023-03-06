@@ -1,0 +1,17 @@
+{
+  "type": "Struct",
+  "name": "Message",
+  "doc": "The message payload.",
+  "fields": [
+    {
+      "name": "author",
+      "doc": "The author of message. This field has to be between 2 and 32 characters long.",
+      "type": "String"
+    },
+    {
+      "name": "content",
+      "doc": "The content of the message. This field has to be at-least 2 characters long. The upper limit\nis the instance's [`InstanceInfo`] `message_limit`.",
+      "type": "String"
+    }
+  ]
+}
