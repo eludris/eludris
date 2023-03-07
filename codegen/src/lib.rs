@@ -1,9 +1,13 @@
 mod models;
 use std::{env, fs, ops::Not};
 
-use models::{FieldInfo, ItemInfo, StructInfo};
+use models::{EnumVariant, FieldInfo, ItemInfo, StructInfo};
 use proc_macro::{Span, TokenStream};
-use syn::{spanned::Spanned, Attribute, Error, Item, Lit, Meta, MetaNameValue, Type};
+use syn::{
+    spanned::Spanned, Attribute, Error, Fields, Item, Lit, Meta, MetaNameValue, NestedMeta, Type,
+};
+
+use crate::models::EnumInfo;
 
 macro_rules! unwrap {
     ($err:expr) => {
@@ -28,8 +32,153 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                 todo!()
             }
             Item::Enum(item) => {
-                println!("enum {}", item.ident);
-                todo!()
+                let name = item.ident.to_string();
+                let doc = unwrap!(get_doc(&item.attrs));
+                let mut rename_all = None;
+                let mut tag = None;
+                let mut untagged = false;
+                let mut content = None;
+                for attr in item.attrs.iter().filter(|a| a.path.is_ident("serde")) {
+                    if let Ok(Meta::List(meta)) = attr.parse_meta() {
+                        for meta in meta.nested {
+                            match meta {
+                                NestedMeta::Meta(Meta::NameValue(meta)) => {
+                                    if let Some(ident) = meta.path.get_ident() {
+                                        match ident.to_string().as_str() {
+                                            "rename_all" => match meta.lit {
+                                                Lit::Str(lit) => rename_all = Some(lit.value()),
+                                                // serde should handle this with an error for us :D
+                                                _ => {}
+                                            },
+                                            "tag" => match meta.lit {
+                                                Lit::Str(lit) => tag = Some(lit.value()),
+                                                _ => {}
+                                            },
+                                            "content" => match meta.lit {
+                                                Lit::Str(lit) => content = Some(lit.value()),
+                                                _ => {}
+                                            },
+                                            _ => {}
+                                        }
+                                    }
+                                }
+                                NestedMeta::Meta(Meta::Path(path)) => {
+                                    if path.is_ident("untagged") {
+                                        untagged = true;
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+                let mut variants = vec![];
+                for variant in item.variants {
+                    let doc = unwrap!(get_doc(&variant.attrs));
+                    let name = variant.ident.to_string();
+                    let variant = match variant.fields {
+                        Fields::Unit => EnumVariant::Unit { name, doc },
+                        Fields::Unnamed(fields) => {
+                            if fields.unnamed.len() > 1 {
+                                return Error::new(
+                                    fields.span(),
+                                    "Cannot document tuple enum variants with more than one field",
+                                )
+                                .to_compile_error()
+                                .into();
+                            }
+                            let field = unwrap!(fields.unnamed.first().ok_or_else(|| Error::new(
+                                fields.span(),
+                                "Tuple enum variants must have at least one field"
+                            )));
+                            if let Type::Path(ty) = &field.ty {
+                                let field_type =
+                                    unwrap!(ty.path.segments.last().ok_or_else(|| {
+                                        Error::new(ty.path.span(), "Cannot extract type from field")
+                                    }))
+                                    .ident
+                                    .to_string();
+                                EnumVariant::Tuple {
+                                    name,
+                                    doc,
+                                    field_type,
+                                }
+                            } else {
+                                return Error::new(
+                                    field.span(),
+                                    "Cannot document non-path typed struct fields",
+                                )
+                                .to_compile_error()
+                                .into();
+                            }
+                        }
+                        Fields::Named(struct_fields) => {
+                            let mut fields = vec![];
+                            for field in struct_fields.named {
+                                if let Type::Path(ty) = &field.ty {
+                                    let name = unwrap!(field.ident.as_ref().ok_or_else(|| {
+                                        Error::new(
+                                            field.span(),
+                                            "Cannot generate documentation for tuple struct fields",
+                                        )
+                                    }))
+                                    .to_string();
+                                    let field_type =
+                                        unwrap!(ty.path.segments.last().ok_or_else(|| {
+                                            Error::new(
+                                                ty.path.span(),
+                                                "Cannot extract type from field",
+                                            )
+                                        }))
+                                        .ident
+                                        .to_string();
+                                    let doc = unwrap!(get_doc(&field.attrs));
+                                    let mut flattened = false;
+                                    for attr in
+                                        item.attrs.iter().filter(|a| a.path.is_ident("serde"))
+                                    {
+                                        if let Ok(Meta::List(meta)) = attr.parse_meta() {
+                                            for meta in meta.nested {
+                                                if let NestedMeta::Meta(Meta::Path(path)) = meta {
+                                                    if path.is_ident("flatten") {
+                                                        flattened = true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    fields.push(FieldInfo {
+                                        name,
+                                        field_type,
+                                        doc,
+                                        flattened,
+                                    })
+                                } else {
+                                    return Error::new(
+                                        field.span(),
+                                        "Cannot document non-path typed struct fields",
+                                    )
+                                    .to_compile_error()
+                                    .into();
+                                }
+                            }
+                            EnumVariant::Struct(StructInfo { name, doc, fields })
+                        }
+                    };
+                    variants.push(variant);
+                }
+                (
+                    ItemInfo::Enum(EnumInfo {
+                        name: name.clone(),
+                        doc,
+                        content,
+                        tag,
+                        untagged,
+                        rename_all,
+                        variants,
+                    }),
+                    name,
+                )
             }
             Item::Struct(item) => {
                 let name = item.ident.to_string();
