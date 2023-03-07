@@ -68,6 +68,13 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                             doc,
                             flattened,
                         })
+                    } else {
+                        return Error::new(
+                            field.span(),
+                            "Cannot document non-path typed struct fields",
+                        )
+                        .to_compile_error()
+                        .into();
                     }
                 }
                 let info = ItemInfo::Struct(StructInfo {
