@@ -35,11 +35,11 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                 let name = item.ident.to_string();
                 let doc = unwrap!(get_doc(&item.attrs));
                 let mut fields = vec![];
-                for f in item.fields {
-                    if let Type::Path(ty) = &f.ty {
-                        let name = unwrap!(f.ident.as_ref().ok_or_else(|| {
+                for field in item.fields {
+                    if let Type::Path(ty) = &field.ty {
+                        let name = unwrap!(field.ident.as_ref().ok_or_else(|| {
                             Error::new(
-                                f.span(),
+                                field.span(),
                                 "Cannot generate documentation for tuple struct fields",
                             )
                         }))
@@ -49,7 +49,7 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                         }))
                         .ident
                         .to_string();
-                        let doc = unwrap!(get_doc(&f.attrs));
+                        let doc = unwrap!(get_doc(&field.attrs));
                         fields.push(FieldInfo {
                             name,
                             field_type,
