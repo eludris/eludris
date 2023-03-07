@@ -25,7 +25,32 @@ pub struct StructInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EnumInfo {}
+#[serde(rename_all = "snake_case")]
+#[serde(tag = "type")]
+pub enum EnumVariant {
+    Unit {
+        name: String,
+        doc: Option<String>,
+    },
+    Tuple {
+        name: String,
+        doc: Option<String>,
+        field_type: String,
+    },
+    Struct(StructInfo),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EnumInfo {
+    pub name: String,
+    pub doc: Option<String>,
+    // `tag` & `content` are for the serde macro
+    pub tag: Option<String>,
+    pub untagged: bool,
+    pub content: Option<String>,
+    pub rename_all: Option<String>,
+    pub variants: Vec<EnumVariant>,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RouteInfo {}
