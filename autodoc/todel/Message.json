@@ -1,5 +1,5 @@
 {
-  "type": "Struct",
+  "type": "struct",
   "name": "Message",
   "doc": "The message payload.",
   "fields": [

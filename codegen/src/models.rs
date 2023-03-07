@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum ItemInfo {
     Struct(StructInfo),
