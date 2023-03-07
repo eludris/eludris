@@ -50,10 +50,23 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                         .ident
                         .to_string();
                         let doc = unwrap!(get_doc(&field.attrs));
+                        let mut flattened = false;
+                        for attr in item.attrs.iter().filter(|a| a.path.is_ident("serde")) {
+                            if let Ok(Meta::List(meta)) = attr.parse_meta() {
+                                for meta in meta.nested {
+                                    if let NestedMeta::Meta(Meta::Path(path)) = meta {
+                                        if path.is_ident("flatten") {
+                                            flattened = true
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         fields.push(FieldInfo {
                             name,
                             field_type,
                             doc,
+                            flattened,
                         })
                     }
                 }

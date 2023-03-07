@@ -6,12 +6,14 @@
     {
       "name": "author",
       "doc": "The author of message. This field has to be between 2 and 32 characters long.",
-      "field_type": "String"
+      "field_type": "String",
+      "flattened": false
     },
     {
       "name": "content",
       "doc": "The content of the message. This field has to be at-least 2 characters long. The upper limit\nis the instance's [`InstanceInfo`] `message_limit`.",
-      "field_type": "String"
+      "field_type": "String",
+      "flattened": false
     }
   ]
 }
