@@ -1,0 +1,27 @@
+{
+  "type": "enum",
+  "name": "Payload",
+  "doc": "The Pandemonium Payload Enum",
+  "tag": "op",
+  "untagged": false,
+  "content": "d",
+  "rename_all": "SCREAMING_SNAKE_CASE",
+  "variants": [
+    {
+      "type": "unit",
+      "name": "Ping",
+      "doc": null
+    },
+    {
+      "type": "unit",
+      "name": "Pong",
+      "doc": null
+    },
+    {
+      "type": "tuple",
+      "name": "MessageCreate",
+      "doc": null,
+      "field_type": "Message"
+    }
+  ]
+}
