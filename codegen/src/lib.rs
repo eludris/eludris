@@ -45,19 +45,21 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                                 NestedMeta::Meta(Meta::NameValue(meta)) => {
                                     if let Some(ident) = meta.path.get_ident() {
                                         match ident.to_string().as_str() {
-                                            "rename_all" => match meta.lit {
-                                                Lit::Str(lit) => rename_all = Some(lit.value()),
-                                                // serde should handle this with an error for us :D
-                                                _ => {}
-                                            },
-                                            "tag" => match meta.lit {
-                                                Lit::Str(lit) => tag = Some(lit.value()),
-                                                _ => {}
-                                            },
-                                            "content" => match meta.lit {
-                                                Lit::Str(lit) => content = Some(lit.value()),
-                                                _ => {}
-                                            },
+                                            "rename_all" => {
+                                                if let Lit::Str(lit) = meta.lit {
+                                                    rename_all = Some(lit.value());
+                                                }
+                                            }
+                                            "tag" => {
+                                                if let Lit::Str(lit) = meta.lit {
+                                                    tag = Some(lit.value());
+                                                }
+                                            }
+                                            "content" => {
+                                                if let Lit::Str(lit) = meta.lit {
+                                                    content = Some(lit.value());
+                                                }
+                                            }
                                             _ => {}
                                         }
                                     }
