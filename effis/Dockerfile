@@ -7,13 +7,13 @@ WORKDIR /effis
 COPY ./oprish/Cargo.toml /oprish/Cargo.toml
 COPY ./pandemonium/Cargo.toml /pandemonium/Cargo.toml
 COPY ./cli/Cargo.toml /cli/Cargo.toml
-COPY ./codegen/Cargo.toml /codegen/Cargo.toml
-RUN mkdir /oprish/src /pandemonium/src /cli/src /codegen/src
-RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs /codegen/src/lib.rs
+RUN mkdir /oprish/src /pandemonium/src /cli/src
+RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs
 
 COPY ./migrations /migrations
 COPY ./Cargo.toml /Cargo.toml
 COPY ./todel /todel
+COPY ./codegen /codegen
 COPY ./effis .
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
