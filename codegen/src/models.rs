@@ -13,7 +13,7 @@ pub enum ItemInfo {
 pub struct FieldInfo {
     pub name: String,
     pub doc: Option<String>,
-    pub r#type: String,
+    pub field_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

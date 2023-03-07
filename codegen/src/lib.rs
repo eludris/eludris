@@ -52,7 +52,7 @@ pub fn autodoc(_: TokenStream, item: TokenStream) -> TokenStream {
                         let doc = unwrap!(get_doc(&f.attrs));
                         fields.push(FieldInfo {
                             name,
-                            r#type: field_type,
+                            field_type,
                             doc,
                         })
                     }
