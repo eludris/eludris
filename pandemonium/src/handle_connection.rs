@@ -87,7 +87,7 @@ pub async fn handle_connection(
     );
     if let Err(()) = rate_limiter.process_rate_limit().await {
         log::info!(
-            "Disconnected a client: {}, reason: Hit rate_limit",
+            "Disconnected a client: {}. Reason: Client is already rate limited",
             rl_address
         );
         return;
