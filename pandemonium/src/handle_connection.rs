@@ -1,7 +1,7 @@
-use deadpool_redis::redis::aio::PubSub;
-use deadpool_redis::Connection;
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
+use redis::aio::Connection;
+use redis::aio::PubSub;
 use std::borrow::Cow;
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;

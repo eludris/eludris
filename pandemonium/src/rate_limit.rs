@@ -3,7 +3,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use deadpool_redis::{redis::AsyncCommands, Connection};
+use redis::{aio::Connection, AsyncCommands};
 
 /// A simple RateLimiter than can keep track of rate limit data from KeyDB
 pub struct RateLimiter {
