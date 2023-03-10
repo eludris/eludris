@@ -13,7 +13,7 @@ use tokio::fs;
 
 use crate::clean;
 
-pub async fn deploy() -> anyhow::Result<()> {
+pub async fn deploy(next: bool) -> anyhow::Result<()> {
     check_user_permissions()?;
 
     if !check_eludris_exists()? {
@@ -26,12 +26,13 @@ pub async fn deploy() -> anyhow::Result<()> {
         download_file(
             &client,
             "docker-compose.prebuilt.yml",
+            next,
             Some("docker-compose.yml"),
         )
         .await?;
-        download_file(&client, "docker-compose.override.yml", None).await?;
-        download_file(&client, ".example.env", Some(".env")).await?;
-        download_file(&client, "Eludris.example.toml", Some("Eludris.toml")).await?;
+        download_file(&client, "docker-compose.override.yml", next, None).await?;
+        download_file(&client, ".example.env", next, Some(".env")).await?;
+        download_file(&client, "Eludris.example.toml", next, Some("Eludris.toml")).await?;
         fs::create_dir("/usr/eludris/files")
             .await
             .context("Could not create effis files directory")?;
@@ -140,11 +141,17 @@ pub async fn deploy() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn download_file(client: &Client, name: &str, save_name: Option<&str>) -> anyhow::Result<()> {
+async fn download_file(
+    client: &Client,
+    name: &str,
+    next: bool,
+    save_name: Option<&str>,
+) -> anyhow::Result<()> {
     log::info!("Fetching {}", name);
     let file = client
         .get(format!(
-            "https://raw.githubusercontent.com/eludris/eludris/main/{}",
+            "https://raw.githubusercontent.com/eludris/eludris/{}/{}",
+            if next { "next" } else { "main" },
             name
         ))
         .send()
