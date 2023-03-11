@@ -25,7 +25,11 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Deploys your Eludris instance
-    Deploy,
+    Deploy {
+        /// Use a development eludris instance
+        #[arg(long)]
+        next: bool,
+    },
     /// Stops your Eludris instance
     Stop,
     /// Shows you your instance's logs
@@ -81,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
     match cli.command {
-        Commands::Deploy => deploy::deploy().await?,
+        Commands::Deploy { next } => deploy::deploy(next).await?,
         Commands::Stop => stop::stop().await?,
         Commands::Logs => logs::logs().await?,
         Commands::Static { command } => match command {
