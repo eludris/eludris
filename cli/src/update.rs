@@ -16,19 +16,20 @@ pub async fn update(next: bool) -> anyhow::Result<()> {
                 "You do not currently have an Eludris system. Run `eludris deploy` to create one"
             )
         );
-    } else {
-        let bar = new_progress_bar("Updating Docker-related files...");
-        let client = Client::new();
-        download_file(
-            &client,
-            "docker-compose.prebuilt.yml",
-            next,
-            Some("docker-compose.yml"),
-        )
-        .await?;
-        download_file(&client, "docker-compose.override.yml", next, None).await?;
-        end_progress_bar(bar, "Finished updating Docker-related files");
-    }
+        return Ok(());
+    };
+
+    let bar = new_progress_bar("Updating Docker-related files...");
+    let client = Client::new();
+    download_file(
+        &client,
+        "docker-compose.prebuilt.yml",
+        next,
+        Some("docker-compose.yml"),
+    )
+    .await?;
+    download_file(&client, "docker-compose.override.yml", next, None).await?;
+    end_progress_bar(bar, "Finished updating Docker-related files");
 
     let command = new_docker_command()
         .arg("build")
