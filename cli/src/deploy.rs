@@ -4,8 +4,8 @@ use anyhow::{bail, Context};
 use console::Style;
 use dialoguer::{theme, Confirm, Editor, Input};
 use eludris::{
-    check_eludris_exists, check_user_permissions, end_progress_bar, new_docker_command,
-    new_progress_bar,
+    check_eludris_exists, check_user_permissions, download_file, end_progress_bar,
+    new_docker_command, new_progress_bar,
 };
 use reqwest::Client;
 use todel::Conf;
@@ -138,33 +138,5 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
         );
     }
 
-    Ok(())
-}
-
-async fn download_file(
-    client: &Client,
-    name: &str,
-    next: bool,
-    save_name: Option<&str>,
-) -> anyhow::Result<()> {
-    log::info!("Fetching {}", name);
-    let file = client
-        .get(format!(
-            "https://raw.githubusercontent.com/eludris/eludris/{}/{}",
-            if next { "next" } else { "main" },
-            name
-        ))
-        .send()
-        .await
-        .context(
-            "Failed to fetch neccesary files for setup. Please check your connection and try again",
-        )?
-        .text()
-        .await
-        .context("Failed to fetch neccesary files for setup")?;
-    log::info!("Writing {}", name);
-    fs::write(format!("/usr/eludris/{}", save_name.unwrap_or(name)), file)
-        .await
-        .context("Could not write setup files")?;
     Ok(())
 }
