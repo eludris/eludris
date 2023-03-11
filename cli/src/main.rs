@@ -33,9 +33,9 @@ enum Commands {
     },
     /// Stops your Eludris instance
     Stop,
-    /// Updates your Eludris instace
+    /// Updates your Eludris instance
     Update {
-        /// Update to the latest decelopment version of Eludris
+        /// Update to the latest development version of Eludris
         #[arg(long)]
         next: bool,
     },
