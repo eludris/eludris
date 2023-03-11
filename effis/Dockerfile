@@ -26,17 +26,15 @@ FROM debian:buster-slim
 
 # Remove docker's default of removing cache after use.
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-ENV PACKAGES ffmpeg
+ENV PACKAGES ffmpeg wait-for-it
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -yqq --no-install-recommends \
     $PACKAGES && rm -rf /var/lib/apt/lists/*
-
-COPY ./wait-for-it.sh ./
 
 ENV ROCKET_ADDRESS 0.0.0.0
 ENV RUST_LOG debug
 
 COPY --from=builder /usr/local/bin/effis /bin/effis
 
-CMD ["./wait-for-it.sh", "mariadb:3306", "-t", "0", "--", "/bin/effis"]
+CMD ["wait-for-it", "mariadb:3306", "-t", "0", "--", "/bin/effis"]
