@@ -35,7 +35,7 @@ enum Commands {
     Stop,
     /// Updates your Eludris instace
     Update {
-        /// Update to the latest decelopment version of Eludris
+        /// Update to the latest development version of Eludris
         #[arg(long)]
         next: bool,
     },
