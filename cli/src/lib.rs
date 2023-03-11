@@ -84,7 +84,11 @@ pub async fn download_file(
         .get(format!(
             "https://raw.githubusercontent.com/eludris/eludris/{}/{}",
             if next { "next" } else { "main" },
-            name
+            if name == "docker-compose.prebuilt.yml" && next {
+                "docker-compose.next.yml"
+            } else {
+                name
+            }
         ))
         .send()
         .await
