@@ -93,7 +93,7 @@ pub async fn download_file(
         .send()
         .await
         .context(
-            "Failed to fetch neccesary files for setup. Please check your connection and try again",
+            "Failed to fetch necessary files for setup. Please check your connection and try again",
         )?
         .text()
         .await
