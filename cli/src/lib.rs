@@ -97,7 +97,7 @@ pub async fn download_file(
         )?
         .text()
         .await
-        .context("Failed to fetch neccesary files for setup")?;
+        .context("Failed to fetch necessary files for setup")?;
     log::info!("Writing {}", name);
     fs::write(format!("/usr/eludris/{}", save_name.unwrap_or(name)), file)
         .await
