@@ -44,7 +44,7 @@ pub async fn update(next: bool) -> anyhow::Result<()> {
             "{}",
             Style::new()
                 .green()
-                .apply_to("Instance succesfully updated!")
+                .apply_to("Instance successfully updated!")
         );
     }
     Ok(())
