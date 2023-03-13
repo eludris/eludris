@@ -12,5 +12,4 @@ fi
 mkdir autodoc/todel autodoc/oprish autodoc/effis
 
 cargo clean -p todel_codegen
-ELUDRIS_AUTODOC=1 cargo build --all-features
-echo -e "\033[1;32mSuccesfully built autodoc info. Check the \`autodoc\` directory.\033[0m"
+ELUDRIS_AUTODOC=1 cargo build --all-features && echo -e "\033[1;32mSuccesfully built autodoc info. Check the \`autodoc\` directory.\033[0m"
