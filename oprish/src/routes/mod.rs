@@ -13,8 +13,9 @@ use crate::{
     Cache, VERSION,
 }; // poggers
 
+#[autodoc]
 #[get("/?<rate_limits>")]
-pub async fn index(
+pub async fn get_instance_info(
     rate_limits: bool,
     address: ClientIP,
     mut cache: Connection<Cache>,
@@ -41,5 +42,5 @@ pub async fn index(
 }
 
 pub fn get_routes() -> Vec<Route> {
-    routes![index]
+    routes![get_instance_info]
 }
