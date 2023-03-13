@@ -113,11 +113,13 @@ pub fn autodoc(attr: TokenStream, item: TokenStream) -> TokenStream {
                             )
                         }))
                         .to_string();
-                        let field_type = unwrap!(ty.path.segments.last().ok_or_else(|| {
-                            Error::new(ty.path.span(), "Cannot extract type from field")
-                        }))
-                        .ident
-                        .to_string();
+                        let field_type = unwrap!(display_path_segment(unwrap!(ty
+                            .path
+                            .segments
+                            .last()
+                            .ok_or_else(|| {
+                                Error::new(ty.path.span(), "Cannot extract type from field")
+                            }))));
                         let doc = unwrap!(get_doc(&field.attrs));
                         let mut flattened = false;
                         for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
@@ -219,13 +221,10 @@ fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
                 )
             })?;
             if let Type::Path(ty) = &field.ty {
-                let field_type = ty
-                    .path
-                    .segments
-                    .last()
-                    .ok_or_else(|| Error::new(ty.path.span(), "Cannot extract type from field"))?
-                    .ident
-                    .to_string();
+                let field_type =
+                    display_path_segment(ty.path.segments.last().ok_or_else(|| {
+                        Error::new(ty.path.span(), "Cannot extract type from field")
+                    })?)?;
                 EnumVariant::Tuple {
                     name,
                     doc,
@@ -252,15 +251,10 @@ fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
                             )
                         })?
                         .to_string();
-                    let field_type = ty
-                        .path
-                        .segments
-                        .last()
-                        .ok_or_else(|| {
+                    let field_type =
+                        display_path_segment(ty.path.segments.last().ok_or_else(|| {
                             Error::new(ty.path.span(), "Cannot extract type from field")
-                        })?
-                        .ident
-                        .to_string();
+                        })?)?;
                     let doc = get_doc(&field.attrs)?;
                     let mut flattened = false;
                     for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
@@ -290,6 +284,35 @@ fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
                 }
             }
             EnumVariant::Struct(StructInfo { name, doc, fields })
+        }
+    })
+}
+
+fn display_path_segment(segment: &PathSegment) -> Result<String, syn::Error> {
+    Ok(match &segment.arguments {
+        PathArguments::None => segment.ident.to_string(),
+        PathArguments::AngleBracketed(args) => {
+            let mut arg_strings = vec![];
+            for arg in &args.args {
+                if let GenericArgument::Type(Type::Path(ty)) = arg {
+                    arg_strings.push(display_path_segment(ty.path.segments.last().ok_or_else(
+                        || Error::new(ty.path.span(), "Cannot extract type from field"),
+                    )?)?)
+                } else {
+                    return Err(Error::new(
+                        arg.span(),
+                        "Cannot generated docummentation for non-type generics",
+                    ));
+                }
+            }
+
+            format!("{}<{}>", segment.ident, arg_strings.join(", "))
+        }
+        _ => {
+            return Err(Error::new(
+                segment.span(),
+                "Unable to extract type of segment",
+            ))
         }
     })
 }
