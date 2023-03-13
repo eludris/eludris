@@ -16,4 +16,4 @@ pub mod models;
 pub use conf::Conf;
 
 #[cfg(feature = "logic")]
-pub use todel_codegen as macros;
+pub use todel_codegen::*;
