@@ -71,7 +71,7 @@ pub struct RouteInfo {
     pub doc: Option<String>,
     pub path_params: Vec<PathParamInfo>,
     pub query_params: Vec<QueryParamInfo>,
-    pub body_type: String,
-    pub return_type: String,
+    pub body_type: Option<String>,
+    pub return_type: Option<String>,
     pub guards: Vec<String>,
 }
