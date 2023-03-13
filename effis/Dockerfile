@@ -12,6 +12,7 @@ RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs
 
 COPY ./migrations /migrations
 COPY ./Cargo.toml /Cargo.toml
+COPY ./Cargo.lock /Cargo.lock
 COPY ./todel /todel
 COPY ./codegen /codegen
 COPY ./effis .

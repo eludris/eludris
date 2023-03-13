@@ -11,6 +11,7 @@ RUN mkdir /oprish/src /effis/src /cli/src
 RUN touch /oprish/src/main.rs /effis/src/main.rs /cli/src/main.rs
 
 COPY ./Cargo.toml /Cargo.toml
+COPY ./Cargo.lock /Cargo.lock
 COPY ./todel /todel
 COPY ./codegen /codegen
 COPY ./pandemonium .
