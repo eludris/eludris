@@ -38,7 +38,7 @@ pub fn autodoc(attr: TokenStream, item: TokenStream) -> TokenStream {
                     if let NestedMeta::Lit(Lit::Str(lit)) = attr {
                         lit.value()
                     } else {
-                        return Error::new(attr.span(), "Invalid attribute atgs")
+                        return Error::new(attr.span(), "Invalid attribute args")
                             .to_compile_error()
                             .into();
                     }
