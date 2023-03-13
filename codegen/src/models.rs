@@ -54,18 +54,19 @@ pub struct EnumInfo {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PathParamInfo {
-    name: String,
-    param_type: String,
+    pub name: String,
+    pub param_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct QueryParamInfo {
-    name: String,
-    param_type: String,
+    pub name: String,
+    pub param_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RouteInfo {
+    pub name: String,
     pub route: String,
     pub doc: Option<String>,
     pub path_params: Vec<PathParamInfo>,
