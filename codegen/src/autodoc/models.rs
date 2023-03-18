@@ -67,6 +67,7 @@ pub struct QueryParamInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RouteInfo {
     pub name: String,
+    pub method: String,
     pub route: String,
     pub doc: Option<String>,
     pub path_params: Vec<PathParamInfo>,

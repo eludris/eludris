@@ -33,6 +33,12 @@ pub fn handle_fn(attr: TokenStream, item: ItemFn) -> Result<(ItemInfo, String), 
                 || a.path.is_ident("push")
         })
         .ok_or_else(|| Error::new(item.span(), "Could not find rocket method attribute"))?;
+    let method = attr
+        .path
+        .get_ident()
+        .expect("Ident removed itself")
+        .to_string()
+        .to_uppercase();
     let return_type = match item.sig.output {
         ReturnType::Default => None,
         ReturnType::Type(_, ty) => Some(get_type(&ty)?),
@@ -134,6 +140,7 @@ pub fn handle_fn(attr: TokenStream, item: ItemFn) -> Result<(ItemInfo, String), 
     Ok((
         ItemInfo::Route(RouteInfo {
             name: name.clone(),
+            method,
             route,
             doc,
             path_params,
