@@ -105,18 +105,10 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                             if meta.path.is_ident("skip_serializing_if") {
                                 ommitable = true;
                                 if let Type::Path(ty) = &field.ty {
-                                    if ty.path.segments.last().unwrap().ident.to_string()
-                                        == "Option"
-                                    {
+                                    if ty.path.segments.last().unwrap().ident == "Option" {
                                         if let Some(qself) = &ty.qself {
                                             if let Type::Path(ty) = &*qself.ty {
-                                                if ty
-                                                    .path
-                                                    .segments
-                                                    .last()
-                                                    .unwrap()
-                                                    .ident
-                                                    .to_string()
+                                                if ty.path.segments.last().unwrap().ident
                                                     == "Option"
                                                 {
                                                     nullable = true;
@@ -134,7 +126,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         }
 
         if let Type::Path(ty) = &field.ty {
-            if ty.path.segments.last().unwrap().ident.to_string() == "Option" && !ommitable {
+            if ty.path.segments.last().unwrap().ident == "Option" && !ommitable {
                 nullable = true;
             }
         }
