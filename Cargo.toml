@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "oprish",
-    "pandemonium",
-    "effis",
-    "todel",
-	"cli"
+  "oprish",
+  "pandemonium",
+  "effis",
+  "todel",
+  "cli",
+  "codegen",
 ]
 
 [workspace.package]
