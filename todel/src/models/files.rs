@@ -164,7 +164,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             } else {
                 let file = tokio::task::spawn_blocking(move || {
                     let mime = tree_magic_mini::from_u8(&data);
-                    let (width, height) = match mime.as_ref() {
+                    let (width, height) = match mime {
                         "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                             if mime == "image/jepg" {
                                 ImageReader::open(&path)
