@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
 /// The data Effis provides for files
+#[autodoc]
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileData {
