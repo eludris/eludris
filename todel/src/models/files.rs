@@ -163,7 +163,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                 }
             } else {
                 let file = tokio::task::spawn_blocking(move || {
-                    let mime = tree_magic::from_u8(&data);
+                    let mime = tree_magic_mini::from_u8(&data);
                     let (width, height) = match mime.as_ref() {
                         "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                             if mime == "image/jepg" {
@@ -264,7 +264,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                         id,
                         file_id: id,
                         name,
-                        content_type: mime,
+                        content_type: mime.to_string(),
                         hash,
                         bucket,
                         spoiler,
