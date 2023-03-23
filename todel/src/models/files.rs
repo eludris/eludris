@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
 /// The data Effis provides for files
-#[autodoc]
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileData {
@@ -165,7 +164,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             } else {
                 let file = tokio::task::spawn_blocking(move || {
                     let mime = tree_magic_mini::from_u8(&data);
-                    let (width, height) = match mime.as_ref() {
+                    let (width, height) = match mime {
                         "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                             if mime == "image/jepg" {
                                 ImageReader::open(&path)
