@@ -88,17 +88,54 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         let field_type = get_type(&field.ty)?;
         let doc = get_doc(&field.attrs)?;
         let mut flattened = false;
+        let mut nullable = false;
+        let mut ommitable = false;
         for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
             if let Ok(Meta::List(meta)) = attr.parse_meta() {
                 for meta in meta.nested {
-                    if let NestedMeta::Meta(Meta::Path(path)) = meta {
-                        if path.is_ident("flatten") {
-                            flattened = true;
-                        } else if path.is_ident("skip") {
-                            continue;
+                    match meta {
+                        NestedMeta::Meta(Meta::Path(path)) => {
+                            if path.is_ident("flatten") {
+                                flattened = true;
+                            } else if path.is_ident("skip") {
+                                continue;
+                            }
                         }
+                        NestedMeta::Meta(Meta::NameValue(meta)) => {
+                            if meta.path.is_ident("skip_serializing_if") {
+                                ommitable = true;
+                                if let Type::Path(ty) = &field.ty {
+                                    if ty.path.segments.last().unwrap().ident.to_string()
+                                        == "Option"
+                                    {
+                                        if let Some(qself) = &ty.qself {
+                                            if let Type::Path(ty) = &*qself.ty {
+                                                if ty
+                                                    .path
+                                                    .segments
+                                                    .last()
+                                                    .unwrap()
+                                                    .ident
+                                                    .to_string()
+                                                    == "Option"
+                                                {
+                                                    nullable = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        _ => {}
                     }
                 }
+            }
+        }
+
+        if let Type::Path(ty) = &field.ty {
+            if ty.path.segments.last().unwrap().ident.to_string() == "Option" && !ommitable {
+                nullable = true;
             }
         }
         field_infos.push(FieldInfo {
@@ -106,6 +143,8 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
             field_type,
             doc,
             flattened,
+            nullable,
+            ommitable,
         })
     }
     Ok(field_infos)

@@ -15,6 +15,8 @@ pub struct FieldInfo {
     pub doc: Option<String>,
     pub field_type: String,
     pub flattened: bool,
+    pub nullable: bool,
+    pub ommitable: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
