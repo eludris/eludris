@@ -1,0 +1,250 @@
+---
+import { SITE_TITLE, SITE_DESCRIPTION, EMBED_COLOUR } from '../config.js';
+import { Icon } from 'astro-icon';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  embed_colour?: string;
+}
+
+const {
+  title = SITE_TITLE,
+  description = SITE_DESCRIPTION,
+  embed_colour = EMBED_COLOUR
+} = Astro.props as Props;
+
+const stars = fetch('https://api.github.com/repos/Eludris/elusite')
+  .then((res) => res.json())
+  .then((res) => res.stargazers_count);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/das_ding.svg" />
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/das_ding.png" />
+    <meta property="og:image:width" content="300" />
+    <meta property="og:image:height" content="300" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content="." />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content="/das_ding.png" />
+    <meta name="theme-color" content={embed_colour} />
+    <link rel="stylesheet" href="/prism-theme.css" />
+  </head>
+  <body>
+    <div id="content">
+      <slot />
+    </div>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+      :root {
+        --font-size-xxl: clamp(2.44rem, 2.38vw + 1.85rem, 3.75rem);
+        --font-size-xl: clamp(2.2rem, 2.5vw + 1.6rem, 2.5rem);
+        --font-size-l: clamp(1.7rem, 1.8vw + 1.2rem, 2rem);
+        --font-size-m: clamp(1.2rem, 1.2vw + 0.8rem, 1.6rem);
+        --font-size-base: clamp(1rem, 0.34vw + 0.91rem, 1.19rem);
+
+        --color-bg: var(--gray-100);
+        --color-border: var(--purple-300);
+      }
+
+      :root.dark {
+        --purple-100: hsl(257, 33%, 8%);
+        --purple-200: hsl(257, 35%, 13%);
+        --purple-300: hsl(257, 44%, 18%);
+        --purple-400: hsl(262, 58%, 22%);
+        --purple-500: hsl(262, 73%, 29%);
+        --purple-600: hsl(262, 79%, 42%);
+
+        --pink-100: hsl(290, 13%, 20%);
+        --pink-200: hsl(290, 19%, 25%);
+        --pink-300: hsl(290, 32%, 35%);
+        --pink-400: hsl(290, 43%, 49%);
+        --pink-500: hsl(290, 63%, 63%);
+        --pink-600: hsl(290, 100%, 70%);
+        --pink-700: hsl(290, 100%, 60%);
+
+        --gray-100: hsl(249, 17%, 12%);
+        --gray-200: hsl(249, 29%, 16%);
+        --gray-300: hsl(249, 33%, 39%);
+        --gray-400: hsl(249, 46%, 49%);
+        --gray-500: hsl(249, 48%, 64%);
+        --gray-600: hsl(249, 81%, 85%);
+
+        --color-text-100: hsl(0, 0%, 93%); /* actually #eeeeee in disguise */
+        --color-text-200: hsl(0, 0%, 73%);
+        --color-code-bg: hsl(260, 32%, 18%);
+      }
+
+      :root:not(.dark) {
+        --purple-100: hsl(320, 89%, 92%);
+        --purple-200: hsl(320, 83%, 86%);
+        --purple-300: hsl(320, 78%, 80%);
+        --purple-400: hsl(320, 64%, 73%);
+        --purple-500: hsl(320, 55%, 64%);
+        --purple-600: hsl(320, 63%, 58%);
+
+        --pink-100: hsl(300, 100%, 80%);
+        --pink-200: hsl(300, 100%, 75%);
+        --pink-300: hsl(300, 63%, 68%);
+        --pink-400: hsl(300, 43%, 61%);
+        --pink-500: hsl(300, 32%, 54%);
+        --pink-600: hsl(300, 19%, 47%);
+        --pink-700: hsl(300, 13%, 40%);
+
+        --gray-100: hsl(340, 78%, 93%);
+        --gray-200: hsl(340, 60%, 84%);
+        --gray-300: hsl(340, 58%, 69%);
+        --gray-400: hsl(340, 50%, 60%);
+        --gray-500: hsl(340, 40%, 45%);
+        --gray-600: hsl(340, 39%, 40%);
+
+        --color-text-100: hsl(0, 0%, 3%);
+        --color-text-200: hsl(0, 0%, 20%);
+      }
+
+      body {
+        font-family: 'Ubuntu', sans-serif;
+        color: var(--color-text-200);
+        background-color: var(--color-bg);
+        font-size: calc(var(--font-size-base) + 1px);
+        margin: 0;
+      }
+
+      #content {
+        min-height: calc(100vh - 6em);
+      }
+
+      footer {
+        padding: 15px;
+        display: flex;
+        font-size: 16px;
+        font-weight: 300;
+        flex-direction: row;
+        justify-content: space-evenly;
+        text-align: center;
+        color: var(--color-text);
+        background-color: var(--purple-200);
+        align-items: center;
+      }
+
+      #footer-github {
+        color: var(--pink-400);
+        border-color: var(--purple-300);
+        transition: border-bottom ease-in-out 200ms, color ease-in-out 200ms;
+      }
+
+      #footer-github:hover {
+        color: var(--pink-600);
+        border-color: var(--purple-500);
+      }
+
+      #footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      #footer-links > a {
+        border-width: 0px;
+      }
+
+      #footer-links > a > [astro-icon] {
+        width: 2em;
+        position: relative;
+        top: 0.2em;
+      }
+
+      :global(h1, h2, h3, h4, h5, h6) {
+        color: var(--color-text-100);
+      }
+
+      :global(h1) {
+        font-size: var(--font-size-xxl);
+      }
+
+      :global(h2) {
+        font-size: var(--font-size-xl);
+      }
+
+      :global(h3) {
+        font-size: var(--font-size-l);
+      }
+
+      :global(h4) {
+        font-size: var(--font-size-m);
+      }
+
+      :global(h5) {
+        font-size: 28px;
+      }
+
+      :global(h6) {
+        font-size: 22px;
+      }
+
+      :global(p) {
+        line-height: 32px;
+      }
+
+      :global(a) {
+        text-decoration: none;
+        transition: border-bottom ease-in-out 200ms, color ease-in-out 200ms;
+      }
+
+      :global(:where(:root:not(.dark) a)) {
+        color: var(--gray-400);
+        border-bottom: 2px solid var(--gray-300);
+      }
+
+      :global(:where(:root:not(.dark) a:hover)) {
+        color: var(--gray-500);
+        border-bottom: 2px solid var(--gray-600);
+      }
+
+      :global(:where(:root.dark a)) {
+        color: var(--gray-500);
+        border-bottom: 2px solid var(--gray-300);
+      }
+
+      :global(:where(:root.dark a:hover)) {
+        color: var(--gray-400);
+        border-bottom: 2px solid var(--purple-400);
+      }
+
+      @media only screen and (max-width: 1200px) {
+        nav {
+          padding: 0 5px 0 17px;
+        }
+
+        #nav-logo {
+          padding-top: 10px;
+        }
+
+        footer {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        #footer-links {
+          order: -1;
+        }
+      }
+    </style>
+  </body>
+</html>
