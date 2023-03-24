@@ -11,6 +11,10 @@ concurrency:
   group: ${{ github.ref }}-${{ github.event_name == 'release' }}
   cancel-in-progress: true
 
+env:
+  NAME: eludris
+  DESC: A simple CLI to help you with setting up and managing your Eludris instance
+
 jobs:
   build:
     strategy:
@@ -20,20 +24,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Cache Rust Dependencies
         uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.os }}
+
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release -p eludris
+
       # Windows scripting isn't the same.
       # - name: Get Variables (Windows)
       #   run: |
@@ -42,28 +47,94 @@ jobs:
       #     echo "PATH=eludris.exe" >> $env:GITHUB_ENV
       #     echo "OS=Windows" >> $env:GITHUB_ENV
       #   if: matrix.os == 'windows-latest'
+
       - name: Get Variables (MacOS)
         run: |
           echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "PATH=eludris" >> $GITHUB_ENV
+          echo "CLI_PATH=eludris" >> $GITHUB_ENV
           echo "OS=MacOS" >> $GITHUB_ENV
         if: matrix.os == 'macos-latest'
+
       - name: Get Variables (Linux)
         run: |
           echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "PATH=eludris" >> $GITHUB_ENV
+          echo "CLI_PATH=eludris" >> $GITHUB_ENV
           echo "OS=Linux-GNU" >> $GITHUB_ENV
         if: matrix.os == 'ubuntu-latest'
+
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.OS }}-eludris
-          path: target/release/${{ env.PATH }}
+          path: target/release/${{ env.CLI_PATH }}
+
       - name: Update Release
         if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
-          file: target/release/${{ env.PATH }}
+          file: target/release/${{ env.CLI_PATH }}
           tag: ${{ github.ref }}
           overwrite: true
           asset_name: eludris-${{ env.TAG }}-${{ env.OS }}-x86_64
+
+  build-deb:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Linux-GNU-eludris
+
+      - name: Create Package Files
+        run: |
+          mkdir -p .debpkg/usr/bin
+          mkdir -p .rpmpkg/usr/bin
+          chmod +x eludris
+          cp -p eludris .debpkg/usr/bin/
+          cp -p eludris .rpmpkg/usr/bin/
+      - name: Build DEB
+        uses: jiro4989/build-deb-action@v2
+        with:
+          package: ${{ env.NAME }}
+          package_root: .debpkg
+          maintainer: Oliver Wilkes <oliver@eludris.gay>
+          version: ${{ github.ref }}
+          arch: "amd64"
+          desc: "${{ env.DESC }}"
+
+      - name: Build RPM
+        uses: jiro4989/build-rpm-action@v2
+        with:
+          summary: "${{ env.DESC }}"
+          package: ${{ env.NAME }}
+          package_root: .rpmpkg
+          maintainer: Oliver Wilkes <oliver@eludris.gay>
+          version: ${{ github.ref }}
+          arch: "x86_64"
+          desc: "${{ env.DESC }}"
+
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact-deb
+          path: |
+            ./*.deb
+      - name: Upload RPM Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact-rpm
+          path: |
+            ./*.rpm
+            !./*-debuginfo-*.rpm
+      - name: Update Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "{eludris-[!d]*.rpm,*.deb}"
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true

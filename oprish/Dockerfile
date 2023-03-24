@@ -11,7 +11,9 @@ RUN mkdir /pandemonium/src /effis/src /cli/src
 RUN touch /pandemonium/src/main.rs /effis/src/main.rs /cli/src/main.rs
 
 COPY ./Cargo.toml /Cargo.toml
+COPY ./Cargo.lock /Cargo.lock
 COPY ./todel /todel
+COPY ./codegen /codegen
 COPY ./oprish .
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
