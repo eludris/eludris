@@ -10,7 +10,6 @@ pub struct ErrorResponse {
 }
 
 /// Preset error types
-#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ErrorData {

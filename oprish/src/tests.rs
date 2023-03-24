@@ -11,10 +11,8 @@ mod tests {
     #[rocket::async_test]
     async fn index() {
         let client = Client::untracked(rocket().unwrap()).await.unwrap();
-        let conf = &client.rocket().state::<Conf>().unwrap();
-
         let response = client.get("/").dispatch().await;
-
+        let conf = &client.rocket().state::<Conf>().unwrap();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(
             response.into_string().await.unwrap(),
@@ -28,34 +26,9 @@ mod tests {
                 effis_url: &conf.effis.url,
                 file_size: conf.effis.file_size,
                 attachment_file_size: conf.effis.attachment_file_size,
-                rate_limits: None
             })
             .unwrap()
-        );
-
-        let response = client.get("/?rate_limits").dispatch().await;
-
-        assert_eq!(response.status(), Status::Ok);
-        assert_eq!(
-            response.into_string().await.unwrap(),
-            serde_json::to_string(&InstanceInfo {
-                instance_name: conf.instance_name.clone(),
-                version: VERSION,
-                description: conf.description.clone(),
-                message_limit: conf.oprish.message_limit,
-                oprish_url: &conf.oprish.url,
-                pandemonium_url: &conf.pandemonium.url,
-                effis_url: &conf.effis.url,
-                file_size: conf.effis.file_size,
-                attachment_file_size: conf.effis.attachment_file_size,
-                rate_limits: Some(InstanceRateLimits {
-                    oprish: conf.oprish.rate_limits.clone(),
-                    pandemonium: conf.pandemonium.rate_limit.clone(),
-                    effis: conf.effis.rate_limits.clone(),
-                })
-            })
-            .unwrap()
-        );
+        )
     }
 
     #[rocket::async_test]
@@ -94,5 +67,22 @@ mod tests {
                 .unwrap(),
             payload
         );
+    }
+
+    #[rocket::async_test]
+    async fn rate_limits() {
+        let client = Client::untracked(rocket().unwrap()).await.unwrap();
+        let response = client.get("/rate_limits").dispatch().await;
+        let conf = &client.rocket().state::<Conf>().unwrap();
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            serde_json::to_string(&InstanceRateLimits {
+                oprish: conf.oprish.rate_limits.clone(),
+                pandemonium: conf.pandemonium.rate_limit.clone(),
+                effis: conf.effis.rate_limits.clone(),
+            })
+            .unwrap()
+        )
     }
 }

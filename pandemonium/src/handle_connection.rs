@@ -1,7 +1,7 @@
+use deadpool_redis::redis::aio::PubSub;
+use deadpool_redis::Connection;
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
-use redis::aio::Connection;
-use redis::aio::PubSub;
 use std::borrow::Cow;
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
@@ -87,7 +87,7 @@ pub async fn handle_connection(
     );
     if let Err(()) = rate_limiter.process_rate_limit().await {
         log::info!(
-            "Disconnected a client: {}. Reason: Client is already rate limited",
+            "Disconnected a client: {}, reason: Hit rate_limit",
             rl_address
         );
         return;

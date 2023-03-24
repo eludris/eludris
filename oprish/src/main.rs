@@ -3,8 +3,6 @@ mod tests;
 
 #[macro_use]
 extern crate rocket;
-#[macro_use]
-extern crate todel;
 
 mod cors;
 mod rate_limit;

@@ -4,7 +4,6 @@ mod deploy;
 mod logs;
 mod static_attachments;
 mod stop;
-mod update;
 
 use std::{env, path::PathBuf};
 
@@ -26,19 +25,9 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Deploys your Eludris instance
-    Deploy {
-        /// Use a development Eludris instance
-        #[arg(long)]
-        next: bool,
-    },
+    Deploy,
     /// Stops your Eludris instance
     Stop,
-    /// Updates your Eludris instance
-    Update {
-        /// Update to the latest development version of Eludris
-        #[arg(long)]
-        next: bool,
-    },
     /// Shows you your instance's logs
     Logs,
     /// Static attachment related commands
@@ -92,9 +81,8 @@ async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
     match cli.command {
-        Commands::Deploy { next } => deploy::deploy(next).await?,
+        Commands::Deploy => deploy::deploy().await?,
         Commands::Stop => stop::stop().await?,
-        Commands::Update { next } => update::update(next).await?,
         Commands::Logs => logs::logs().await?,
         Commands::Static { command } => match command {
             StaticSubcommand::Add { path } => static_attachments::add(path).await?,

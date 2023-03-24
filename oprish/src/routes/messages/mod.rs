@@ -8,9 +8,8 @@ use todel::http::ClientIP;
 use todel::models::{ErrorResponse, ErrorResponseData, Message, Payload, ValidationError};
 use todel::Conf;
 
-#[autodoc("/messages")]
 #[post("/", data = "<message>")]
-pub async fn create_message(
+pub async fn index(
     message: Json<Message>,
     address: ClientIP,
     mut cache: Connection<Cache>,
@@ -49,5 +48,5 @@ pub async fn create_message(
 }
 
 pub fn get_routes() -> Vec<Route> {
-    routes![create_message]
+    routes![index]
 }
