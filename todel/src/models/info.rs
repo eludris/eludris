@@ -23,7 +23,6 @@ pub struct InstanceInfo {
 ///
 /// This model uses borrows and is thus a pain to deserialize which is why another one is provided
 #[cfg(feature = "logic")]
-#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo<'a> {
     pub instance_name: String,
