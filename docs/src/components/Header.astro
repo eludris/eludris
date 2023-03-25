@@ -1,0 +1,119 @@
+---
+import { Icon } from 'astro-icon';
+---
+
+<div id="header">
+  <div id="button-wrapper">
+    <Icon id="sun" width="30px" name="mdi:white-balance-sunny" />
+    <Icon id="moon" width="30px" name="mdi:weather-night" />
+    <button id="theme-button"></button>
+  </div>
+  <p id="header-text">The Eludris Developer Portal</p>
+  <a href="https://github.com/eludris/eludris">
+    <Icon name="akar-icons:github-fill" width="30px" />
+  </a>
+</div>
+
+<script is:inline>
+  let theme =
+    localStorage.getItem('theme') ??
+    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light');
+
+  if (theme == 'dark') {
+    document.documentElement.classList.add('dark');
+  }
+
+  document.getElementById('theme-button')?.addEventListener('click', () => {
+    if (document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.remove('dark');
+      theme = 'light';
+    } else {
+      document.documentElement.classList.add('dark');
+      theme = 'dark';
+    }
+    localStorage.setItem('theme', theme);
+  });
+</script>
+
+<script>
+  const content = document.getElementById('slot');
+  const header = document.getElementById('header');
+
+  content!.addEventListener('scroll', () => {
+    if (content!.scrollTop > 0) {
+      header!.style.borderBottomWidth = '1px';
+    } else {
+      header!.style.borderBottomWidth = '0px';
+    }
+  });
+</script>
+
+<style>
+  #header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border: 0px solid var(--gray-400);
+    padding: 5px 20px;
+    box-sizing: border-box;
+  }
+
+  #header a {
+    border: unset;
+    color: inherit;
+  }
+
+  #header [astro-icon] {
+    color: var(--gray-500);
+    transition: color ease-in-out 125ms;
+  }
+
+  #header [astro-icon]:hover {
+    color: var(--gray-600);
+  }
+
+  #header-text {
+    margin: 10px auto;
+    font-weight: 300;
+  }
+
+  #button-wrapper {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    transition: color ease-in-out 200ms;
+  }
+
+  #button-wrapper:hover > [astro-icon] {
+    color: var(--gray-600);
+  }
+
+  #theme-button {
+    position: absolute;
+    border: unset;
+    background-color: inherit;
+    width: 30px;
+    height: 30px;
+    padding: 2px;
+    cursor: pointer;
+  }
+
+  #button-wrapper > [astro-icon] {
+    position: absolute;
+    transition: transform ease-in-out 250ms, opacity ease-in-out 250ms, color ease-in-out 125ms;
+  }
+
+  :where(:root.dark #sun) {
+    transform: translate(0, 100%);
+    opacity: 0;
+    z-index: -1;
+  }
+
+  :where(:root:not(.dark) #moon) {
+    transform: translate(0, 100%);
+    opacity: 0;
+    z-index: -1;
+  }
+</style>
