@@ -2,8 +2,9 @@ use std::{ffi::OsStr, path::Path, process::Stdio, time::Duration};
 
 use anyhow::{anyhow, bail, Context};
 use indicatif::{ProgressBar, ProgressStyle};
+use reqwest::Client;
 use sqlx::{Connection, MySqlConnection};
-use tokio::process::Command;
+use tokio::{fs, process::Command};
 use users::{get_current_uid, get_user_by_uid};
 
 pub fn check_user_permissions() -> anyhow::Result<()> {
@@ -70,4 +71,36 @@ pub async fn new_database_connection() -> anyhow::Result<MySqlConnection> {
     MySqlConnection::connect(&format!("mysql://root:root@{}:3306/eludris", address))
         .await
         .context("Could not connect to database")
+}
+
+pub async fn download_file(
+    client: &Client,
+    name: &str,
+    next: bool,
+    save_name: Option<&str>,
+) -> anyhow::Result<()> {
+    log::info!("Fetching {}", name);
+    let file = client
+        .get(format!(
+            "https://raw.githubusercontent.com/eludris/eludris/{}/{}",
+            if next { "next" } else { "main" },
+            if name == "docker-compose.prebuilt.yml" && next {
+                "docker-compose.next.yml"
+            } else {
+                name
+            }
+        ))
+        .send()
+        .await
+        .context(
+            "Failed to fetch necessary files for setup. Please check your connection and try again",
+        )?
+        .text()
+        .await
+        .context("Failed to fetch necessary files for setup")?;
+    log::info!("Writing {}", name);
+    fs::write(format!("/usr/eludris/{}", save_name.unwrap_or(name)), file)
+        .await
+        .context("Could not write setup files")?;
+    Ok(())
 }

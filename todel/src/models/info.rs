@@ -1,7 +1,9 @@
+use crate::conf::{EffisRateLimits, OprishRateLimits, RateLimitConf};
 use serde::{Deserialize, Serialize};
 
 /// The instance info payload
 #[cfg(not(feature = "logic"))]
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo {
     pub instance_name: String,
@@ -13,10 +15,15 @@ pub struct InstanceInfo {
     pub effis_url: String,
     pub file_size: u64,
     pub attachment_file_size: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate_limits: Option<InstanceRateLimits>,
 }
 
 /// The instance info payload
+///
+/// This model uses borrows and is thus a pain to deserialize which is why another one is provided
 #[cfg(feature = "logic")]
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo<'a> {
     pub instance_name: String,
@@ -28,4 +35,14 @@ pub struct InstanceInfo<'a> {
     pub effis_url: &'a str,
     pub file_size: u64,
     pub attachment_file_size: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate_limits: Option<InstanceRateLimits>,
+}
+
+/// The type which represents all of an instance's rate limit configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InstanceRateLimits {
+    pub oprish: OprishRateLimits,
+    pub pandemonium: RateLimitConf,
+    pub effis: EffisRateLimits,
 }

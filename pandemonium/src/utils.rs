@@ -1,4 +1,4 @@
-use deadpool_redis::redis::Msg;
+use redis::Msg;
 use std::{error::Error, fmt::Display};
 use todel::models::Payload;
 

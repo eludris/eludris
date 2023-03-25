@@ -4,8 +4,8 @@ use anyhow::{bail, Context};
 use console::Style;
 use dialoguer::{theme, Confirm, Editor, Input};
 use eludris::{
-    check_eludris_exists, check_user_permissions, end_progress_bar, new_docker_command,
-    new_progress_bar,
+    check_eludris_exists, check_user_permissions, download_file, end_progress_bar,
+    new_docker_command, new_progress_bar,
 };
 use reqwest::Client;
 use todel::Conf;
@@ -13,7 +13,7 @@ use tokio::fs;
 
 use crate::clean;
 
-pub async fn deploy() -> anyhow::Result<()> {
+pub async fn deploy(next: bool) -> anyhow::Result<()> {
     check_user_permissions()?;
 
     if !check_eludris_exists()? {
@@ -26,12 +26,13 @@ pub async fn deploy() -> anyhow::Result<()> {
         download_file(
             &client,
             "docker-compose.prebuilt.yml",
+            next,
             Some("docker-compose.yml"),
         )
         .await?;
-        download_file(&client, "docker-compose.override.yml", None).await?;
-        download_file(&client, ".example.env", Some(".env")).await?;
-        download_file(&client, "Eludris.example.toml", Some("Eludris.toml")).await?;
+        download_file(&client, "docker-compose.override.yml", next, None).await?;
+        download_file(&client, ".example.env", next, Some(".env")).await?;
+        download_file(&client, "Eludris.example.toml", next, Some("Eludris.toml")).await?;
         fs::create_dir("/usr/eludris/files")
             .await
             .context("Could not create effis files directory")?;
@@ -137,27 +138,5 @@ pub async fn deploy() -> anyhow::Result<()> {
         );
     }
 
-    Ok(())
-}
-
-async fn download_file(client: &Client, name: &str, save_name: Option<&str>) -> anyhow::Result<()> {
-    log::info!("Fetching {}", name);
-    let file = client
-        .get(format!(
-            "https://raw.githubusercontent.com/eludris/eludris/main/{}",
-            name
-        ))
-        .send()
-        .await
-        .context(
-            "Failed to fetch neccesary files for setup. Please check your connection and try again",
-        )?
-        .text()
-        .await
-        .context("Failed to fetch neccesary files for setup")?;
-    log::info!("Writing {}", name);
-    fs::write(format!("/usr/eludris/{}", save_name.unwrap_or(name)), file)
-        .await
-        .context("Could not write setup files")?;
     Ok(())
 }
