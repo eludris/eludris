@@ -40,6 +40,7 @@ import { Icon } from 'astro-icon';
 <script>
   const content = document.getElementById('slot');
   const header = document.getElementById('header');
+  let lastScroll = 0;
 
   content!.addEventListener('scroll', () => {
     if (content!.scrollTop > 0) {
@@ -47,6 +48,14 @@ import { Icon } from 'astro-icon';
     } else {
       header!.style.borderBottomWidth = '0px';
     }
+    if (window.innerWidth < 1200 && content!.scrollTop > lastScroll) {
+      header!.style.transform = 'translate(0, -200%)';
+      header!.style.position = 'absolute';
+    } else if (window.innerWidth < 1200) {
+      header!.style.transform = 'translate(0, 0)';
+      header!.style.position = 'static';
+    }
+    lastScroll = content!.scrollTop;
   });
 </script>
 
@@ -56,8 +65,11 @@ import { Icon } from 'astro-icon';
     display: flex;
     align-items: center;
     border: 0px solid var(--gray-400);
+    background-color: var(--gray-100);
     padding: 5px 20px;
     box-sizing: border-box;
+    transform: translate(0, 0);
+    transition: transform ease-in-out 125ms;
   }
 
   #header a {
@@ -115,5 +127,8 @@ import { Icon } from 'astro-icon';
     transform: translate(0, 100%);
     opacity: 0;
     z-index: -1;
+  }
+
+  @media only screen and (max-width: 1200px) {
   }
 </style>
