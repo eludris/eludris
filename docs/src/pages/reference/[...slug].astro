@@ -4,7 +4,8 @@ import Base from '../../layouts/Base.astro';
 import { readdirSync } from 'fs';
 
 export const getStaticPaths = () => {
-  const crates = readdirSync('public/autodoc').filter((crate) => crate != 'index.json');
+  const IGNORED_FILES = ['index.json', '.gitkeep'];
+  const crates = readdirSync('public/autodoc').filter((crate) => !IGNORED_FILES.includes(crate));
   let paths: { params: { slug: string }; props: { slug: string } }[] = [];
 
   crates.forEach((crate) => {
@@ -27,4 +28,3 @@ const { slug } = Astro.props;
 <Base>
   <p>beanos {slug}</p>
 </Base>
-

@@ -1,6 +1,8 @@
 ---
 import { readdirSync } from 'fs';
 
+const IGNORED_FILES = ['index.json', '.gitkeep'];
+
 interface Child {
   slug: string;
   name: string;
@@ -14,7 +16,7 @@ interface Entry {
 let entries: Entry[] = [];
 
 readdirSync('public/autodoc')
-  .filter((crate) => crate != 'index.json')
+  .filter((crate) => !IGNORED_FILES.includes(crate))
   .reverse() // Lazy hack to bring todel first, then oprish then effis
   .forEach((crate) => {
     let children: Child[] = [];
