@@ -141,11 +141,11 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
       #content {
         display: flex;
         width: 100%;
-        flex-direction: column;
         margin-left: var(--sidebar-width);
+        flex-direction: column;
         overflow-y: auto;
         overflow-x: hidden;
-        transition: margin-left ease-in-out 250ms;
+        transition: margin-left ease-in-out 250ms, transform ease-in-out 250ms;
       }
 
       #slot {
@@ -256,6 +256,10 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
       }
 
       @media only screen and (max-width: 1200px) {
+        #content {
+          transform: translateX(var(--sidebar-width));
+          margin-left: 0;
+        }
       }
     </style>
   </body>
