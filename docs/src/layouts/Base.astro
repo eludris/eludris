@@ -2,7 +2,6 @@
 import Sidebar from '../components/Sidebar.astro';
 import Header from '../components/Header.astro';
 import { SITE_TITLE, SITE_DESCRIPTION, EMBED_COLOUR } from '../config.js';
-import { Icon } from 'astro-icon';
 
 export interface Props {
   title?: string;
@@ -50,7 +49,7 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
   <body>
     <div id="main">
       <Sidebar slug={slug} />
-      <div id="content">
+      <div id="content" class="notransition">
         <Header />
         <div id="slot">
           <slot />
@@ -61,14 +60,10 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
       @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 
       :root {
-        --font-size-xxl: clamp(2.44rem, 2.38vw + 1.85rem, 3.75rem);
-        --font-size-xl: clamp(2.2rem, 2.5vw + 1.6rem, 2.5rem);
-        --font-size-l: clamp(1.7rem, 1.8vw + 1.2rem, 2rem);
-        --font-size-m: clamp(1.2rem, 1.2vw + 0.8rem, 1.6rem);
-        --font-size-base: clamp(1rem, 0.34vw + 0.91rem, 1.19rem);
-
         --color-bg: var(--gray-100);
         --color-border: var(--purple-300);
+
+        --sidebar-width: 300px;
       }
 
       :root.dark {
@@ -130,7 +125,7 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
         font-family: 'Ubuntu', sans-serif;
         color: var(--color-text-200);
         background-color: var(--color-bg);
-        font-size: calc(var(--font-size-base) + 1px);
+        font-size: var(--font-size-base);
         margin: 0;
       }
 
@@ -147,12 +142,19 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
         display: flex;
         width: 100%;
         flex-direction: column;
+        margin-left: var(--sidebar-width);
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: margin-left ease-in-out 250ms;
       }
 
       #slot {
         flex-grow: 1;
-        overflow: auto;
-        padding: 10px 10%;
+        margin-top: 60px;
+        padding: 10px;
+        max-width: 750px;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
 
       :global(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a) {
@@ -164,32 +166,8 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
         color: var(--color-text-100);
       }
 
-      :global(h1) {
-        font-size: var(--font-size-xxl);
-      }
-
-      :global(h2) {
-        font-size: var(--font-size-xl);
-      }
-
-      :global(h3) {
-        font-size: var(--font-size-l);
-      }
-
-      :global(h4) {
-        font-size: var(--font-size-m);
-      }
-
-      :global(h5) {
-        font-size: 28px;
-      }
-
-      :global(h6) {
-        font-size: 22px;
-      }
-
       :global(p) {
-        line-height: 32px;
+        line-height: 28px;
       }
 
       :global(a) {
