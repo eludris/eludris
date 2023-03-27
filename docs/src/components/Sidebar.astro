@@ -34,7 +34,7 @@ export interface Props {
 }
 ---
 
-<div id="sidebar">
+<div id="sidebar" class="notransition">
   <p>Why did the bean cross the road? To die_kms</p>
   <ul id="index">
     {
@@ -58,11 +58,13 @@ export interface Props {
 
 <style>
   #sidebar {
+    position: fixed;
     height: 100%;
-    width: 300px;
+    width: var(--sidebar-width);
     padding: 20px 10px;
     background-color: var(--gray-200);
     box-sizing: border-box;
+    transition: transform ease-in-out 250ms;
   }
 
   #index {
@@ -96,5 +98,13 @@ export interface Props {
 
   .page:hover > a {
     color: var(--gray-500);
+  }
+
+  #sidebar.sidebar-hide {
+    transform: translate(-100%, 0);
+  }
+
+  :global(.notransition) {
+    transition: unset !important;
   }
 </style>
