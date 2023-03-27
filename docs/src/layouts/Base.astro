@@ -1,15 +1,19 @@
 ---
+import Sidebar from '../components/Sidebar.astro';
+import Header from '../components/Header.astro';
 import { SITE_TITLE, SITE_DESCRIPTION, EMBED_COLOUR } from '../config.js';
 import { Icon } from 'astro-icon';
 
 export interface Props {
   title?: string;
+  slug?: string;
   description?: string;
   embed_colour?: string;
 }
 
 const {
   title = SITE_TITLE,
+  slug,
   description = SITE_DESCRIPTION,
   embed_colour = EMBED_COLOUR
 } = Astro.props as Props;
@@ -44,8 +48,14 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
     <link rel="stylesheet" href="/prism-theme.css" />
   </head>
   <body>
-    <div id="content">
-      <slot />
+    <div id="main">
+      <Sidebar slug={slug} />
+      <div id="content">
+        <Header />
+        <div id="slot">
+          <slot />
+        </div>
+      </div>
     </div>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
@@ -124,50 +134,30 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
         margin: 0;
       }
 
+      #main {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+      }
+
       #content {
-        min-height: calc(100vh - 6em);
-      }
-
-      footer {
-        padding: 15px;
         display: flex;
-        font-size: 16px;
-        font-weight: 300;
-        flex-direction: row;
-        justify-content: space-evenly;
-        text-align: center;
-        color: var(--color-text);
-        background-color: var(--purple-200);
-        align-items: center;
+        width: 100%;
+        flex-direction: column;
       }
 
-      #footer-github {
-        color: var(--pink-400);
-        border-color: var(--purple-300);
-        transition: border-bottom ease-in-out 200ms, color ease-in-out 200ms;
+      #slot {
+        flex-grow: 1;
+        overflow: auto;
+        padding: 10px 10%;
       }
 
-      #footer-github:hover {
-        color: var(--pink-600);
-        border-color: var(--purple-500);
-      }
-
-      #footer-links {
-        display: flex;
-        justify-content: center;
-        gap: 1em;
-        flex-direction: row;
-        align-items: center;
-      }
-
-      #footer-links > a {
-        border-width: 0px;
-      }
-
-      #footer-links > a > [astro-icon] {
-        width: 2em;
-        position: relative;
-        top: 0.2em;
+      :global(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a) {
+        color: inherit;
+        border: inherit;
       }
 
       :global(h1, h2, h3, h4, h5, h6) {
@@ -227,23 +217,67 @@ const stars = fetch('https://api.github.com/repos/Eludris/elusite')
         border-bottom: 2px solid var(--purple-400);
       }
 
+      :global(code, code[class*='language-'][class*='language-']) {
+        width: 100%;
+        background-color: var(--gray-200);
+        font-size: 18px;
+      }
+
+      :global(pre code, pre code[class*='language-'][class*='language-']) {
+        background-color: transparent;
+      }
+
+      :global(img) {
+        max-width: calc(100% - 10px);
+        border-radius: 5px;
+      }
+
+      :global(table) {
+        border-spacing: 0;
+        width: 100%;
+      }
+
+      :global(td, th) {
+        border: 1px solid var(--gray-300);
+        padding: 10px 20px;
+      }
+
+      :global(th) {
+        border-top-width: 2px;
+        background-color: var(--gray-200);
+      }
+
+      :global(th:first-of-type) {
+        border-top-left-radius: 5px;
+        border-left-width: 2px;
+      }
+
+      :global(th:last-of-type) {
+        border-top-right-radius: 5px;
+        border-right-width: 2px;
+      }
+
+      :global(tr:last-of-type td) {
+        border-bottom-width: 2px;
+      }
+
+      :global(tr td:first-of-type) {
+        border-left-width: 2px;
+      }
+
+      :global(tr td:last-of-type) {
+        border-right-width: 2px;
+      }
+
+      :global(tr:last-of-type td:first-of-type) {
+        border-bottom-left-radius: 5px;
+      }
+
+      :global(tr:last-of-type td:last-of-type) {
+        border-bottom-right-radius: 5px;
+      }
+
       @media only screen and (max-width: 1200px) {
-        nav {
-          padding: 0 5px 0 17px;
-        }
-
-        #nav-logo {
-          padding-top: 10px;
-        }
-
-        footer {
-          flex-direction: column;
-          gap: 15px;
-        }
-
-        #footer-links {
-          order: -1;
-        }
       }
     </style>
   </body>
