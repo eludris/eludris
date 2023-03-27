@@ -1,0 +1,30 @@
+---
+import Base from '../../layouts/Base.astro';
+
+import { readdirSync } from 'fs';
+
+export const getStaticPaths = () => {
+  const crates = readdirSync('public/autodoc').filter((crate) => crate != 'index.json');
+  let paths: { params: { slug: string }; props: { slug: string } }[] = [];
+
+  crates.forEach((crate) => {
+    readdirSync(`public/autodoc/${crate}`).forEach((file) => {
+      const slug = `${crate}/${file}`;
+      paths.push({ params: { slug }, props: { slug } });
+    });
+  });
+
+  return paths;
+};
+
+export interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<Base>
+  <p>beanos {slug}</p>
+</Base>
+
