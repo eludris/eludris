@@ -49,11 +49,13 @@ import { Icon } from 'astro-icon';
       header!.style.borderBottomWidth = '0px';
     }
     if (window.innerWidth < 1200 && content!.scrollTop > lastScroll) {
-      header!.style.transform = 'translate(0, -200%)';
-      header!.style.position = 'absolute';
+      header!.style.height = '0';
+      header!.style.padding = '0';
+      header!.style.opacity = '0';
     } else if (window.innerWidth < 1200) {
-      header!.style.transform = 'translate(0, 0)';
-      header!.style.position = 'static';
+      header!.style.height = 'auto';
+      header!.style.padding = '5px 20px';
+      header!.style.opacity = '1';
     }
     lastScroll = content!.scrollTop;
   });
@@ -73,8 +75,7 @@ import { Icon } from 'astro-icon';
     background-color: var(--gray-100);
     padding: 5px 20px;
     box-sizing: border-box;
-    transform: translate(0, 0);
-    transition: transform ease-in-out 125ms;
+    transition: height ease-in-out 250ms, padding ease-in-out 250ms, opacity ease-in-out 50ms;
   }
 
   #header a {
