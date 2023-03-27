@@ -1,6 +1,107 @@
 ---
 import Base from '../layouts/Base.astro';
-import Card from '../components/Card.astro';
 ---
 
-<p>Here be dragons!</p>
+<Base>
+  <div style="text-align: center;">
+    <img
+      src="https://github.com/eludris/.github/blob/main/assets/das_ding.png?raw=true"
+      width="300em"
+    />
+    <br />
+    <br />
+    <a href="https://discord.gg/vV6v2DhWQB" style="border: unset;"
+      ><img
+        src="https://shields.io/discord/980412957060137001?style=for-the-badge&logo=discord&labelColor=363934&label=Discord%20Server&color=363934"
+      /></a
+    >
+    <a href="https://reddit.com/r/eludris" style="border: unset;"
+      ><img
+        src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Reddit&logo=reddit&logoColor=ff5700&color=121212&labelColor=121212"
+      /></a
+    >
+    <a href="https://twitter.com/eludris" style="border: unset;"
+      ><img
+        src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Twitter&logo=twitter&color=15202b&labelColor=15202b"
+      /></a
+    >
+  </div>
+  <h1 id="what-the-heck-is-an-eludris">
+    <a class="header" href="#what-the-heck-is-an-eludris">What the heck is an Eludris</a>
+  </h1>
+  <p>
+    Eludris is a <a href="https://en.wikipedia.org/wiki/Free_and_open-source_software">FOSS</a>
+    <a href="https://en.wikipedia.org/wiki/Federation_(information_technology)">federated</a>,
+    <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">End-To-End-Encrypted</a> Discord x
+    Reddit mesh-like social media platform where the priority is for it to be <em>truly yours</em>.
+  </p>
+  <p>
+    To that extent Eludris aims to be as easily accessible by everyone, even if they do not
+    understand or care about the unique privacy-related features Eludris offers.
+  </p>
+  <p>
+    In terms of client Eludris is currently officially providing <a
+      href="https://github.com/eludris/pilfer">Pilfer</a
+    >
+    (a lightweight TUI) and <a href="https://github.com/eludris/pengin">Pengin</a> (a web-based cross-platform
+    client).
+  </p>
+  <p>
+    However the intent has always been and still remains to be for people to make their own clients,
+    toolings, bots, API wrappers and so on.
+  </p>
+  <p>
+    As such Eludris has tried to convey said support via multiple things, namely the
+    <a href="https://github.com/eludris-community">Eludris Community organisation</a> where people can
+    add their own creations and the <a href="https://github.com/eludris/awesome"
+      >Eludris Awesome repository</a
+    >, in addition to these docs.
+  </p>
+  <p>
+    For more info you can check out our <a href="htt%5Bs://github.com/eludris"
+      >Official GitHub organisation</a
+    >
+    or our <a href="https://eludris.pages.dev">website</a>.
+  </p>
+  <p>
+    While you're also at it consider joining our <a href="https://discord.gg/amMHHjzwb9"
+      >Discord Server</a
+    >
+    since that is currently mainly where we hang out, joke around and work on Eludris and Eludris related
+    stuff.
+  </p>
+  <h2 id="reading-the-docs"><a class="header" href="#reading-the-docs">Reading The Docs</a></h2>
+  <p>
+    The documentation is straight forward, however here are some additional clarifications oh some
+    of the points where you can get confused.
+  </p>
+  <h3 id="ommitabillity-and-nullability">
+    <a class="header" href="#ommitabillity-and-nullability">Ommitabillity And Nullability</a>
+  </h3>
+  <p>
+    While reading the docs you might notice the use of the question marks next to field names or
+    types, here's an example of that.
+  </p>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Field</th><th>Type</th></tr></thead><tbody>
+        <tr><td>Foo?</td><td>Integer</td></tr>
+        <tr><td>Bar</td><td>String?</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Now, you may be wondering what these question marks are going there, it depends on where the
+    question mark is, if the question mark is next to the field name like in <code class="hljs"
+      >Foo?</code
+    >, then that field is ommitable, meaning that it is not guaranteed to exist, however in a case
+    where it exists it is <strong>guaranteed</strong> to be an Integer.
+  </p>
+  <p>
+    On the other hand if the question mark is next to the type like in <code class="hljs"
+      >String?</code
+    > it means that while the field will always be present, its value can be a <code class="hljs"
+      >null</code
+    >.
+  </p>
+</Base>
