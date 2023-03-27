@@ -4,11 +4,11 @@ import { Icon } from 'astro-icon';
 
 <div id="header">
   <div id="button-wrapper">
-    <Icon id="sun" width="30px" name="mdi:white-balance-sunny" />
-    <Icon id="moon" width="30px" name="mdi:weather-night" />
+    <Icon id="sun" class="notransition" width="30px" name="mdi:white-balance-sunny" />
+    <Icon id="moon" class="notransition" width="30px" name="mdi:weather-night" />
     <button id="theme-button"></button>
   </div>
-  <p id="header-text">The Eludris Developer Portal</p>
+  <a href="/" id="header-text">The Eludris Developer Portal</a>
   <a href="https://github.com/eludris/eludris">
     <Icon name="akar-icons:github-fill" width="30px" />
   </a>
@@ -57,6 +57,11 @@ import { Icon } from 'astro-icon';
     }
     lastScroll = content!.scrollTop;
   });
+
+  setTimeout(() => {
+    document.getElementById('moon')!.classList.remove('notransition');
+    document.getElementById('sun')!.classList.remove('notransition');
+  }, 0); // why the heck does this work???
 </script>
 
 <style>
@@ -87,8 +92,13 @@ import { Icon } from 'astro-icon';
   }
 
   #header-text {
+    font-size: 22px;
     margin: 10px auto;
     font-weight: 300;
+  }
+
+  #header-text:hover {
+    color: var(--color-text-100);
   }
 
   #button-wrapper {
@@ -127,6 +137,10 @@ import { Icon } from 'astro-icon';
     transform: translate(0, 100%);
     opacity: 0;
     z-index: -1;
+  }
+
+  .notransition {
+    transition: unset !important;
   }
 
   @media only screen and (max-width: 1200px) {
