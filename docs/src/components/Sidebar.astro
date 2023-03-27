@@ -1,0 +1,100 @@
+---
+import { readdirSync } from 'fs';
+
+interface Child {
+  slug: string;
+  name: string;
+}
+
+interface Entry {
+  crate: string;
+  children: Child[];
+}
+
+let entries: Entry[] = [];
+
+readdirSync('public/autodoc')
+  .filter((crate) => crate != 'index.json')
+  .reverse() // Lazy hack to bring todel first, then oprish then effis
+  .forEach((crate) => {
+    let children: Child[] = [];
+    readdirSync(`public/autodoc/${crate}`).forEach((file) => {
+      const slug = `${crate}/${file}`;
+      let name = file
+        .split('.')[0]
+        .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+        .replace(/[A-Z]/gm, ' $&');
+      children.push({ slug, name });
+    });
+    entries.push({ crate, children });
+  });
+
+export interface Props {
+  slug?: string;
+}
+---
+
+<div id="sidebar">
+  <p>Why did the bean cross the road? To die_kms</p>
+  <ul id="index">
+    {
+      entries
+        .filter((entry) => entry.children.length)
+        .map((entry) => (
+          <li class="category">
+            <h3>{entry.crate[0].toUpperCase() + entry.crate.substring(1)}</h3>{' '}
+            <ul>
+              {entry.children.map((child) => (
+                <li class="page">
+                  <a href={`/reference/${child.slug}`}>{child.name}</a>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+    }
+  </ul>
+</div>
+
+<style>
+  #sidebar {
+    height: 100%;
+    width: 300px;
+    padding: 20px 10px;
+    background-color: var(--gray-200);
+    box-sizing: border-box;
+  }
+
+  #index {
+    padding: 0;
+  }
+
+  .category {
+    list-style: none;
+  }
+
+  .category > h3 {
+    font-size: 22px;
+    font-weight: normal;
+    margin: 10px 0;
+  }
+
+  .category > ul {
+    padding: 0 10px;
+  }
+
+  .page {
+    list-style: none;
+    padding: 2px 0;
+  }
+
+  .page > a {
+    color: var(--gray-700);
+    font-weight: 300;
+    border: unset;
+  }
+
+  .page:hover > a {
+    color: var(--gray-500);
+  }
+</style>
