@@ -73,12 +73,22 @@ import { Icon } from 'astro-icon';
     } else {
       header!.style.borderBottomWidth = '0px';
     }
-    if (window.innerWidth < 1200 && content!.scrollTop > lastScroll) {
-      header!.classList.add('header-hidden');
-    } else if (window.innerWidth < 1200) {
-      header!.classList.remove('header-hidden');
+    if (Math.abs(lastScroll - content!.scrollTop) > 50) {
+      if (
+        window.innerWidth < 1200 &&
+        content!.scrollTop > lastScroll &&
+        !header!.classList.contains('header-hidden')
+      ) {
+        header!.classList.add('header-hidden');
+      } else if (
+        window.innerWidth < 1200 &&
+        content!.scrollTop < lastScroll &&
+        header!.classList.contains('header-hidden')
+      ) {
+        header!.classList.remove('header-hidden');
+      }
+      lastScroll = content!.scrollTop;
     }
-    lastScroll = content!.scrollTop;
   });
 
   setTimeout(() => {
