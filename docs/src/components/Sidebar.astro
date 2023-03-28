@@ -34,11 +34,13 @@ readdirSync('public/autodoc')
 export interface Props {
   slug?: string;
 }
+
+let { slug } = Astro.props;
 ---
 
 <div id="sidebar" class="notransition">
   <p>Why did the bean cross the road? To die_kms</p>
-  <a href="/">Home</a>
+  <a href="/" class={slug == '/' ? 'active' : ''}>Home</a>
   <ul id="index">
     {
       entries
@@ -50,7 +52,9 @@ export interface Props {
               <ul>
                 {entry.children.map((child) => (
                   <li class="page">
-                    <a href={`/reference/${child.slug}`}>{child.name}</a>
+                    <a href={`/reference/${child.slug}`} class={slug == child.slug ? 'active' : ''}>
+                      {child.name}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -100,17 +104,26 @@ export interface Props {
   }
 
   #sidebar a {
-    color: var(--gray-700);
+    color: var(--gray-600);
     font-weight: 300;
     border: unset;
   }
 
   #sidebar a:hover {
-    color: var(--gray-500);
+    color: var(--gray-700);
   }
 
   #sidebar.sidebar-hide {
     transform: translate(-100%, 0);
+  }
+
+  #sidebar a.active {
+    color: var(--gray-500);
+    font-weight: bold;
+  }
+
+  #sidebar a.active:hover {
+    color: var(--gray-600);
   }
 
   :global(.notransition) {
