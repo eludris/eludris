@@ -1,4 +1,7 @@
+name: Deploy Dev Portal
+
 on: [push]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -10,14 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: CD Into `docs  Directory
-        run: cd docs
-
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -31,10 +32,10 @@ jobs:
           python-version: 3.10
 
       - name: Build Autodocs
-        run: ../autodoc.py
+        run: ./autodoc.py
 
       - name: Build Dev Portal
-        run: npm i && npm run build
+        run: cd docs && npm i && npm run build
 
       - name: Publish
         uses: cloudflare/pages-action@1
