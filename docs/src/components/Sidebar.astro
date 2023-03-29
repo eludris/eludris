@@ -9,12 +9,12 @@ interface Child {
 let entries: { [key: string]: Child[] } = {};
 
 AUTODOC_ENTRIES.forEach((slug) => {
+  slug = slug.split('.')[0];
   const [crate, file] = slug.split('/');
   if (!entries[crate]) {
     entries[crate] = [];
   }
   const name = file
-    .split('.')[0]
     .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
     .replace(/[A-Z]/gm, ' $&');
   entries[crate].push({ slug, name });
