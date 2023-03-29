@@ -25,6 +25,10 @@ export interface Props {
 }
 
 let { slug } = Astro.props;
+
+const stars = fetch('https://api.github.com/repos/eludris/eludris')
+  .then((res) => res.json())
+  .then((res) => res.stargazers_count);
 ---
 
 <div id="sidebar" class="notransition">
@@ -62,11 +66,29 @@ let { slug } = Astro.props;
         ))
     }
   </ul>
+  <span id="star">
+    <span
+      >Eludris has <span id="star-text">{stars} stars</span>. consider starring the <a
+        href="https://github.com/eludris">repository</a
+      >!</span
+    >
+  </span>
 </div>
+
+<script>
+  fetch('https://api.github.com/repos/eludris/eludris') // update star count after page load
+    .then((res) => res.json())
+    .then((res) => res.stargazers_count)
+    .then((stars) => {
+      document.getElementById('star-text')!.innerText = `${stars} stars`;
+    });
+</script>
 
 <style>
   #sidebar {
     position: fixed;
+    display: flex;
+    flex-direction: column;
     top: 0;
     left: 0;
     height: 100%;
@@ -128,6 +150,21 @@ let { slug } = Astro.props;
   .sep {
     color: var(--color-text-200);
     opacity: 0.7;
+    width: 95%;
+    margin: 0;
+  }
+
+  #star {
+    margin-top: auto;
+    position: relative;
+  }
+
+  #star-text {
+    color: var(--pink-500);
+  }
+
+  #star a {
+    border-bottom: 1px solid var(--color-text-200);
   }
 
   :global(.notransition) {

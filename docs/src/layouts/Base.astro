@@ -16,10 +16,6 @@ const {
   description = SITE_DESCRIPTION,
   embed_colour = EMBED_COLOUR
 } = Astro.props as Props;
-
-const stars = fetch('https://api.github.com/repos/Eludris/elusite')
-  .then((res) => res.json())
-  .then((res) => res.stargazers_count);
 ---
 
 <!DOCTYPE html>
