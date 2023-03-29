@@ -13,7 +13,7 @@ AUTODOC_ENTRIES.forEach((slug) => {
   if (!entries[crate]) {
     entries[crate] = [];
   }
-  let name = file
+  const name = file
     .split('.')[0]
     .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
     .replace(/[A-Z]/gm, ' $&');

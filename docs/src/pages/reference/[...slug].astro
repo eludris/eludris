@@ -1,12 +1,19 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { readFileSync } from 'fs';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
 export const getStaticPaths = () => {
-  let paths: { params: { slug: string }; props: { slug: string } }[] = [];
+  let paths: { params: { slug: string }; props: Props }[] = [];
 
   AUTODOC_ENTRIES.forEach((slug) => {
-    paths.push({ params: { slug }, props: { slug } });
+    const name = slug
+      .split('/')[1]
+      .split('.')[0]
+      .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+      .replace(/[A-Z]/gm, ' $&');
+    const data = JSON.parse(readFileSync(`public/autodoc/${slug}`).toString());
+    paths.push({ params: { slug }, props: { slug, name, data } });
   });
 
   return paths;
@@ -14,11 +21,13 @@ export const getStaticPaths = () => {
 
 export interface Props {
   slug: string;
+  name: string;
+  data: any;
 }
 
-const { slug } = Astro.props;
+const { slug, name, data } = Astro.props;
 ---
 
-<Base slug={slug}>
+<Base title={`${name} - Eludris Reference`} description={data.doc} slug={slug}>
   <p>beanos {slug}</p>
 </Base>
