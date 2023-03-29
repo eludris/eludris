@@ -46,6 +46,7 @@ export interface StructEnumVariant extends FieldInfo {
 export type EnumVariant = UnitEnumVariant | TupleEnumVariant | StructEnumVariant;
 
 export interface EnumInfo {
+  type: ItemType.Enum;
   name: string;
   doc: string | null;
   tag: string | null;
