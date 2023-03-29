@@ -148,7 +148,7 @@ const {
         flex-grow: 1;
         margin-top: 60px;
         padding: 10px;
-        max-width: 750px;
+        width: 750px;
         margin: 0 auto;
         box-sizing: border-box;
         background-color: var(--color-bg);
@@ -256,9 +256,14 @@ const {
         :root {
           --sidebar-width: 70%;
         }
+
         #content {
           transform: translateX(var(--sidebar-width));
           margin-left: 0;
+        }
+
+        #slot {
+          max-width: 750px;
         }
       }
     </style>
