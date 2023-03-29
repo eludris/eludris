@@ -28,16 +28,26 @@ let { slug } = Astro.props;
 ---
 
 <div id="sidebar" class="notransition">
-  <p>Why did the bean cross the road? To die_kms</p>
-  <a href="/" class={slug == '/' ? 'active' : ''}>Home</a>
+  <h3>The Eludris Developer Portal</h3>
+  <hr class="sep" />
   <ul id="index">
+    <li>
+      <details open class="category">
+        <summary>Meta</summary>
+        <ul>
+          <li class="page">
+            <a href="/" class={slug == '/' ? 'active' : ''}>Home</a>
+          </li>
+        </ul>
+      </details>
+    </li>
     {
       Object.entries(entries)
         .filter(([_, children]) => children.length)
         .map(([crate, children]) => (
-          <details open class="category">
-            <summary>{crate[0].toUpperCase() + crate.substring(1)}</summary>
-            <li>
+          <li>
+            <details open class="category">
+              <summary>{crate[0].toUpperCase() + crate.substring(1)}</summary>
               <ul>
                 {children.map((child) => (
                   <li class="page">
@@ -47,8 +57,8 @@ let { slug } = Astro.props;
                   </li>
                 ))}
               </ul>
-            </li>
-          </details>
+            </details>
+          </li>
         ))
     }
   </ul>
@@ -61,7 +71,7 @@ let { slug } = Astro.props;
     left: 0;
     height: 100%;
     width: var(--sidebar-width);
-    padding: 20px 10px;
+    padding: 10px;
     background-color: var(--gray-200);
     box-sizing: border-box;
     transition: transform ease-in-out 250ms;
@@ -69,6 +79,7 @@ let { slug } = Astro.props;
 
   #index {
     padding: 0;
+    list-style: none;
   }
 
   .category {
@@ -78,12 +89,12 @@ let { slug } = Astro.props;
   .category > summary {
     font-size: 22px;
     font-weight: normal;
-    margin: 10px 10px;
+    margin: 10px 0;
     list-style: none;
   }
 
-  .category > li > ul {
-    padding: 0 10px;
+  .category > ul {
+    padding: 0 5px;
   }
 
   .page {
@@ -112,6 +123,11 @@ let { slug } = Astro.props;
 
   #sidebar a.active:hover {
     border-bottom: 1px solid var(--gray-500);
+  }
+
+  .sep {
+    color: var(--color-text-200);
+    opacity: 0.7;
   }
 
   :global(.notransition) {
