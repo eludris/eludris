@@ -252,6 +252,34 @@ const {
         border-bottom-right-radius: 5px;
       }
 
+      :global(.header) {
+        display: block;
+        position: relative;
+      }
+
+      :global(.header > a) {
+        display: inline;
+        position: absolute;
+        left: -25px;
+        bottom: 2px;
+        opacity: 0;
+        border: unset;
+        border: unset;
+        transition: opacity ease-in-out 75ms;
+      }
+
+      :global(.link-icon) {
+        color: inherit;
+      }
+
+      :global(.link-icon:hover) {
+        color: var(--gray-300);
+      }
+
+      :global(.header:hover > a) {
+        opacity: 1;
+      }
+
       @media only screen and (max-width: 1200px) {
         :root {
           --sidebar-width: 70%;
