@@ -132,6 +132,7 @@ const {
         width: 100%;
         height: 100%;
         display: flex;
+        overflow-x: hidden;
       }
 
       #content {
@@ -140,7 +141,6 @@ const {
         margin-left: var(--sidebar-width);
         flex-direction: column;
         overflow-y: auto;
-        overflow-x: hidden;
         transition: margin-left ease-in-out 250ms, transform ease-in-out 250ms;
       }
 
@@ -148,7 +148,7 @@ const {
         flex-grow: 1;
         margin-top: 60px;
         padding: 10px;
-        width: 750px;
+        max-width: 750px;
         margin: 0 auto;
         box-sizing: border-box;
       }
