@@ -1,18 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
-
-import { readdirSync } from 'fs';
+import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
 export const getStaticPaths = () => {
-  const IGNORED_FILES = ['index.json', '.gitkeep'];
-  const crates = readdirSync('public/autodoc').filter((crate) => !IGNORED_FILES.includes(crate));
   let paths: { params: { slug: string }; props: { slug: string } }[] = [];
 
-  crates.forEach((crate) => {
-    readdirSync(`public/autodoc/${crate}`).forEach((file) => {
-      const slug = `${crate}/${file}`;
-      paths.push({ params: { slug }, props: { slug } });
-    });
+  AUTODOC_ENTRIES.forEach((slug) => {
+    paths.push({ params: { slug }, props: { slug } });
   });
 
   return paths;
