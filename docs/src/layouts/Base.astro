@@ -151,6 +151,7 @@ const {
         max-width: 750px;
         margin: 0 auto;
         box-sizing: border-box;
+        background-color: var(--color-bg);
       }
 
       :global(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a) {
@@ -252,6 +253,9 @@ const {
       }
 
       @media only screen and (max-width: 1200px) {
+        :root {
+          --sidebar-width: 70%;
+        }
         #content {
           transform: translateX(var(--sidebar-width));
           margin-left: 0;
