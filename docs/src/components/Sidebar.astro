@@ -104,13 +104,13 @@ let { slug } = Astro.props;
   }
 
   #sidebar a {
-    color: var(--gray-600);
+    color: var(--color-text-200);
     font-weight: 300;
     border: unset;
   }
 
   #sidebar a:hover {
-    color: var(--gray-700);
+    color: var(--gray-500);
   }
 
   #sidebar.sidebar-hide {
@@ -118,12 +118,11 @@ let { slug } = Astro.props;
   }
 
   #sidebar a.active {
-    color: var(--gray-500);
-    font-weight: bold;
+    border-bottom: 1px solid var(--color-text-200);
   }
 
   #sidebar a.active:hover {
-    color: var(--gray-600);
+    border-bottom: 1px solid var(--gray-500);
   }
 
   :global(.notransition) {
