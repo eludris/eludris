@@ -1,7 +1,11 @@
 ---
+import { renderMarkdown } from '@astrojs/markdown-remark';
 import Base from '../../layouts/Base.astro';
 import { readFileSync } from 'fs';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
+import type { ItemInfo } from '../../lib/types';
+import astroConfig from '../../../astro.config.mjs';
+import data_to_md from './data_to_md';
 
 export const getStaticPaths = () => {
   let paths: { params: { slug: string }; props: Props }[] = [];
@@ -22,12 +26,30 @@ export const getStaticPaths = () => {
 export interface Props {
   slug: string;
   name: string;
-  data: any;
+  data: ItemInfo;
 }
 
 const { slug, name, data } = Astro.props;
+const content = (await renderMarkdown(data_to_md(data, name), astroConfig.markdown!)).metadata.html;
 ---
 
-<Base title={`${name} - Eludris Reference`} description={data.doc} slug={slug}>
-  <p>beanos {slug}</p>
+<Base title={`${name} - Eludris Reference`} description={data.doc ?? undefined} slug={slug}>
+  <Fragment set:html={content} />
 </Base>
+
+<style>
+  :global(.method) {
+    background-color: var(--purple-500);
+    padding: 3px 5px;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+
+  :global(.route) {
+    font-family: monospace, 'Ubuntu', sans-serif;
+  }
+
+  :global(.special-segment) {
+    color: var(--color-text-100);
+  }
+</style>
