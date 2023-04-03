@@ -1,4 +1,4 @@
-//! Simple abstraction for a TOML based Eludris configuration file
+//! Simple abstraction for a TOML based Derailed configuration file
 mod effis_rate_limits;
 mod oprish_rate_limits;
 
@@ -16,7 +16,7 @@ use url::Url;
 pub use effis_rate_limits::*;
 pub use oprish_rate_limits::*;
 
-/// Eludris config.
+/// Derailed config.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Conf {
     pub instance_name: String,
@@ -159,7 +159,7 @@ impl Conf {
     }
 
     /// Create a new [`Conf`] by determining it's path based on the "DERAILED_CONF" environment
-    /// variable or falling back to "Eludris.toml" if it is not found.
+    /// variable or falling back to "Derailed.toml" if it is not found.
     ///
     /// # Panics
     ///
@@ -167,7 +167,7 @@ impl Conf {
     ///
     /// That also includes the config file's data failing to deserialise.
     pub fn new_from_env() -> anyhow::Result<Self> {
-        Self::new(env::var("DERAILED_CONF").unwrap_or_else(|_| "Eludris.toml".to_string()))
+        Self::new(env::var("DERAILED_CONF").unwrap_or_else(|_| "Derailed.toml".to_string()))
     }
 
     #[cfg(test)]

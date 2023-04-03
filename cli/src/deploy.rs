@@ -17,10 +17,10 @@ pub async fn deploy() -> anyhow::Result<()> {
     check_user_permissions()?;
 
     if !check_derailed_exists()? {
-        let bar = new_progress_bar("Eludris directory not found, setting up...");
+        let bar = new_progress_bar("Derailed directory not found, setting up...");
         fs::create_dir("/usr/derailed")
             .await
-            .context("Could not create Eludris directory")?;
+            .context("Could not create Derailed directory")?;
 
         let client = Client::new();
         download_file(
@@ -31,7 +31,7 @@ pub async fn deploy() -> anyhow::Result<()> {
         .await?;
         download_file(&client, "docker-compose.override.yml", None).await?;
         download_file(&client, ".example.env", Some(".env")).await?;
-        download_file(&client, "Eludris.example.toml", Some("Eludris.toml")).await?;
+        download_file(&client, "Derailed.example.toml", Some("Derailed.toml")).await?;
         fs::create_dir("/usr/derailed/files")
             .await
             .context("Could not create effis files directory")?;
@@ -62,9 +62,9 @@ pub async fn deploy() -> anyhow::Result<()> {
             };
             break;
         }
-        let mut base_conf = fs::read_to_string("/usr/derailed/Eludris.toml")
+        let mut base_conf = fs::read_to_string("/usr/derailed/Derailed.toml")
             .await
-            .context("Could not read Eludris.toml file")?;
+            .context("Could not read Derailed.toml file")?;
         loop {
             let conf = Editor::new()
                 .executable(&editor) // we can't use the default since most people don't have a
@@ -80,9 +80,9 @@ pub async fn deploy() -> anyhow::Result<()> {
                     let conf = Conf::from_str(&conf_string);
                     match conf {
                         Ok(_) => {
-                            fs::write("/usr/derailed/Eludris.toml", conf_string)
+                            fs::write("/usr/derailed/Derailed.toml", conf_string)
                                 .await
-                                .context("Could not write new config to Eludris.toml")?;
+                                .context("Could not write new config to Derailed.toml")?;
                             break;
                         }
                         Err(err) => {
@@ -115,7 +115,7 @@ pub async fn deploy() -> anyhow::Result<()> {
             "{}",
             Style::new()
                 .green()
-                .apply_to("Great, you've succesfully setup your own Eludris instance")
+                .apply_to("Great, you've succesfully setup your own Derailed instance")
         );
     }
 

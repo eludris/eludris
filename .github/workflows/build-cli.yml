@@ -13,7 +13,7 @@ concurrency:
 
 env:
   NAME: derailed
-  DESC: A simple CLI to help you with setting up and managing your Eludris instance
+  DESC: A simple CLI to help you with setting up and managing your Derailed instance
 
 jobs:
   build:

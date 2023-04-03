@@ -14,8 +14,8 @@ services:
       - REDIS_URL=redis://keydb:6379
     volumes:
       - type: bind
-        source: Eludris.toml
-        target: /Eludris.toml
+        source: Derailed.toml
+        target: /Derailed.toml
     build:
       context: .
       dockerfile: oprish/Dockerfile

@@ -1,6 +1,6 @@
 # Todel
 
-The Eludris models & shared logic crate.
+The Derailed models & shared logic crate.
 
 ## Usage
 
@@ -22,7 +22,7 @@ projects with mind, add it to your own project either by:
 ## Features
 
 Todel comes with 2 main features, `logic` which provides the logic-related implementation
-to the models and also some types which are not used directly by the Eludris API
+to the models and also some types which are not used directly by the Derailed API
 and `http` which houses the rocket-reliant logic and models.
 
 If you just need the models (which will be the case most of the time) then you

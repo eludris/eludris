@@ -20,7 +20,7 @@ pub fn check_user_permissions() -> anyhow::Result<()> {
 pub fn check_derailed_exists() -> anyhow::Result<bool> {
     let path = Path::new("/usr/derailed");
     if !path.is_dir() && path.exists() {
-        bail!("An Eludris file exists but it is not a directory");
+        bail!("An Derailed file exists but it is not a directory");
     }
     Ok(path.exists())
 }

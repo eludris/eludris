@@ -9,12 +9,12 @@
   <a href="https://github.com/derailed/derailed/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/derailed/derailed/build.yml?label=Builds&labelColor=003f8c&logo=docker&style=for-the-badge" /></a>
 </p>
 
-# Eludris
+# Derailed
 
 A free and open source, federated, End-To-End-Encrypted social media platform made
 in rust that's easy to deploy and configure while striving to be *truly **yours***.
 
-Eludris tries to combine the best parts of other popular social media platforms
+Derailed tries to combine the best parts of other popular social media platforms
 such as Discord, Reddit, Twitter and so on while not being one or the other.
 
 ### We're currently at version 0.3.2, click [here](https://derailed.github.io/docs/changelog0.3.2.html) to check the changelog
@@ -22,12 +22,12 @@ such as Discord, Reddit, Twitter and so on while not being one or the other.
 ## Deployment
 
 We really recommend using the provided docker-compose as a quick way to get stuff
-running, just edit your `Eludris.toml` to suit your needs then run
+running, just edit your `Derailed.toml` to suit your needs then run
 
 ```sh
 docker-compose up
 ```
 
-Congratulations, you've now successfully deployed your Eludris instance! <img width="30em" src="https://github.com/derailed/.github/blob/main/assets/thang-big.png" />
+Congratulations, you've now successfully deployed your Derailed instance! <img width="30em" src="https://github.com/derailed/.github/blob/main/assets/thang-big.png" />
 
 For more detailed info please visit our [docs](https://derailed.github.io/docs)

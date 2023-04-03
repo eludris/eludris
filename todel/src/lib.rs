@@ -1,4 +1,4 @@
-//! A simple crate that houses most of the Eludris models & shared logic.
+//! A simple crate that houses most of the Derailed models & shared logic.
 
 #[cfg(feature = "logic")]
 #[macro_use]

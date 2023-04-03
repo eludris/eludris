@@ -24,9 +24,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Deploys your Eludris instance
+    /// Deploys your Derailed instance
     Deploy,
-    /// Stops your Eludris instance
+    /// Stops your Derailed instance
     Stop,
     /// Shows you your instance's logs
     Logs,
@@ -40,7 +40,7 @@ enum Commands {
         #[command(subcommand)]
         command: AttachmentSubcommand,
     },
-    /// Removes all info related to your Eludris instance
+    /// Removes all info related to your Derailed instance
     #[command(alias = "clear")]
     Clean,
 }

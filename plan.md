@@ -2,9 +2,9 @@
 
 ## Instead, check out the [docs](https://derailed.github.io/docs/).
 
-# Eludris
+# Derailed
 
-This markdown file is dedicated to explaining and organising how the features and components of Eludris will work.
+This markdown file is dedicated to explaining and organising how the features and components of Derailed will work.
 
 This file is changed every while with new changes and additions appearing.
 
@@ -12,7 +12,7 @@ This file is changed every while with new changes and additions appearing.
 
 The goal is to provide a uniquely fresh but not totally new experience focused around programming but also any other topic / interest whilst being secure, free (as in monetary value), free (as in freedom), privacy respecting, open source and decentralised without inconveniencing users who may not have anything to do with the aforementioned topics.
 
-Additionally and as with anything Eludris related, modifying the source code or making your own clients, libraries and tooling around Eludris and such is more than welcome ~~as long as you respect the license anyway~~.
+Additionally and as with anything Derailed related, modifying the source code or making your own clients, libraries and tooling around Derailed and such is more than welcome ~~as long as you respect the license anyway~~.
 
 Here are the core takeaways:
 
@@ -33,7 +33,7 @@ Communities can get manually reviewed by a staff member to get verified if reque
 Verified communities can claim a namespace getting their own URL invite and are indexed in a list to be easily discover-able, doing that however adds more restrictions upon them however
 (like no End-To-End-Encryption, stricter moderation and so on).
 
-A community can get unverified at any point in time if they break the Eludris EULA, Terms of Service or instance rules, that however can be appealed and, unjustified unverification will not happen.
+A community can get unverified at any point in time if they break the Derailed EULA, Terms of Service or instance rules, that however can be appealed and, unjustified unverification will not happen.
 
 - Accounts are unique.
 
@@ -41,7 +41,7 @@ Much like Reddit and Twitter only one person can have a specific account name, _
 
 You can follow people or send them friend requests.
 
-You can also gain a Reddit Karma like form of point creatively called Social Credit by the Eludris Team, you gain it by getting more up-votes on your posts, spending time interacting with people, getting rewarded by instance moderators or through events.
+You can also gain a Reddit Karma like form of point creatively called Social Credit by the Derailed Team, you gain it by getting more up-votes on your posts, spending time interacting with people, getting rewarded by instance moderators or through events.
 
 - Bots done _right_
 
@@ -53,7 +53,7 @@ Discord style application commands will be available, however unlike discord the
 
 ## Tokens
 
-About tokens, to be able to make API requests and connect to the Eludris gateway you will need a token, Eludris uses JWT tokens with a cryptographically secure pseudo-random string with HC128 as a secret, to get a Token you send an HTTP request to `/auth` with your email and password.
+About tokens, to be able to make API requests and connect to the Derailed gateway you will need a token, Derailed uses JWT tokens with a cryptographically secure pseudo-random string with HC128 as a secret, to get a Token you send an HTTP request to `/auth` with your email and password.
 
 Tokens work on a per-session basis which means that you have to generate a Token for every client you use to make it easy to invalidate any sessions without impacting others.
 
@@ -99,12 +99,12 @@ Private communities work similarly to how Group DMs work with the addition that 
 
 ## Federation
 
-Eludris will be federated, meaning anyone can host their own instance and instances can communicate with other instances so that any user on one instance can interact with others on any other instance.
+Derailed will be federated, meaning anyone can host their own instance and instances can communicate with other instances so that any user on one instance can interact with others on any other instance.
 
 ### Side note about federation
 
 Making your own implementation in the language you prefer is actually encouraged, same with forking this one and adding new stuff to it, just make sure to give your new features an id and name so that clients that work with multiple instances can
-use your features & not break if you made substantial changes, incidentally everything included in the official Eludris implementation at Eludris/derailed is called `base` and has an id of `0`, all other implementations should at least have them.
+use your features & not break if you made substantial changes, incidentally everything included in the official Derailed implementation at Derailed/derailed is called `base` and has an id of `0`, all other implementations should at least have them.
 
 Features are acquired by sending a `GET` request to an instance's `/` route besides the other elements of the [info](#info) payload.
 
@@ -127,7 +127,7 @@ I'm sure this implementation has some edge cases which may cause some issues but
 
 ### IDs
 
-A Eludris ID is a 64 bit (8 byte) number, structured like so.
+A Derailed ID is a 64 bit (8 byte) number, structured like so.
 
 ```explaination-please-stfu-md
  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678
@@ -139,7 +139,7 @@ A Eludris ID is a 64 bit (8 byte) number, structured like so.
       32 bit (4 byte) Unix Timestamp.
 ```
 
-T: A Unix timestamp with the Eludris epoch (1,650,000,000).
+T: A Unix timestamp with the Derailed epoch (1,650,000,000).
 
 I: The id of the instance that generated this ID.
 
@@ -156,13 +156,13 @@ An instance ID is a 24 bit (3 byte) number, structured likes so.
 16 bit (2 byte) partial unix timestamp.
 ```
 
-T: The first 16 bits of the current Unix timestamp (also with the Eludris) epoch.
+T: The first 16 bits of the current Unix timestamp (also with the Derailed) epoch.
 
 N: The 8 bits representing the first character in the instance name.
 
 ### Redis
 
-Eludris uses a non persistent Redis instance to store data that should be really fast to fetch and is ephemeral like rate-limit info.
+Derailed uses a non persistent Redis instance to store data that should be really fast to fetch and is ephemeral like rate-limit info.
 
 Here's the structure of currently available keys:
 
@@ -170,27 +170,27 @@ Here's the structure of currently available keys:
 
 ### Internal names
 
-Some of the Eludris components have names that are used internally by the
-Eludris team or are referenced directly in the source code.
+Some of the Derailed components have names that are used internally by the
+Derailed team or are referenced directly in the source code.
 
 Here are some of these names:
 
-- Das Ding: The Eludris logo.
-- Thang: The Eludris mascot.
-- Oprish: The Eludris RESTful API.
-- Pandemonium: The Eludris websocket based gateway.
-- Effis: The Eludris file server, proxy and CDN.
-- Todel: The Eludris model and shared logic crate.
-- Carnage: The official Eludris frontend.
+- Das Ding: The Derailed logo.
+- Thang: The Derailed mascot.
+- Oprish: The Derailed RESTful API.
+- Pandemonium: The Derailed websocket based gateway.
+- Effis: The Derailed file server, proxy and CDN.
+- Todel: The Derailed model and shared logic crate.
+- Carnage: The official Derailed frontend.
 
 ## How It Works
 
-Now, Eludris is split into 4 main parts which if you have read this far in would have an idea of, they are:
+Now, Derailed is split into 4 main parts which if you have read this far in would have an idea of, they are:
 
-- Oprish: The Eludris RESTful API.
-- Pandemonium: The Eludris websocket based gateway.
-- Effis: The Eludris file server, proxy and CDN.
-- Todel: The Eludris model and shared logic crate.
+- Oprish: The Derailed RESTful API.
+- Pandemonium: The Derailed websocket based gateway.
+- Effis: The Derailed file server, proxy and CDN.
+- Todel: The Derailed model and shared logic crate.
 
 These tiny micro-services are tied together using Apache Kafka and the docker-compose in derailed/derailed, how they actually work is as follows:
 
@@ -200,21 +200,21 @@ When a user connects to Pandemonium it fetches the relative data about the user 
 
 Effis is responsible for handling files and being a CDN besides being a media proxy which means that it stores files and attachments (and their related info), serves them and also can generate embed previews from links.
 
-Todel is a lib crate that houses all the Eludris models and shared logic for Oprish, Pandemonium and Effis to reuse and rely on.
+Todel is a lib crate that houses all the Derailed models and shared logic for Oprish, Pandemonium and Effis to reuse and rely on.
 
 ## API Spec
 
-This section discusses how the Eludris v0.2.0 API will work from a client point of view.
+This section discusses how the Derailed v0.2.0 API will work from a client point of view.
 
 ### Models
 
 #### Feature
 
-A model representing a set of features an Eludris instance may have.
+A model representing a set of features an Derailed instance may have.
 
 The point of this model is to make it so that different clients can work for different instances with different features without anything breaking.
 
-Anything in the official implementation of Eludris (present at Eludris/derailed) is under the feature `base` and has an id of `0`
+Anything in the official implementation of Derailed (present at Derailed/derailed) is under the feature `base` and has an id of `0`
 
 | field | type     | description                      |
 | ----- | -------- | -------------------------------- |
@@ -223,7 +223,7 @@ Anything in the official implementation of Eludris (present at Eludris/derailed)
 
 #### Info
 
-A model representing an Eludris instance's info.
+A model representing an Derailed instance's info.
 
 | field         | type                   | description                    |
 | ------------- | ---------------------- | ------------------------------ |
@@ -232,7 +232,7 @@ A model representing an Eludris instance's info.
 
 #### Message
 
-A model representing an Eludris message.
+A model representing an Derailed message.
 
 | field   | type     | description                                |
 | ------- | -------- | ------------------------------------------ |
@@ -277,8 +277,8 @@ A [message](#message) object
 
 #### Interacting With Pandemonium
 
-To actually be able to properly use Eludris you will need to establish a Pandemonium connection which is essentially the programming equivalent of sending yourself straight to hell's boiler room.
+To actually be able to properly use Derailed you will need to establish a Pandemonium connection which is essentially the programming equivalent of sending yourself straight to hell's boiler room.
 
 Contrary to how it may seem, going to hell is actually very easy, all you need to do is connect to the websocket and send a Ping frame every 20 seconds and tada! Pandemonium will start sending you events.
 
-The current payload you can get as of Eludris v0.2.0 is a [message](#message) payload.
+The current payload you can get as of Derailed v0.2.0 is a [message](#message) payload.
