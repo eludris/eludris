@@ -1,17 +1,17 @@
 [package]
-name = "eludris"
+name = "derailed"
 edition = "2021"
 version.workspace = true
 documentation.workspace = true
 license = "MIT"
 description = "A simple CLI to help you manage your Eludris instance"
-homepage = "https://github.com/eludris/eludris"
-repository = "https://github.com/eludris/eludris"
+homepage = "https://github.com/derailed/derailed"
+repository = "https://github.com/derailed/derailed"
 readme = "README.md"
 categories = [
 	"command-line-utilities"
 ]
-keywords = ["eludris"]
+keywords = ["derailed"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

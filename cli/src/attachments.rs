@@ -1,11 +1,11 @@
 use std::path::Path;
 
 use anyhow::{bail, Context};
-use eludris::new_database_connection;
+use derailed::new_database_connection;
 use tokio::fs;
 
 pub async fn remove(id: u128) -> anyhow::Result<()> {
-    if !Path::new(&format!("/usr/eludris/files/attachments/{}", id)).exists() {
+    if !Path::new(&format!("/usr/derailed/files/attachments/{}", id)).exists() {
         bail!("Could not find attachment with id {}", id);
     }
 
@@ -22,7 +22,7 @@ AND bucket = 'attachments'
     .await
     .context("Could not remove attachment from database")?;
 
-    fs::remove_file(format!("/usr/eludris/files/attachments/{}", id))
+    fs::remove_file(format!("/usr/derailed/files/attachments/{}", id))
         .await
         .context("Failed to remove file from filesystem")?;
 

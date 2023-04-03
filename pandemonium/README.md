@@ -4,5 +4,5 @@ The Eludris WebSocket gateway.
 
 > **Note**
 >
-> This is not meant to be used as a standalone thing, refer to [eludris/eludris](https://github.com/eludris/eludris)
-> and [The Eludris Docs](https://eludris.github.io/docs) for more information.
+> This is not meant to be used as a standalone thing, refer to [derailed/derailed](https://github.com/derailed/derailed)
+> and [The Eludris Docs](https://derailed.github.io/docs) for more information.

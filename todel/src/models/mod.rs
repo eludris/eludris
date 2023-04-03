@@ -1,4 +1,4 @@
-//! A collection of models and some related function implementations for eludris.
+//! A collection of models and some related function implementations for derailed.
 
 mod files;
 mod gateway;

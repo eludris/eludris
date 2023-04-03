@@ -1,6 +1,6 @@
 # You should not be reading this file
 
-## Instead, check out the [docs](https://eludris.github.io/docs/).
+## Instead, check out the [docs](https://derailed.github.io/docs/).
 
 # Eludris
 
@@ -104,7 +104,7 @@ Eludris will be federated, meaning anyone can host their own instance and instan
 ### Side note about federation
 
 Making your own implementation in the language you prefer is actually encouraged, same with forking this one and adding new stuff to it, just make sure to give your new features an id and name so that clients that work with multiple instances can
-use your features & not break if you made substantial changes, incidentally everything included in the official Eludris implementation at Eludris/eludris is called `base` and has an id of `0`, all other implementations should at least have them.
+use your features & not break if you made substantial changes, incidentally everything included in the official Eludris implementation at Eludris/derailed is called `base` and has an id of `0`, all other implementations should at least have them.
 
 Features are acquired by sending a `GET` request to an instance's `/` route besides the other elements of the [info](#info) payload.
 
@@ -192,7 +192,7 @@ Now, Eludris is split into 4 main parts which if you have read this far in would
 - Effis: The Eludris file server, proxy and CDN.
 - Todel: The Eludris model and shared logic crate.
 
-These tiny micro-services are tied together using Apache Kafka and the docker-compose in eludris/eludris, how they actually work is as follows:
+These tiny micro-services are tied together using Apache Kafka and the docker-compose in derailed/derailed, how they actually work is as follows:
 
 Oprish waits for HTTP requests from clients, does validation and authentication to make sure that everything is right, then dispatches an event to the Apache Kafka topic which Pandemonium listens to and determines who to dispatch the event to.
 
@@ -214,7 +214,7 @@ A model representing a set of features an Eludris instance may have.
 
 The point of this model is to make it so that different clients can work for different instances with different features without anything breaking.
 
-Anything in the official implementation of Eludris (present at Eludris/eludris) is under the feature `base` and has an id of `0`
+Anything in the official implementation of Eludris (present at Eludris/derailed) is under the feature `base` and has an id of `0`
 
 | field | type     | description                      |
 | ----- | -------- | -------------------------------- |

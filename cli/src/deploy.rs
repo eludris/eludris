@@ -3,8 +3,8 @@ use std::{env, str::FromStr};
 use anyhow::{bail, Context};
 use console::Style;
 use dialoguer::{theme, Confirm, Editor, Input};
-use eludris::{
-    check_eludris_exists, check_user_permissions, end_progress_bar, new_docker_command,
+use derailed::{
+    check_derailed_exists, check_user_permissions, end_progress_bar, new_docker_command,
     new_progress_bar,
 };
 use reqwest::Client;
@@ -16,9 +16,9 @@ use crate::clean;
 pub async fn deploy() -> anyhow::Result<()> {
     check_user_permissions()?;
 
-    if !check_eludris_exists()? {
+    if !check_derailed_exists()? {
         let bar = new_progress_bar("Eludris directory not found, setting up...");
-        fs::create_dir("/usr/eludris")
+        fs::create_dir("/usr/derailed")
             .await
             .context("Could not create Eludris directory")?;
 
@@ -32,7 +32,7 @@ pub async fn deploy() -> anyhow::Result<()> {
         download_file(&client, "docker-compose.override.yml", None).await?;
         download_file(&client, ".example.env", Some(".env")).await?;
         download_file(&client, "Eludris.example.toml", Some("Eludris.toml")).await?;
-        fs::create_dir("/usr/eludris/files")
+        fs::create_dir("/usr/derailed/files")
             .await
             .context("Could not create effis files directory")?;
         end_progress_bar(bar, "Finished setting up instance files");
@@ -62,7 +62,7 @@ pub async fn deploy() -> anyhow::Result<()> {
             };
             break;
         }
-        let mut base_conf = fs::read_to_string("/usr/eludris/Eludris.toml")
+        let mut base_conf = fs::read_to_string("/usr/derailed/Eludris.toml")
             .await
             .context("Could not read Eludris.toml file")?;
         loop {
@@ -80,7 +80,7 @@ pub async fn deploy() -> anyhow::Result<()> {
                     let conf = Conf::from_str(&conf_string);
                     match conf {
                         Ok(_) => {
-                            fs::write("/usr/eludris/Eludris.toml", conf_string)
+                            fs::write("/usr/derailed/Eludris.toml", conf_string)
                                 .await
                                 .context("Could not write new config to Eludris.toml")?;
                             break;
@@ -144,7 +144,7 @@ async fn download_file(client: &Client, name: &str, save_name: Option<&str>) -> 
     log::info!("Fetching {}", name);
     let file = client
         .get(format!(
-            "https://raw.githubusercontent.com/eludris/eludris/main/{}",
+            "https://raw.githubusercontent.com/derailed/derailed/main/{}",
             name
         ))
         .send()
@@ -156,7 +156,7 @@ async fn download_file(client: &Client, name: &str, save_name: Option<&str>) -> 
         .await
         .context("Failed to fetch neccesary files for setup")?;
     log::info!("Writing {}", name);
-    fs::write(format!("/usr/eludris/{}", save_name.unwrap_or(name)), file)
+    fs::write(format!("/usr/derailed/{}", save_name.unwrap_or(name)), file)
         .await
         .context("Could not write setup files")?;
     Ok(())

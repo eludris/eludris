@@ -158,7 +158,7 @@ impl Conf {
         Ok(data)
     }
 
-    /// Create a new [`Conf`] by determining it's path based on the "ELUDRIS_CONF" environment
+    /// Create a new [`Conf`] by determining it's path based on the "DERAILED_CONF" environment
     /// variable or falling back to "Eludris.toml" if it is not found.
     ///
     /// # Panics
@@ -167,7 +167,7 @@ impl Conf {
     ///
     /// That also includes the config file's data failing to deserialise.
     pub fn new_from_env() -> anyhow::Result<Self> {
-        Self::new(env::var("ELUDRIS_CONF").unwrap_or_else(|_| "Eludris.toml".to_string()))
+        Self::new(env::var("DERAILED_CONF").unwrap_or_else(|_| "Eludris.toml".to_string()))
     }
 
     #[cfg(test)]

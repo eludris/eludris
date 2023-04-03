@@ -1,5 +1,5 @@
 use anyhow::Context;
-use eludris::{check_user_permissions, new_docker_command};
+use derailed::{check_user_permissions, new_docker_command};
 
 pub async fn stop() -> anyhow::Result<()> {
     check_user_permissions()?;

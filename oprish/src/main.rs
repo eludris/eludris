@@ -25,7 +25,7 @@ pub struct Cache(deadpool_redis::Pool);
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        env::set_var("ELUDRIS_CONF", "../tests/Eludris.toml");
+        env::set_var("DERAILED_CONF", "../tests/Eludris.toml");
     }
     dotenv::dotenv().ok();
     env_logger::try_init().ok();
@@ -42,7 +42,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
             "databases.db",
             rocket_db_pools::Config {
                 url: env::var("DATABASE_URL")
-                    .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string()),
+                    .unwrap_or_else(|_| "mysql://root:root@localhost:3306/derailed".to_string()),
                 min_connections: None,
                 max_connections: 1024,
                 connect_timeout: 3,

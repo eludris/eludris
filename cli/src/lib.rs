@@ -17,8 +17,8 @@ pub fn check_user_permissions() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn check_eludris_exists() -> anyhow::Result<bool> {
-    let path = Path::new("/usr/eludris");
+pub fn check_derailed_exists() -> anyhow::Result<bool> {
+    let path = Path::new("/usr/derailed");
     if !path.is_dir() && path.exists() {
         bail!("An Eludris file exists but it is not a directory");
     }
@@ -46,11 +46,11 @@ pub fn end_progress_bar(bar: ProgressBar, message: &str) {
 pub fn new_docker_command() -> Command {
     let mut command = Command::new("docker-compose");
     command // One can never be *too* sure
-        .current_dir("/usr/eludris")
+        .current_dir("/usr/derailed")
         .arg("-f")
-        .arg("/usr/eludris/docker-compose.override.yml")
+        .arg("/usr/derailed/docker-compose.override.yml")
         .arg("-f")
-        .arg("/usr/eludris/docker-compose.yml");
+        .arg("/usr/derailed/docker-compose.yml");
     command
 }
 
@@ -59,7 +59,7 @@ pub async fn new_database_connection() -> anyhow::Result<MySqlConnection> {
         .arg("inspect")
         .arg("-f")
         .arg("{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}")
-        .arg("eludris-mariadb-1")
+        .arg("derailed-mariadb-1")
         .stdout(Stdio::piped())
         .output()
         .await
@@ -67,7 +67,7 @@ pub async fn new_database_connection() -> anyhow::Result<MySqlConnection> {
         .stdout;
     let address = String::from_utf8(stdout).context("Could not convert address to a string")?;
 
-    MySqlConnection::connect(&format!("mysql://root:root@{}:3306/eludris", address))
+    MySqlConnection::connect(&format!("mysql://root:root@{}:3306/derailed", address))
         .await
         .context("Could not connect to database")
 }

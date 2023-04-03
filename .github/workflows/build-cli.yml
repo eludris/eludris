@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NAME: eludris
+  NAME: derailed
   DESC: A simple CLI to help you with setting up and managing your Eludris instance
 
 jobs:
@@ -37,35 +37,35 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release -p eludris
+          args: --release -p derailed
 
       # Windows scripting isn't the same.
       # - name: Get Variables (Windows)
       #   run: |
       #     echo "$env:GITHUB_ENV"
       #     echo ("TAG=" + $env:GITHUB_REF.replace('refs/tags/', '')) >> $env:GITHUB_ENV
-      #     echo "PATH=eludris.exe" >> $env:GITHUB_ENV
+      #     echo "PATH=derailed.exe" >> $env:GITHUB_ENV
       #     echo "OS=Windows" >> $env:GITHUB_ENV
       #   if: matrix.os == 'windows-latest'
 
       - name: Get Variables (MacOS)
         run: |
           echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "CLI_PATH=eludris" >> $GITHUB_ENV
+          echo "CLI_PATH=derailed" >> $GITHUB_ENV
           echo "OS=MacOS" >> $GITHUB_ENV
         if: matrix.os == 'macos-latest'
 
       - name: Get Variables (Linux)
         run: |
           echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "CLI_PATH=eludris" >> $GITHUB_ENV
+          echo "CLI_PATH=derailed" >> $GITHUB_ENV
           echo "OS=Linux-GNU" >> $GITHUB_ENV
         if: matrix.os == 'ubuntu-latest'
 
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.OS }}-eludris
+          name: ${{ env.OS }}-derailed
           path: target/release/${{ env.CLI_PATH }}
 
       - name: Update Release
@@ -75,7 +75,7 @@ jobs:
           file: target/release/${{ env.CLI_PATH }}
           tag: ${{ github.ref }}
           overwrite: true
-          asset_name: eludris-${{ env.TAG }}-${{ env.OS }}-x86_64
+          asset_name: derailed-${{ env.TAG }}-${{ env.OS }}-x86_64
 
   build-deb:
     needs: build
@@ -88,21 +88,21 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v3
         with:
-          name: Linux-GNU-eludris
+          name: Linux-GNU-derailed
 
       - name: Create Package Files
         run: |
           mkdir -p .debpkg/usr/bin
           mkdir -p .rpmpkg/usr/bin
-          chmod +x eludris
-          cp -p eludris .debpkg/usr/bin/
-          cp -p eludris .rpmpkg/usr/bin/
+          chmod +x derailed
+          cp -p derailed .debpkg/usr/bin/
+          cp -p derailed .rpmpkg/usr/bin/
       - name: Build DEB
         uses: jiro4989/build-deb-action@v2
         with:
           package: ${{ env.NAME }}
           package_root: .debpkg
-          maintainer: Oliver Wilkes <oliver@eludris.gay>
+          maintainer: Oliver Wilkes <oliver@derailed.gay>
           version: ${{ github.ref }}
           arch: "amd64"
           desc: "${{ env.DESC }}"
@@ -113,7 +113,7 @@ jobs:
           summary: "${{ env.DESC }}"
           package: ${{ env.NAME }}
           package_root: .rpmpkg
-          maintainer: Oliver Wilkes <oliver@eludris.gay>
+          maintainer: Oliver Wilkes <oliver@derailed.gay>
           version: ${{ github.ref }}
           arch: "x86_64"
           desc: "${{ env.DESC }}"
@@ -134,7 +134,7 @@ jobs:
       - name: Update Release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: "{eludris-[!d]*.rpm,*.deb}"
+          file: "{derailed-[!d]*.rpm,*.deb}"
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true

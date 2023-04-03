@@ -3,7 +3,7 @@
 use std::time::{Duration, SystemTime};
 
 lazy_static! {
-    pub static ref ELUDRIS_EPOCH: SystemTime =
+    pub static ref DERAILED_EPOCH: SystemTime =
         SystemTime::UNIX_EPOCH + Duration::from_secs(1_650_000_000);
 }
 
@@ -11,7 +11,7 @@ lazy_static! {
 pub fn generate_instance_id() -> u64 {
     // This is just a 48 bit Unix timestamp
     SystemTime::now()
-        .duration_since(*ELUDRIS_EPOCH)
+        .duration_since(*DERAILED_EPOCH)
         .expect("Couldn't get current timestamp")
         .as_secs()
         & 0xFFFFFFFFFFFF
@@ -52,7 +52,7 @@ impl IDGenerator {
             self.sequence += 1;
         }
         (SystemTime::now()
-            .duration_since(*ELUDRIS_EPOCH)
+            .duration_since(*DERAILED_EPOCH)
             .expect("Couldn't get current timestamp")
             .as_secs() as u128)
             << 64

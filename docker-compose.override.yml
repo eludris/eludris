@@ -10,7 +10,7 @@ services:
     depends_on: [ "mariadb", "keydb" ]
 
     environment:
-      - DATABASE_URL=mysql://root:root@mariadb/eludris
+      - DATABASE_URL=mysql://root:root@mariadb/derailed
       - REDIS_URL=redis://keydb:6379
     volumes:
       - type: bind
@@ -49,6 +49,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: "%"
-      MYSQL_DATABASE: eludris
+      MYSQL_DATABASE: derailed
     volumes:
       - "./mariadb:/var/lib/mysql"
