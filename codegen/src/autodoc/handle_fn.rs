@@ -4,7 +4,7 @@ use proc_macro::{Span, TokenStream};
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType, Type};
 
 use super::{
-    models::{ItemInfo, PathParamInfo, QueryParamInfo, RouteInfo},
+    models::{ItemInfo, ParamInfo, RouteInfo},
     utils::{display_path_segment, get_doc, get_type},
 };
 
@@ -90,29 +90,25 @@ pub fn handle_fn(attr: TokenStream, item: ItemFn) -> Result<(ItemInfo, String), 
         // if it's in the `<name>` format, we want it's type
         if segment.starts_with('<') && segment.ends_with('>') {
             let name = segment[1..segment.len() - 1].to_string();
-            path_params.push(PathParamInfo {
-                param_type: params.remove(&name).ok_or_else(|| {
-                    Error::new(
-                        Span::call_site().into(),
-                        format!("Cannot find type of path param{}", name),
-                    )
-                })?,
-                name,
-            });
+            let param_type = params.remove(&name).ok_or_else(|| {
+                Error::new(
+                    Span::call_site().into(),
+                    format!("Cannot find type of path param {}", name),
+                )
+            })?;
+            path_params.push(ParamInfo { param_type, name });
         }
     }
     for param in query.split('&') {
         if param.starts_with('<') && param.ends_with('>') {
             let name = param[1..param.len() - 1].to_string();
-            query_params.push(QueryParamInfo {
-                param_type: params.remove(&name).ok_or_else(|| {
-                    Error::new(
-                        Span::call_site().into(),
-                        format!("Cannot find type of path param{}", name),
-                    )
-                })?,
-                name,
-            });
+            let param_type = params.remove(&name).ok_or_else(|| {
+                Error::new(
+                    Span::call_site().into(),
+                    format!("Cannot find type of query param{}", name),
+                )
+            })?;
+            query_params.push(ParamInfo { param_type, name });
         }
     }
 
