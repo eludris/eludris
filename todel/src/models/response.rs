@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Base type for error responses
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ErrorResponse {
     pub status: u16,
@@ -22,6 +23,7 @@ pub enum ErrorData {
 }
 
 /// The error when a client is rate limited
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RateLimitError {
     pub retry_after: u64,
@@ -29,6 +31,7 @@ pub struct RateLimitError {
 
 /// The error caused when a client surpasses the maximum amount of bytes in an Effis rate limit
 /// bucket
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileSizeRateLimitedError {
     pub retry_after: u64,
@@ -36,6 +39,7 @@ pub struct FileSizeRateLimitedError {
 }
 
 /// The error when the supplied request body is invalid
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidationError {
     pub field_name: String,
@@ -43,10 +47,12 @@ pub struct ValidationError {
 }
 
 /// The error when the requested resource is not found
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NotFoundError;
 
 /// The error when the requested resource is not found
+#[autodoc]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServerError {
     pub error: String,
