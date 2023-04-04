@@ -30,7 +30,7 @@ export interface Props {
 }
 
 const { slug, name, data } = Astro.props;
-const content = (await renderMarkdown(data_to_md(data, name), astroConfig.markdown!)).metadata.html;
+const content = (await renderMarkdown(data_to_md(data), astroConfig.markdown!)).metadata.html;
 ---
 
 <Base title={`${name} - Eludris Reference`} description={data.doc ?? undefined} slug={slug}>

@@ -20,27 +20,30 @@ export interface StructInfo {
   fields: FieldInfo[];
 }
 
-export enum EnumType {
+export enum VariantType {
   Unit = "unit",
   Tuple = "tuple",
   Struct = "struct",
 }
 
 export interface UnitEnumVariant {
-  type: EnumType.Unit
+  type: VariantType.Unit
   name: string;
   doc: string | null;
 }
 
 export interface TupleEnumVariant {
-  type: EnumType.Tuple
+  type: VariantType.Tuple
   name: string;
   doc: string | null;
   field_type: string;
 }
 
-export interface StructEnumVariant extends FieldInfo {
-  type: EnumType.Struct;
+export interface StructEnumVariant {
+  type: VariantType.Struct;
+  name: string;
+  doc: string | null;
+  fields: FieldInfo[];
 }
 
 export type EnumVariant = UnitEnumVariant | TupleEnumVariant | StructEnumVariant;

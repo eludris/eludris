@@ -1,24 +1,72 @@
 import { readFileSync } from 'fs';
-import { FieldInfo, ItemInfo, ItemType, StructInfo } from "../../lib/types";
+import { EnumInfo, EnumVariant, FieldInfo, ItemInfo, ItemType, StructInfo, VariantType } from "../../lib/types";
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
-export default (data: ItemInfo, name: string): string => {
-  let content = `# ${name}`;
-  let example: string | null = null;
-  if (data.type == ItemType.Route) {
-    content += `\n\n<span class="method">${data.method}</span><span class="route">${data.route.replace(/<.+?>/gm, '<span class="special-segment">$&</span>')}</span>`;
+export default (item: ItemInfo): string => {
+  let content = `# ${uncodeName(item.name)}`;
+  let example = '';
+  if (item.type == ItemType.Route) {
+    content += `\n\n<span class="method">${item.method}</span><span class="route">${item.route.replace(/<.+?>/gm, '<span class="special-segment">$&</span>')}</span>`;
   }
-  if (data.doc) {
-    const parts = data.doc.split('-----');
+  if (item.doc) {
+    const parts = item.doc.split('-----');
     let doc = parts.shift();
     example = parts.join('-----');
-    content += `\n\n${doc}`
+    content += `\n\n${displayDoc(doc)}`
   }
-  if (data.type == ItemType.Struct) {
-    content += '\n\n|Field|Type|Description|\n|---|---|---|';
-    data.fields.forEach((field) => {
-      content += `\n${display_field(field)}`
-    });
+  if (item.type == ItemType.Struct) {
+    content += `\n\n${displayFields(item.fields)}`;
+  } else if (item.type == ItemType.Enum) {
+    item.variants.forEach((variant) => {
+      content += `\n## ${uncodeName(variant.name)}`;
+      let variant_example = '';
+      if (variant.doc) {
+        const parts = variant.doc.split('-----');
+        let doc = parts.shift();
+        variant_example = parts.join('-----');
+        content += `\n\n${displayDoc(doc)}`
+      }
+      content += `\n${displayVariant(variant, item)}`
+      if (variant_example) {
+        content += `\n${example}`;
+      }
+    })
+  } else {
+    if (item.path_params.length) {
+      content += '\n\n## Path Params\n\n|Name|Type|\n|---|---|';
+      item.path_params.forEach((param) => {
+        content += `\n|${param.name}|${displayType(param.param_type)}|`;
+      });
+    }
+    if (item.query_params.length) {
+      content += '\n\n## Query Params\n\n|Name|Type|\n|---|---|';
+      item.query_params.forEach((param) => {
+        content += `\n|${param.name}|${displayType(param.param_type)}|`;
+      });
+    }
+    if (item.body_type) {
+      content += '\n\n## Request Body';
+      let body_type = item.body_type.replace(/Json<(.+)>/gm, '$1');
+      content += `\n\n${displayType(body_type)}`;
+      const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
+      if (innerType) {
+        let innerData: StructInfo | EnumInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(innerData)}`;
+      }
+    }
+    if (item.return_type) {
+      content += '\n\n## Response';
+      let return_type = item.return_type
+        .replace(/Result<(.+?), .+?>/gm, '$1')
+        .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
+        .replace(/Json<(.+?)>/gm, '$1');
+      content += `\n\n${displayType(return_type)}`;
+      const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
+      if (innerType) {
+        let innerData: StructInfo | EnumInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(innerData)}`;
+      }
+    }
   }
   if (example) {
     content += `\n${example}`;
@@ -26,22 +74,112 @@ export default (data: ItemInfo, name: string): string => {
   return content;
 };
 
-const display_field = (field: FieldInfo): string => {
-  const innerType = field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.name}`));
+const briefItem = (item: StructInfo | EnumInfo): string => {
+  if (item.type == ItemType.Struct) {
+    if (!item.fields.length) {
+      return '';
+    }
+    return displayFields(item.fields);
+  } else {
+    let content = '';
+    item.variants.forEach((variant) => {
+      content += `\n- ${uncodeName(variant.name)}\n\n${variant.doc ?? ''}`;
+      content += `\n${displayVariant(variant, item)}`
+    })
+    return content;
+  }
+}
+
+const displayFields = (fields: FieldInfo[]): string => {
+  if (!fields.length) {
+    return '';
+  }
+  let content = '|Field|Type|Description|\n|---|---|---|';
+  fields.forEach((field) => {
+    content += `\n${displayField(field)}`
+  });
+  return content;
+}
+
+const displayField = (field: FieldInfo): string => {
+  const innerType = field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.name}.json`));
   if (innerType) {
-    let innerData: StructInfo = JSON.parse(readFileSync(`autodoc/${innerType}`).toString());
+    let innerData: StructInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
     let fields = '';
     innerData.fields.forEach((field) => {
-      fields += `\n${display_field(field)}`;
+      fields += `\n\n${displayField(field)}`;
     })
     return fields;
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${display_type(field.field_type)}${field.nullable ? '?' : ''}|${field.doc?.replace(/(\S)\n(\S)/gm, '$1 $2') ?? ''}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''}|${displayDoc(field.doc).replace(/(\S)\n(\S)/gm, '$1 $2')}|`;
 }
 
-const display_type = (type: string): string => {
+const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
+  let content = '';
+  if (variant.type == VariantType.Unit) {
+    if (item.tag) {
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${switchCase(variant.name, item.rename_all)}"|The tag of this variant`;
+    }
+  } else if (variant.type == VariantType.Tuple) {
+    if (item.tag) {
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${switchCase(variant.name, item.rename_all)}"|The tag of this variant`;
+      if (item.content) {
+        content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
+      }
+    } else {
+      content += `${displayType(variant.field_type)}`
+      const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${variant.field_type}.json`));
+      if (innerType) {
+        let innerData: StructInfo | EnumInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(innerData)}`;
+      }
+    }
+  } else if (variant.type == VariantType.Struct) {
+    content += '\n\n|Field|Type|Description|\n|---|---|---|';
+    if (item.tag) {
+      content += `\n|${item.tag}|"${switchCase(variant.name, item.rename_all)}"|The tag of this variant|`;
+      if (item.content) {
+        content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant`;
+        content += '\n\nWith the data of this variant being:';
+        content += `\n\n${displayFields(variant.fields)}`;
+      } else {
+        variant.fields.forEach((field) => {
+          content += `\n${displayField(field)}`
+        });
+      }
+    }
+
+  }
+  return content;
+}
+
+const displayDoc = (doc: string | null | undefined): string => {
+  return doc ? doc.replace(/\[`(.+)`\]/gm, (_, p1) => {
+    return `[${p1}](/reference/${AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${p1}.json`))?.split('.')[0]})`;
+  }) : '';
+}
+
+const switchCase = (content: string, new_case: string | null): string => {
+  if (new_case == "SCREAMING_SNAKE_CASE") {
+    return content.replace(/(\S)([A-Z])/gm, '$1_$2').toUpperCase();
+  }
+  return content;
+}
+
+const displayType = (type: string): string => {
   if (type == 'u32' || type == 'u64' || type == 'usize') {
     return 'Number';
   }
-  return type.replace(/Option<(.+)>/gm, '$1').replace(/</gm, '\\<');
+  type = type
+    .replace(/Option<(.+)>/gm, '$1')
+    .replace(/Json<(.+)>/gm, '$1')
+    .replace(/</gm, '\\<');
+  let entry =
+    AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
+  return entry ? `[${type}](/reference/${entry})` : type;
+}
+
+const uncodeName = (name: string): string => {
+  return name.replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+    .replace(/[A-Z]/gm, ' $&');
 }

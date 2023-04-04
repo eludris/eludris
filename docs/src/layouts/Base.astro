@@ -148,7 +148,7 @@ const {
         flex-grow: 1;
         margin-top: 60px;
         padding: 10px;
-        width: 750px;
+        width: 70%;
         margin: 0 auto;
         box-sizing: border-box;
         background-color: var(--color-bg);
@@ -250,6 +250,14 @@ const {
 
       :global(tr:last-of-type td:last-of-type) {
         border-bottom-right-radius: 5px;
+      }
+
+      :global(tr th:nth-child(-n + 2)) {
+        width: 200px;
+      }
+
+      :global(tr td:nth-child(-n + 2)) {
+        font-family: monospace, 'Ubuntu', sans-serif;
       }
 
       :global(.header) {
