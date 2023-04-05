@@ -152,6 +152,7 @@ const {
         margin: 0 auto;
         box-sizing: border-box;
         background-color: var(--color-bg);
+        overflow-x: hidden;
       }
 
       :global(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a) {
@@ -299,7 +300,16 @@ const {
         }
 
         #slot {
-          max-width: 750px;
+          width: 95%;
+        }
+
+        :global(table) {
+          overflow-x: auto;
+          display: inline-block;
+        }
+
+        :global(tr th:nth-child(-n + 2)) {
+          width: 60px;
         }
       }
     </style>
