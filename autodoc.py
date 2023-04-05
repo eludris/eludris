@@ -5,9 +5,14 @@ import pathlib
 import shutil
 import subprocess
 import json
+import logging
 
 CRATES = ["todel", "oprish", "effis"]  # The other crates do not have autodoc info
 EXTRA_COMMAND_ENV = {"ELUDRIS_AUTODOC": "1"}
+
+# Logging setup
+logging.basicConfig(format='%(message)s', level=logging.INFO)
+log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     repo_dir = pathlib.Path(os.path.realpath(__file__)).parent
@@ -28,7 +33,7 @@ if __name__ == "__main__":
     for crate in CRATES:
         crate_path = autodoc_path.joinpath(crate)
         crate_path.mkdir()
-        print(f"\033[3;35mCompiling \033[1;35m{crate}...\033[0m")
+        log.info(f"\033[3;35mCompiling \033[1;35m{crate}...\033[0m")
         subprocess.run(["cargo", "build", "-p", crate], env=os.environ)
         for item in crate_path.iterdir():
             items.append(f"{crate}/{item.name}")
