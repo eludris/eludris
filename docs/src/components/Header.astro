@@ -26,7 +26,7 @@ import { Icon } from 'astro-icon';
       : 'light');
 
   let sidebarState =
-    localStorage.getItem('sidebarState') ?? (window.innerWidth < 1200 ? 'in' : 'out');
+    localStorage.getItem('sidebarState') ?? (window.innerWidth < 1000 ? 'in' : 'out');
 
   if (theme === 'dark') {
     document.documentElement.classList.add('dark');
@@ -60,6 +60,28 @@ import { Icon } from 'astro-icon';
     }
     localStorage.setItem('sidebarState', sidebarState);
   });
+
+  let touchX = 0;
+
+  document.addEventListener('touchstart', (e) => {
+    touchX = e.changedTouches[0].screenX;
+  });
+
+  document.addEventListener('touchend', (e) => {
+    if (e.changedTouches[0].screenX > touchX + 10 && sidebar.classList.contains('sidebar-hide')) {
+      sidebar.classList.remove('sidebar-hide');
+      content.style.removeProperty('--sidebar-width');
+      sidebarState = 'out';
+    } else if (
+      e.changedTouches[0].screenX < touchX - 10 &&
+      !sidebar.classList.contains('sidebar-hide')
+    ) {
+      sidebar.classList.add('sidebar-hide');
+      content.style.setProperty('--sidebar-width', '0');
+      sidebarState = 'in';
+    }
+    localStorage.setItem('sidebarState', sidebarState);
+  });
 </script>
 
 <script>
@@ -75,13 +97,13 @@ import { Icon } from 'astro-icon';
     }
     if (Math.abs(lastScroll - content!.scrollTop) > 50) {
       if (
-        window.innerWidth < 1200 &&
+        window.innerWidth < 1000 &&
         content!.scrollTop > lastScroll &&
         !header!.classList.contains('header-hidden')
       ) {
         header!.classList.add('header-hidden');
       } else if (
-        window.innerWidth < 1200 &&
+        window.innerWidth < 1000 &&
         content!.scrollTop < lastScroll &&
         header!.classList.contains('header-hidden')
       ) {
@@ -194,8 +216,5 @@ import { Icon } from 'astro-icon';
     height: 30px;
     padding: 2px;
     cursor: pointer;
-  }
-
-  @media only screen and (max-width: 1200px) {
   }
 </style>

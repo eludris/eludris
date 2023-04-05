@@ -211,6 +211,8 @@ const {
       :global(table) {
         border-spacing: 0;
         width: 100%;
+        overflow-x: auto;
+        display: inline-block;
       }
 
       :global(td, th) {
@@ -289,7 +291,7 @@ const {
         opacity: 1;
       }
 
-      @media only screen and (max-width: 1200px) {
+      @media only screen and (max-width: 1000px) {
         :root {
           --sidebar-width: 70%;
         }
@@ -301,11 +303,6 @@ const {
 
         #slot {
           width: 95%;
-        }
-
-        :global(table) {
-          overflow-x: auto;
-          display: inline-block;
         }
 
         :global(tr th:nth-child(-n + 2)) {
