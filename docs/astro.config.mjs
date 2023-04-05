@@ -4,7 +4,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings/lib';
-import { h, s } from 'hastscript';
+import { h } from 'hastscript';
 import rehypeSlug from 'rehype-slug';
 
 // https://astro.build/config
@@ -26,10 +26,10 @@ export default defineConfig({
         {
           behavior: 'before',
           content() {
-            return h('span', '>>')
+            return h('span', '>>');
           },
           group() {
-            return h('span.header')
+            return h('span.header');
           }
         }
       ]

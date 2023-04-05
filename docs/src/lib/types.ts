@@ -1,7 +1,7 @@
 export enum ItemType {
-  Struct = "struct",
-  Enum = "enum",
-  Route = "route",
+  Struct = 'struct',
+  Enum = 'enum',
+  Route = 'route'
 }
 
 export interface FieldInfo {
@@ -21,19 +21,19 @@ export interface StructInfo {
 }
 
 export enum VariantType {
-  Unit = "unit",
-  Tuple = "tuple",
-  Struct = "struct",
+  Unit = 'unit',
+  Tuple = 'tuple',
+  Struct = 'struct'
 }
 
 export interface UnitEnumVariant {
-  type: VariantType.Unit
+  type: VariantType.Unit;
   name: string;
   doc: string | null;
 }
 
 export interface TupleEnumVariant {
-  type: VariantType.Tuple
+  type: VariantType.Tuple;
   name: string;
   doc: string | null;
   field_type: string;
@@ -81,6 +81,5 @@ export interface RouteInfo {
   return_type: string | null;
   guards: string[];
 }
-
 
 export type ItemInfo = StructInfo | EnumInfo | RouteInfo;
