@@ -6,7 +6,8 @@ import {
   ItemInfo,
   ItemType,
   StructInfo,
-  VariantType
+  VariantType,
+  RouteInfo
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
@@ -45,45 +46,7 @@ export default (item: ItemInfo): string => {
       }
     });
   } else {
-    if (item.path_params.length) {
-      content += '\n\n## Path Params\n\n|Name|Type|\n|---|---|';
-      item.path_params.forEach((param) => {
-        content += `\n|${param.name}|${displayType(param.param_type)}|`;
-      });
-    }
-    if (item.query_params.length) {
-      content += '\n\n## Query Params\n\n|Name|Type|\n|---|---|';
-      item.query_params.forEach((param) => {
-        content += `\n|${param.name}|${displayType(param.param_type)}|`;
-      });
-    }
-    if (item.body_type) {
-      content += '\n\n## Request Body';
-      let body_type = item.body_type.replace(/Json<(.+)>/gm, '$1');
-      content += `\n\n${displayType(body_type)}`;
-      const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
-      if (innerType) {
-        let innerData: StructInfo | EnumInfo = JSON.parse(
-          readFileSync(`public/autodoc/${innerType}`).toString()
-        );
-        content += `\n\n${briefItem(innerData)}`;
-      }
-    }
-    if (item.return_type) {
-      content += '\n\n## Response';
-      let return_type = item.return_type
-        .replace(/Result<(.+?), .+?>/gm, '$1')
-        .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
-        .replace(/Json<(.+?)>/gm, '$1');
-      content += `\n\n${displayType(return_type)}`;
-      const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
-      if (innerType) {
-        let innerData: StructInfo | EnumInfo = JSON.parse(
-          readFileSync(`public/autodoc/${innerType}`).toString()
-        );
-        content += `\n\n${briefItem(innerData)}`;
-      }
-    }
+    content += `\n\n${displayRoute(item)}`;
   }
   if (example) {
     content += `\n${example}`;
@@ -153,7 +116,7 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
         content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
       }
     } else {
-      content += `${displayType(variant.field_type)}`;
+      content += `This variant contains a ${displayType(variant.field_type)}`;
       const innerType = AUTODOC_ENTRIES.find((entry) =>
         entry.endsWith(`/${variant.field_type}.json`)
       );
@@ -183,6 +146,50 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
     }
   }
   return content;
+};
+
+const displayRoute = (item: RouteInfo): string => {
+  let content = '';
+  if (item.path_params.length) {
+    content += '\n\n## Path Params\n\n|Name|Type|\n|---|---|';
+    item.path_params.forEach((param) => {
+      content += `\n|${param.name}|${displayType(param.param_type)}|`;
+    });
+  }
+  if (item.query_params.length) {
+    content += '\n\n## Query Params\n\n|Name|Type|\n|---|---|';
+    item.query_params.forEach((param) => {
+      content += `\n|${param.name}|${displayType(param.param_type)}|`;
+    });
+  }
+  if (item.body_type) {
+    content += '\n\n## Request Body';
+    let body_type = item.body_type.replace(/Json<(.+)>/gm, '$1');
+    content += `\n\n${displayType(body_type)}`;
+    const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
+    if (innerType) {
+      let innerData: StructInfo | EnumInfo = JSON.parse(
+        readFileSync(`public/autodoc/${innerType}`).toString()
+      );
+      content += `\n\n${briefItem(innerData)}`;
+    }
+  }
+  if (item.return_type) {
+    content += '\n\n## Response';
+    let return_type = item.return_type
+      .replace(/Result<(.+?), .+?>/gm, '$1')
+      .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
+      .replace(/Json<(.+?)>/gm, '$1');
+    content += `\n\n${displayType(return_type)}`;
+    const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
+    if (innerType) {
+      let innerData: StructInfo | EnumInfo = JSON.parse(
+        readFileSync(`public/autodoc/${innerType}`).toString()
+      );
+      content += `\n\n${briefItem(innerData)}`;
+    }
+  }
+  return content.substring(2); // to remove the first double newline
 };
 
 const displayDoc = (doc: string | null | undefined): string => {
