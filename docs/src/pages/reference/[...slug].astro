@@ -1,10 +1,9 @@
 ---
-import { renderMarkdown } from '@astrojs/markdown-remark';
+import Markdown from '@astrojs/markdown-component';
 import Base from '../../layouts/Base.astro';
 import { readFileSync } from 'fs';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 import type { ItemInfo } from '../../lib/types';
-import astroConfig from '../../../astro.config.mjs';
 import data_to_md from './data_to_md';
 
 export const getStaticPaths = () => {
@@ -30,11 +29,10 @@ export interface Props {
 }
 
 const { slug, name, data } = Astro.props;
-const content = (await renderMarkdown(data_to_md(data), astroConfig.markdown!)).metadata.html;
 ---
 
 <Base title={`${name} - Eludris Reference`} description={data.doc ?? undefined} slug={slug}>
-  <Fragment set:html={content} />
+  <Markdown content={data_to_md(data)} />
 </Base>
 
 <style>
