@@ -47,8 +47,10 @@ const {
       <Sidebar slug={slug} />
       <div id="content" class="notransition">
         <Header />
-        <div id="slot">
-          <slot />
+        <div id="slot-wrapper">
+          <div id="slot">
+            <slot />
+          </div>
         </div>
       </div>
     </div>
@@ -140,8 +142,12 @@ const {
         width: 100%;
         margin-left: var(--sidebar-width);
         flex-direction: column;
-        overflow-y: auto;
+        overflow: hidden;
         transition: margin-left ease-in-out 250ms, transform ease-in-out 250ms;
+      }
+
+      #slot-wrapper {
+        overflow-y: auto;
       }
 
       #slot {

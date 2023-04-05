@@ -85,31 +85,31 @@ import { Icon } from 'astro-icon';
 </script>
 
 <script>
-  const content = document.getElementById('content');
+  const slot = document.getElementById('slot-wrapper');
   const header = document.getElementById('header');
   let lastScroll = 0;
 
-  content!.addEventListener('scroll', () => {
-    if (content!.scrollTop > 0) {
+  slot!.addEventListener('scroll', () => {
+    if (slot!.scrollTop > 0) {
       header!.style.borderBottomWidth = '1px';
     } else {
       header!.style.borderBottomWidth = '0px';
     }
-    if (Math.abs(lastScroll - content!.scrollTop) > 50) {
+    if (Math.abs(lastScroll - slot!.scrollTop) > 50) {
       if (
         window.innerWidth < 1000 &&
-        content!.scrollTop > lastScroll &&
+        slot!.scrollTop > lastScroll &&
         !header!.classList.contains('header-hidden')
       ) {
         header!.classList.add('header-hidden');
       } else if (
         window.innerWidth < 1000 &&
-        content!.scrollTop < lastScroll &&
+        slot!.scrollTop < lastScroll &&
         header!.classList.contains('header-hidden')
       ) {
         header!.classList.remove('header-hidden');
       }
-      lastScroll = content!.scrollTop;
+      lastScroll = slot!.scrollTop;
     }
   });
 
