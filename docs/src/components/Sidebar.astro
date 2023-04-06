@@ -38,7 +38,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
   .then((res) => res.stargazers_count);
 ---
 
-<div id="sidebar" class="notransition">
+<div id="sidebar">
   <h3>The Eludris Developer Portal</h3>
   <hr class="sep" />
   <ul id="index">
@@ -219,9 +219,5 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
 
   #star a {
     border-bottom: 1px solid var(--color-text-200);
-  }
-
-  :global(.notransition) {
-    transition: unset !important;
   }
 </style>

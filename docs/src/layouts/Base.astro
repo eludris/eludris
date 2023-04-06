@@ -43,9 +43,9 @@ const {
     <link rel="stylesheet" href="/prism-theme.css" />
   </head>
   <body>
-    <div id="main">
+    <div id="main" class="notransition">
       <Sidebar slug={slug} />
-      <div id="content" class="notransition">
+      <div id="content">
         <Header />
         <div id="slot-wrapper">
           <div id="slot">
@@ -294,6 +294,14 @@ const {
 
       :global(.header:hover > a) {
         opacity: 1;
+      }
+
+      :global(.notransition) {
+        transition: unset !important;
+      }
+
+      :global(.notransition *) {
+        transition: unset !important;
       }
 
       @media only screen and (max-width: 1000px) {

@@ -5,8 +5,8 @@ import { Icon } from 'astro-icon';
 <div id="header">
   <button id="sidebar-toggle"><Icon width="30px" name="mdi:menu" /></button>
   <div id="theme-button-wrapper">
-    <Icon id="sun" class="notransition" width="30px" name="mdi:white-balance-sunny" />
-    <Icon id="moon" class="notransition" width="30px" name="mdi:weather-night" />
+    <Icon id="sun" width="30px" name="mdi:white-balance-sunny" />
+    <Icon id="moon" width="30px" name="mdi:weather-night" />
     <button id="theme-button"></button>
   </div>
   <a href="/" id="header-text">The Eludris Developer Portal</a>
@@ -114,10 +114,7 @@ import { Icon } from 'astro-icon';
   });
 
   setTimeout(() => {
-    document.getElementById('moon')!.classList.remove('notransition');
-    document.getElementById('sun')!.classList.remove('notransition');
-    document.getElementById('sidebar')!.classList.remove('notransition');
-    document.getElementById('content')!.classList.remove('notransition');
+    document.getElementById('main')!.classList.remove('notransition');
   }, 0); // why the heck does this work???
 </script>
 
