@@ -110,7 +110,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
                   href={`/changelogs/${entry.data.version}`}
                   class={slug == entry.data.version ? 'active' : ''}
                 >
-                  version {entry.data.version}
+                  Version {entry.data.version}
                 </a>
               </li>
             ))
