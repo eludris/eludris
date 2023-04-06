@@ -1,0 +1,26 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+export const getStaticPaths = async () => {
+  return (await getCollection('changelogs'))
+    .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
+    .map((entry) => ({
+      params: { slug: entry.data.version },
+      props: { entry }
+    }));
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<Base
+  title={`Version ${entry.data.version} Changes`}
+  description={`The changes that occured in Eludris for version ${entry.data.version}`}
+  slug={entry.data.version}
+>
+  <h1>Version {entry.data.version} Changes</h1>
+  <Content />
+  <a href={`https://github.com/eludris/eludris/pull/${entry.data.pr}`}>Update PR</a>
+</Base>

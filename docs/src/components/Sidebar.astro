@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import AUTODOC_ENTRIES from '../../public/autodoc/index.json';
 
 interface Child {
@@ -20,6 +21,12 @@ AUTODOC_ENTRIES.forEach((slug) => {
   entries[crate].push({ slug, name });
 });
 
+const docPages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+const extraPages = (await getCollection('extra')).sort((a, b) => a.data.order - b.data.order);
+const changelogPages = (await getCollection('changelogs')).sort(
+  (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf()
+);
+
 export interface Props {
   slug?: string;
 }
@@ -37,14 +44,24 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
   <ul id="index">
     <li>
       <details open class="category">
-        <summary>Meta</summary>
+        <summary>Docs</summary>
         <ul>
-          <li class="page">
-            <a href="/" class={slug == '/' ? 'active' : ''}>Home</a>
-          </li>
+          {
+            docPages.map((entry) => (
+              <li class="page">
+                <a
+                  href={entry.data.order == 0 ? '/' : `/docs/${entry.slug}`}
+                  class={slug == entry.slug ? 'active' : ''}
+                >
+                  {entry.data.title}
+                </a>
+              </li>
+            ))
+          }
         </ul>
       </details>
     </li>
+    <h4>API reference</h4>
     {
       Object.entries(entries)
         .filter(([_, children]) => children.length)
@@ -65,6 +82,42 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
           </li>
         ))
     }
+    <h4>Other</h4>
+    <li>
+      <details open class="category">
+        <summary>Extras</summary>
+        <ul>
+          {
+            extraPages.map((entry) => (
+              <li class="page">
+                <a href={`/extra/${entry.slug}`} class={slug == entry.slug ? 'active' : ''}>
+                  {entry.data.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+    </li>
+    <li>
+      <details open class="category">
+        <summary>Changelogs</summary>
+        <ul>
+          {
+            changelogPages.map((entry) => (
+              <li class="page">
+                <a
+                  href={`/changelogs/${entry.data.version}`}
+                  class={slug == entry.data.version ? 'active' : ''}
+                >
+                  version {entry.data.version}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+    </li>
   </ul>
   <span id="star">
     <span

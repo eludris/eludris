@@ -26,7 +26,7 @@ export default defineConfig({
         {
           behavior: 'before',
           content() {
-            return h('span', '>>');
+            return h('span.header-icon', '>>');
           },
           group() {
             return h('span.header');
