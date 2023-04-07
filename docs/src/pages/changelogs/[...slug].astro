@@ -3,12 +3,10 @@ import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 
 export const getStaticPaths = async () => {
-  return (await getCollection('changelogs'))
-    .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
-    .map((entry) => ({
-      params: { slug: entry.data.version },
-      props: { entry }
-    }));
+  return (await getCollection('changelogs')).map((entry) => ({
+    params: { slug: entry.data.version },
+    props: { entry }
+  }));
 };
 
 const { entry } = Astro.props;
@@ -22,5 +20,16 @@ const { Content } = await entry.render();
 >
   <h1>Version {entry.data.version} Changes</h1>
   <Content />
-  <a href={`https://github.com/eludris/eludris/pull/${entry.data.pr}`}>Update PR</a>
+  <div style="display: flex; justify-content: center;">
+    <table style="width: auto;">
+      <thead>
+        <th style="border-bottom-left-radius: 5px; border-bottom-width: 2px;">Update PR</th>
+        <th style="border-bottom-right-radius: 5px; border-bottom-width: 2px;"
+          ><a href={`https://github.com/eludris/eludris/pull/${entry.data.pr}`}
+            >eludris#{entry.data.pr}</a
+          ></th
+        >
+      </thead>
+    </table>
+  </div>
 </Base>

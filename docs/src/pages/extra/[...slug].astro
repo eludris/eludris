@@ -3,12 +3,10 @@ import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 
 export const getStaticPaths = async () => {
-  return (await getCollection('extra'))
-    .sort((a, b) => a.data.order - b.data.order)
-    .map((entry) => ({
-      params: { slug: entry.slug },
-      props: { entry }
-    }));
+  return (await getCollection('extra')).map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry }
+  }));
 };
 
 const { entry } = Astro.props;

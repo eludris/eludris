@@ -5,7 +5,6 @@ import { getCollection } from 'astro:content';
 export const getStaticPaths = async () => {
   return (await getCollection('docs'))
     .filter((entry) => entry.data.order != 0)
-    .sort((a, b) => a.data.order - b.data.order)
     .map((entry) => ({
       params: { slug: entry.slug },
       props: { entry }
