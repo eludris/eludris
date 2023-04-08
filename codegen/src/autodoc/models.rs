@@ -6,7 +6,7 @@ pub struct ItemInfo {
     pub category: String,
     pub doc: Option<String>,
     pub package: String,
-    pub info: Item,
+    pub item: Item,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -62,7 +62,7 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
                     doc,
                     category,
                     package: package.clone(),
-                    info: handle_fn::handle_fn(&attrs, item)?,
+                    item: handle_fn::handle_fn(&attrs, item)?,
                 }
             }
             Item::Enum(item) => {
@@ -73,7 +73,7 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
                     doc,
                     category,
                     package: package.clone(),
-                    info: handle_enum::handle_enum(&attrs, item)?,
+                    item: handle_enum::handle_enum(&attrs, item)?,
                 }
             }
             Item::Struct(item) => {
@@ -84,7 +84,7 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
                     doc,
                     category,
                     package: package.clone(),
-                    info: handle_struct::handle_struct(&attrs, item)?,
+                    item: handle_struct::handle_struct(&attrs, item)?,
                 }
             }
             item => return Err(Error::new(item.span(), "Unsupported item for autodoc")),
