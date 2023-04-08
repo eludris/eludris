@@ -15,8 +15,6 @@ export interface FieldInfo {
 
 export interface StructInfo {
   type: ItemType.Struct;
-  name: string;
-  doc: string | null;
   fields: FieldInfo[];
 }
 
@@ -50,8 +48,6 @@ export type EnumVariant = UnitEnumVariant | TupleEnumVariant | StructEnumVariant
 
 export interface EnumInfo {
   type: ItemType.Enum;
-  name: string;
-  doc: string | null;
   tag: string | null;
   untagged: boolean;
   content: string | null;
@@ -71,10 +67,8 @@ export interface QueryParamInfo {
 
 export interface RouteInfo {
   type: ItemType.Route;
-  name: string;
   method: string;
   route: string;
-  doc: string | null;
   path_params: PathParamInfo[];
   query_params: QueryParamInfo[];
   body_type: string | null;
@@ -82,4 +76,12 @@ export interface RouteInfo {
   guards: string[];
 }
 
-export type ItemInfo = StructInfo | EnumInfo | RouteInfo;
+export type Item = StructInfo | EnumInfo | RouteInfo;
+
+export interface ItemInfo {
+  name: string;
+  doc: string;
+  category: string;
+  package: string;
+  item: Item;
+}

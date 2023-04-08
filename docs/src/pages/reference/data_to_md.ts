@@ -11,27 +11,26 @@ import {
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
-export default (item: ItemInfo): string => {
-  let content = `# ${uncodeName(item.name)}`;
+export default (info: ItemInfo): string => {
+  let content = `# ${uncodeName(info.name)}`;
   let example = '';
-  if (item.type == ItemType.Route) {
-    content += `\n\n<span class="method">${
-      item.method
-    }</span><span class="route">${item.route.replace(
-      /<.+?>/gm,
-      '<span class="special-segment">$&</span>'
-    )}</span>`;
+  if (info.item.type == ItemType.Route) {
+    content += `\n\n<span class="method">${info.item.method
+      }</span><span class="route">${info.item.route.replace(
+        /<.+?>/gm,
+        '<span class="special-segment">$&</span>'
+      )}</span>`;
   }
-  if (item.doc) {
-    const parts = item.doc.split('-----');
+  if (info.doc) {
+    const parts = info.doc.split('-----');
     let doc = parts.shift();
     example = parts.join('-----');
     content += `\n\n${displayDoc(doc)}`;
   }
-  if (item.type == ItemType.Struct) {
-    content += `\n\n${displayFields(item.fields)}`;
-  } else if (item.type == ItemType.Enum) {
-    item.variants.forEach((variant) => {
+  if (info.item.type == ItemType.Struct) {
+    content += `\n\n${displayFields(info.item.fields)}`;
+  } else if (info.item.type == ItemType.Enum) {
+    info.item.variants.forEach((variant) => {
       content += `\n## ${uncodeName(variant.name)}`;
       let variant_example = '';
       if (variant.doc) {
@@ -40,13 +39,13 @@ export default (item: ItemInfo): string => {
         variant_example = parts.join('-----');
         content += `\n\n${displayDoc(doc)}`;
       }
-      content += `\n${displayVariant(variant, item)}`;
+      content += `\n${displayVariant(variant, <EnumInfo>info.item)}`;
       if (variant_example) {
         content += `\n${example}`;
       }
     });
   } else {
-    content += `\n\n${displayRoute(item)}`;
+    content += `\n\n${displayRoute(info.item)}`;
   }
   if (example) {
     content += `\n${example}`;
@@ -61,6 +60,7 @@ const briefItem = (item: StructInfo | EnumInfo): string => {
     }
     return displayFields(item.fields);
   } else {
+    console.log(item);
     let content = '';
     item.variants.forEach((variant) => {
       content += `\n- ${uncodeName(variant.name)}\n\n${variant.doc ?? ''}`;
@@ -92,9 +92,8 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields;
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
-    field.nullable ? '?' : ''
-  }|${displayDoc(field.doc).replace(/(\S)\n(\S)/gm, '$1 $2')}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
+    }|${displayDoc(field.doc).replace(/(\S)\n(\S)/gm, '$1 $2')}|`;
 };
 
 const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
@@ -123,7 +122,7 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
       if (innerType) {
         let innerData: StructInfo | EnumInfo = JSON.parse(
           readFileSync(`public/autodoc/${innerType}`).toString()
-        );
+        ).item;
         content += `\n\n${briefItem(innerData)}`;
       }
     }
@@ -170,7 +169,7 @@ const displayRoute = (item: RouteInfo): string => {
     if (innerType) {
       let innerData: StructInfo | EnumInfo = JSON.parse(
         readFileSync(`public/autodoc/${innerType}`).toString()
-      );
+      ).item;
       content += `\n\n${briefItem(innerData)}`;
     }
   }
@@ -185,7 +184,7 @@ const displayRoute = (item: RouteInfo): string => {
     if (innerType) {
       let innerData: StructInfo | EnumInfo = JSON.parse(
         readFileSync(`public/autodoc/${innerType}`).toString()
-      );
+      ).item;
       content += `\n\n${briefItem(innerData)}`;
     }
   }
@@ -195,10 +194,9 @@ const displayRoute = (item: RouteInfo): string => {
 const displayDoc = (doc: string | null | undefined): string => {
   return doc
     ? doc.replace(/\[`(.+)`\]/gm, (_, p1) => {
-        return `[${p1}](/reference/${
-          AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${p1}.json`))?.split('.')[0]
+      return `[${p1}](/reference/${AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${p1}.json`))?.split('.')[0]
         })`;
-      })
+    })
     : '';
 };
 
