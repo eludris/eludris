@@ -46,18 +46,20 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
         PathArguments::None => segment.ident.to_string(),
         PathArguments::AngleBracketed(args) => {
             let mut arg_strings = vec![];
-            for arg in &args.args {
-                if let GenericArgument::Type(Type::Path(ty)) = arg {
+
+            args.args.iter().try_for_each(|a| {
+                if let GenericArgument::Type(Type::Path(ty)) = a {
                     arg_strings.push(display_path_segment(ty.path.segments.last().ok_or_else(
                         || Error::new(ty.path.span(), "Cannot extract type from field"),
-                    )?)?)
+                    )?)?);
+                    Ok(())
                 } else {
-                    return Err(Error::new(
-                        arg.span(),
-                        "Cannot generated docummentation for non-type generics",
-                    ));
+                    Err(Error::new(
+                        a.span(),
+                        "Cannot generated documentation for non-type generics",
+                    ))
                 }
-            }
+            })?;
 
             format!("{}<{}>", segment.ident, arg_strings.join(", "))
         }
@@ -90,6 +92,8 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         let mut flattened = false;
         let mut nullable = false;
         let mut ommitable = false;
+
+        // I'm sorry, Torvalds
         for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
             if let Ok(Meta::List(meta)) = attr.parse_meta() {
                 for meta in meta.nested {
