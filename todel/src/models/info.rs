@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /// The instance info payload
 #[cfg(not(feature = "logic"))]
-#[autodoc]
+#[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo {
     pub instance_name: String,

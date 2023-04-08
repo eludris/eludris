@@ -8,7 +8,7 @@ use todel::http::ClientIP;
 use todel::models::{ErrorResponse, ErrorResponseData, Message, Payload, ValidationError};
 use todel::Conf;
 
-#[autodoc("/messages")]
+#[autodoc("/messages", category = "Messaging")]
 #[post("/", data = "<message>")]
 pub async fn create_message(
     message: Json<Message>,

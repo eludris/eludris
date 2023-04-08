@@ -13,7 +13,7 @@ use crate::{
     Cache, VERSION,
 }; // poggers
 
-#[autodoc]
+#[autodoc(category = "Instance")]
 #[get("/?<rate_limits>")]
 pub async fn get_instance_info(
     rate_limits: bool,
