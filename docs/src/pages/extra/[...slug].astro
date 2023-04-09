@@ -13,7 +13,11 @@ const { entry } = Astro.props;
 const { Content } = await entry.render();
 ---
 
-<Base title={entry.data.title} description={entry.data.description} slug={entry.slug}>
+<Base
+  title={`${entry.data.title} - Eludris Docs`}
+  description={entry.data.description}
+  slug={entry.slug}
+>
   <h1>{entry.data.title}</h1>
   <Content />
 </Base>
