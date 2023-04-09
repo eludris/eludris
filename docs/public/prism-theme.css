@@ -11,7 +11,6 @@
 :where(:root.dark pre[class*='language-']) {
   background: #27212e;
   color: #ffffff;
-  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
   font-size: 1em;
   direction: ltr;
   text-align: left;
@@ -148,7 +147,6 @@
 :where(:root:not(.dark) pre[class*='language-']) {
   background: hsl(230, 1%, 98%);
   color: hsl(230, 8%, 24%);
-  font-family: 'Fira Code', 'Fira Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
   direction: ltr;
   text-align: left;
   white-space: pre;

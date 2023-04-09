@@ -1,5 +1,5 @@
 ---
-title: 'What The Heck is an Eludris?'
+title: 'What the Heck is an Eludris?'
 description: 'Ever wondered what the heck an Eludris was? This page is just the thing for you then!'
 order: 0
 ---
