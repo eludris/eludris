@@ -67,6 +67,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
     <h4>API reference</h4>
     {
       Object.entries(entries)
+        .sort()
         .filter(([_, children]) => children.models.length + children.routes.length)
         .map(([crate, children]) => (
           <li>
@@ -74,7 +75,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
               <summary>{crate[0].toUpperCase() + crate.substring(1)}</summary>
               <ul>
                 {children.models.length > 0 &&
-                  children.models.map((child) => (
+                  children.models.sort().map((child) => (
                     <li class="page">
                       <a
                         href={`/reference/${child.slug}`}
@@ -85,7 +86,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
                     </li>
                   ))}
                 {children.routes.length > 0 &&
-                  children.routes.map((child) => (
+                  children.routes.sort().map((child) => (
                     <li class="page">
                       <a
                         href={`/reference/${child.slug}`}
