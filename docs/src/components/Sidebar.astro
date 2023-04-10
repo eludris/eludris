@@ -152,7 +152,9 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
     .then((res) => res.json())
     .then((res) => res.stargazers_count)
     .then((stars) => {
-      document.getElementById('star-text')!.innerText = `${stars} stars`;
+      if (stars) {
+        document.getElementById('star-text')!.innerText = `${stars} stars`;
+      }
     });
 </script>
 
