@@ -140,6 +140,24 @@ import { Icon } from 'astro-icon';
     }
   });
 
+  document.addEventListener('keydown', (e) => {
+    if (e.key == '/') {
+      if (!searchData) {
+        fetch('/search.json')
+          .then((r) => r.json())
+          .then((r) => (searchData = r));
+      }
+      if (searchBar!.style.display == 'none') {
+        searchBar!.style.display = 'block';
+        header!.style.borderBottomWidth = '0px';
+        searchInput!.focus();
+      } else {
+        searchBar!.style.display = 'none';
+      }
+      e.preventDefault();
+    }
+  });
+
   searchInput!.addEventListener('input', () => {
     if (searchData) {
       if (!searchInput.value.length) {
