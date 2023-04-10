@@ -13,7 +13,7 @@ order: 0
   <a style="border: unset;" href="https://twitter.com/eludris"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Twitter&logo=twitter&color=15202b&labelColor=15202b" /></a>
 </div>
 
-# What the heck is an Eludris
+# What the Heck is an Eludris
 
 Eludris is a [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software)
 [federated](<https://en.wikipedia.org/wiki/Federation_(information_technology)>),
@@ -42,12 +42,12 @@ While you're also at it consider joining our [Discord Server](https://discord.gg
 since that is currently mainly where we hang out, joke around and work on Eludris
 and Eludris related stuff.
 
-## Reading The Docs
+## Reading the Docs
 
 The documentation is straight forward, however here are some additional clarifications
 on some of the points where you can get confused.
 
-### Omittability And Nullability
+### Omittability and Nullability
 
 While reading the docs you might notice the use of the question marks next to field
 names or types, here's an example of that.
