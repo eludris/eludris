@@ -19,6 +19,7 @@ import { Icon } from 'astro-icon';
 </div>
 <div id="search-bar" style="display: none;">
   <input type="text" id="search-input" placeholder="Search For Something" />
+  <span id="search-stats"></span>
   <div id="search-results"></div>
 </div>
 
@@ -75,6 +76,7 @@ import { Icon } from 'astro-icon';
   const search = document.getElementById('search');
   const searchBar = document.getElementById('search-bar');
   const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const searchStats = document.getElementById('search-stats');
   const searchResults = document.getElementById('search-results');
   let searchData: [{ text: string; route: string; content: string }] | null = null;
   let lastScroll = 0;
@@ -140,8 +142,10 @@ import { Icon } from 'astro-icon';
     if (searchData) {
       if (!searchInput.value.length) {
         searchResults!.replaceChildren();
+        searchStats!.style.display = 'none';
         return;
       }
+      searchStats!.style.display = 'inline-block';
       searchResults!.replaceChildren(
         ...searchData
           .filter(
@@ -149,7 +153,6 @@ import { Icon } from 'astro-icon';
               s.content.toLowerCase().includes(searchInput.value.toLowerCase()) ||
               s.text.toLowerCase().includes(searchInput.value.toLowerCase())
           )
-          .slice(0, 10)
           .map((s) => {
             let anchor = document.createElement('a');
             anchor.classList.add('search-result');
@@ -172,6 +175,7 @@ import { Icon } from 'astro-icon';
             return anchor;
           })
       );
+      searchStats!.innerText = `found ${searchResults!.children.length} results`;
     }
   });
 
@@ -285,6 +289,15 @@ import { Icon } from 'astro-icon';
     border-bottom-right-radius: 10px;
     padding: 10px;
     box-sizing: border-box;
+    flex-shrink: 0; /* wtf why */
+    overflow-y: auto;
+    max-height: 90%;
+  }
+
+  #search-stats {
+    display: none;
+    text-align: center;
+    width: 100%;
   }
 
   :global(.search-result) {
