@@ -14,7 +14,7 @@ examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `E
 all you have to do is rename them to their respective names and add whatever configuration
 is required in `Eludris.toml`.
 
-## `.env`
+## .env
 
 Here's the example `.env` file found in the repository.
 
@@ -35,7 +35,7 @@ PANDEMONIUM_PORT = 7160
 EFFIS_PORT = 7161
 ```
 
-## `Eludris.toml`
+## Eludris.toml
 
 Here's the example `Eludris.toml` file found in the repository.
 

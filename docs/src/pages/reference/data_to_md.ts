@@ -88,7 +88,7 @@ const displayField = (field: FieldInfo): string => {
     let innerData: StructInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
     let fields = '';
     innerData.fields.forEach((field) => {
-      fields += `\n\n${displayField(field)}`;
+      fields += `\n${displayField(field)}`;
     });
     return fields;
   }
@@ -221,5 +221,5 @@ const displayType = (type: string): string => {
 const uncodeName = (name: string): string => {
   return name
     .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
-    .replace(/[A-Z]/gm, ' $&');
+    .replace(/[A-Z]/gm, ' $&').trim();
 };

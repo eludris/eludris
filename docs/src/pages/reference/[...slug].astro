@@ -14,7 +14,8 @@ export const getStaticPaths = () => {
     const name = slug
       .split('/')[1]
       .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
-      .replace(/[A-Z]/gm, ' $&');
+      .replace(/[A-Z]/gm, ' $&')
+      .trim();
     const data = JSON.parse(readFileSync(`public/autodoc/${slug}.json`).toString());
     paths.push({ params: { slug }, props: { slug, name, data } });
   });

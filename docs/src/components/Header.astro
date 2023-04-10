@@ -13,6 +13,13 @@ import { Icon } from 'astro-icon';
   <a href="https://github.com/eludris/eludris">
     <Icon name="akar-icons:github-fill" width="30px" />
   </a>
+  <button id="search">
+    <Icon name="mdi:search" width="30px" />
+  </button>
+</div>
+<div id="search-bar" style="display: none;">
+  <input type="text" id="search-input" placeholder="Search For Something" />
+  <div id="search-results"></div>
 </div>
 
 <script is:inline>
@@ -87,10 +94,15 @@ import { Icon } from 'astro-icon';
 <script>
   const slot = document.getElementById('slot-wrapper');
   const header = document.getElementById('header');
+  const search = document.getElementById('search');
+  const searchBar = document.getElementById('search-bar');
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const searchResults = document.getElementById('search-results');
+  let searchData: [{ text: string; route: string; content: string }] | null = null;
   let lastScroll = 0;
 
   slot!.addEventListener('scroll', () => {
-    if (slot!.scrollTop > 0) {
+    if (slot!.scrollTop > 0 && searchBar!.style.display == 'none') {
       header!.style.borderBottomWidth = '1px';
     } else {
       header!.style.borderBottomWidth = '0px';
@@ -110,6 +122,60 @@ import { Icon } from 'astro-icon';
         header!.classList.remove('header-hidden');
       }
       lastScroll = slot!.scrollTop;
+    }
+  });
+
+  search!.addEventListener('click', () => {
+    if (!searchData) {
+      fetch('/search.json')
+        .then((r) => r.json())
+        .then((r) => (searchData = r));
+    }
+    if (searchBar!.style.display == 'none') {
+      searchBar!.style.display = 'block';
+      header!.style.borderBottomWidth = '0px';
+      searchInput!.focus();
+    } else {
+      searchBar!.style.display = 'none';
+    }
+  });
+
+  searchInput!.addEventListener('input', () => {
+    if (searchData) {
+      if (!searchInput.value.length) {
+        searchResults!.replaceChildren();
+        return;
+      }
+      searchResults!.replaceChildren(
+        ...searchData
+          .filter(
+            (s) =>
+              s.content.toLowerCase().includes(searchInput.value.toLowerCase()) ||
+              s.text.toLowerCase().includes(searchInput.value.toLowerCase())
+          )
+          .slice(0, 10)
+          .map((s) => {
+            let anchor = document.createElement('a');
+            anchor.classList.add('search-result');
+            anchor.href = s.route;
+            let header = document.createElement('h3');
+            header.innerHTML = s.text.replace(
+              new RegExp(searchInput.value, 'gmi'),
+              '<span style="background-color: var(--purple-600)">$&</span>'
+            );
+            anchor.appendChild(header);
+            let span = document.createElement('span');
+            let index = s.content.toLowerCase().indexOf(searchInput.value.toLowerCase());
+            const excerptStart = Math.max(0, index - 200);
+            let excerpt = s.content.substring(excerptStart, Math.max(excerptStart + 200, 400));
+            span.innerHTML = excerpt.replace(
+              new RegExp(searchInput.value, 'gmi'),
+              '<span style="background-color: var(--purple-600)">$&</span>'
+            );
+            anchor.appendChild(span);
+            return anchor;
+          })
+      );
     }
   });
 
@@ -192,6 +258,48 @@ import { Icon } from 'astro-icon';
   #theme-button-wrapper > [astro-icon] {
     position: absolute;
     transition: transform ease-in-out 250ms, opacity ease-in-out 250ms, color ease-in-out 125ms;
+  }
+
+  #search {
+    border: unset;
+    background-color: inherit;
+    width: fit-content;
+    height: fit-content;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  #search-input {
+    width: calc(100% - 30px);
+    margin: 10px 15px 10px 15px;
+    border: unset;
+    background-color: var(--gray-300);
+    outline: none;
+    color: var(--color-text-100);
+    border-radius: 5px;
+    font-size: 18px;
+  }
+
+  #search-bar {
+    background-color: var(--gray-200);
+    border: 2px solid var(--gray-300);
+    border-top: unset;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  :global(.search-result) {
+    color: var(--color-text-200);
+    border: unset;
+    cursor: pointer;
+    transition: color ease-in-out 125ms;
+  }
+
+  :global(.search-result:hover) {
+    color: var(--color-text-100);
   }
 
   :where(:root.dark #sun) {

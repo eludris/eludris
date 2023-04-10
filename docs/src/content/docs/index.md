@@ -45,7 +45,7 @@ and Eludris related stuff.
 ## Reading The Docs
 
 The documentation is straight forward, however here are some additional clarifications
-oh some of the points where you can get confused.
+on some of the points where you can get confused.
 
 ### Omittability And Nullability
 
