@@ -38,7 +38,7 @@ jobs:
         run: cd docs && npm i && npm run build
 
       - name: Update Search Index
-        run: mv public/search.json dist/search.json
+        run: mv docs/public/search.json docs/dist/search.json
 
       - name: Publish
         uses: cloudflare/pages-action@1
