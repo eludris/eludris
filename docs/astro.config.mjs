@@ -86,9 +86,7 @@ const remarkGenerateSearchIndex = () => {
       .filter((s) => s.text)
       .map((s) => ({ route: `${baseRoute}${s.id ? '#' + s.id : ''} `, ...s }));
     const data = JSON.parse(readFileSync('public/search.json'));
-    console.log(data)
     writeFileSync('public/search.json', JSON.stringify([...data, ...sections.reverse()]));
-    console.log(';;;;;;;;;;;;;;;;;;;;;;;;')
   };
 };
 
