@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 
 export const getStaticPaths = async () => {
   return (await getCollection('changelogs')).map((entry) => ({
-    params: { slug: entry.data.version },
+    params: { slug: entry.data.version.replace(/\./g, '-') },
     props: { entry }
   }));
 };

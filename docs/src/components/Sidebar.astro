@@ -126,7 +126,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
             changelogPages.map((entry) => (
               <li class="page">
                 <a
-                  href={`/changelogs/${entry.data.version}`}
+                  href={`/changelogs/${entry.data.version.replace(/\./g, '-')}`}
                   class={slug == entry.data.version ? 'active' : ''}
                 >
                   Version {entry.data.version}
