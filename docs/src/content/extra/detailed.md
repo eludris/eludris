@@ -1,6 +1,6 @@
 ---
-title: "Eludris Detailed"
-description: "A detailed rundown and initial spec of how Eludris is to eventually function"
+title: 'Eludris Detailed'
+description: 'A detailed rundown and initial spec of how Eludris is to eventually function'
 order: 0
 ---
 

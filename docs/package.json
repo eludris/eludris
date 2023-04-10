@@ -3,11 +3,11 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev": "echo '[]' > public/search.json && astro dev",
+    "start": "echo '[]' > public/search.json && astro dev",
+    "build": "echo '[]' > public/search.json && astro build",
+    "preview": "echo '[]' > public/search.json && astro preview",
+    "astro": "echo '[]' > public/search.json && astro"
   },
   "dependencies": {
     "@astrojs/markdown-component": "^1.0.3",

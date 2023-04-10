@@ -15,11 +15,12 @@ export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
-    content += `\n\n<span class="method">${info.item.method
-      }</span><span class="route">${info.item.route.replace(
-        /<.+?>/gm,
-        '<span class="special-segment">$&</span>'
-      )}</span>`;
+    content += `\n\n<span class="method">${
+      info.item.method
+    }</span><span class="route">${info.item.route.replace(
+      /<.+?>/gm,
+      '<span class="special-segment">$&</span>'
+    )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -92,8 +93,9 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields;
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
-    }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
+    field.nullable ? '?' : ''
+  }|${displayInlineDoc(field.doc)}|`;
 };
 
 const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
@@ -196,7 +198,9 @@ const displayDoc = (doc: string | null | undefined): string => {
 };
 
 const displayInlineDoc = (doc: string | null | undefined): string => {
-  return displayDoc(doc).replace(/\n{2,}/gm, 'nbsp;').replace(/(\S)\n(\S)/gm, '$1 $2');
+  return displayDoc(doc)
+    .replace(/\n{2,}/gm, 'nbsp;')
+    .replace(/(\S)\n(\S)/gm, '$1 $2');
 };
 
 const switchCase = (content: string, new_case: string | null): string => {
@@ -221,5 +225,6 @@ const displayType = (type: string): string => {
 const uncodeName = (name: string): string => {
   return name
     .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
-    .replace(/[A-Z]/gm, ' $&').trim();
+    .replace(/[A-Z]/gm, ' $&')
+    .trim();
 };
