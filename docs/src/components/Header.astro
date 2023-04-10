@@ -67,28 +67,6 @@ import { Icon } from 'astro-icon';
     }
     localStorage.setItem('sidebarState', sidebarState);
   });
-
-  let touchX = 0;
-
-  document.addEventListener('touchstart', (e) => {
-    touchX = e.changedTouches[0].screenX;
-  });
-
-  document.addEventListener('touchend', (e) => {
-    if (e.changedTouches[0].screenX > touchX + 10 && sidebar.classList.contains('sidebar-hide')) {
-      sidebar.classList.remove('sidebar-hide');
-      content.style.removeProperty('--sidebar-width');
-      sidebarState = 'out';
-    } else if (
-      e.changedTouches[0].screenX < touchX - 10 &&
-      !sidebar.classList.contains('sidebar-hide')
-    ) {
-      sidebar.classList.add('sidebar-hide');
-      content.style.setProperty('--sidebar-width', '0');
-      sidebarState = 'in';
-    }
-    localStorage.setItem('sidebarState', sidebarState);
-  });
 </script>
 
 <script>
