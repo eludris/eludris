@@ -32,5 +32,5 @@ ubyte = { version = "0.10.3", features = ["serde"] }
 url = "2.2.2"
 
 [features]
-logic = ["dep:toml", "dep:lazy_static", "dep:anyhow", "dep:sqlx", "dep:log", "dep:tokio", "dep:tree_magic_mini"]
-http = ["logic", "dep:rocket", "dep:sha256", "dep:imagesize", "dep:ffprobe", "dep:image"]
+logic = ["dep:toml", "dep:lazy_static", "dep:anyhow", "dep:sqlx", "dep:log", "dep:tokio"]
+http = ["logic", "dep:rocket", "dep:tree_magic_mini", "dep:sha256", "dep:imagesize", "dep:ffprobe", "dep:image"]
