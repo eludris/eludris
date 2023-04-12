@@ -42,5 +42,9 @@ pub async fn get_instance_info(
 }
 
 pub fn get_routes() -> Vec<Route> {
+<<<<<<< HEAD
     routes![get_instance_info]
+=======
+    routes![index]
+>>>>>>> next
 }
