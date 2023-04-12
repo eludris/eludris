@@ -106,7 +106,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
             let param_type = params.remove(&name).ok_or_else(|| {
                 Error::new(
                     Span::call_site().into(),
-                    format!("Cannot find type of query param{}", name),
+                    format!("Cannot find type of query param {}", name),
                 )
             })?;
             query_params.push(ParamInfo { param_type, name });
