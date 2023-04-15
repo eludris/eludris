@@ -23,8 +23,8 @@ use crate::utils::deserialize_message;
 
 /// The duration it takes for a connection to be inactive in for it to be regarded as zombified and
 /// disconnected.
-const TIMEOUT_DURATION: Duration = Duration::from_secs(46); // 45 seconds + some time to account
-                                                            // for jitter
+const TIMEOUT_DURATION: Duration = Duration::from_secs(48); // 45 seconds + some time to account
+                                                            // for latency
 /// A simple function that check's if a client's last ping was over TIMEOUT_DURATION seconds ago and
 /// closes the gateway connection if so.
 async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
