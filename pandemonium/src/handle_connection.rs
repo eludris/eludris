@@ -87,12 +87,12 @@ pub async fn handle_connection(
     );
     let mut rate_limited = false;
     if let Err(wait) = rate_limiter.process_rate_limit().await {
-        let res = socket
+        if let Err(err) = socket
             .send(WebSocketMessage::Text(
                 serde_json::to_string(&ServerPayload::RateLimit { wait }).unwrap(),
             ))
-            .await;
-        if let Err(err) = res {
+            .await
+        {
             log::error!("Could not send gateway RateLimit payload: {}", err);
         }
         rate_limited = true;
@@ -114,14 +114,14 @@ pub async fn handle_connection(
                     );
                     break;
                 } else {
-                    let res = tx
+                    if let Err(err) = tx
                         .lock()
                         .await
                         .send(WebSocketMessage::Text(
                             serde_json::to_string(&ServerPayload::RateLimit { wait }).unwrap(),
                         ))
-                        .await;
-                    if let Err(err) = res {
+                        .await
+                    {
                         log::error!("Could not send gateway RateLimit payload: {}", err);
                     }
                     rate_limited = true;
@@ -136,14 +136,14 @@ pub async fn handle_connection(
                             Ok(ClientPayload::Ping) => {
                                 let mut last_ping = last_ping.lock().await;
                                 *last_ping = Instant::now();
-                                let res = tx
+                                if let Err(err) = tx
                                     .lock()
                                     .await
                                     .send(WebSocketMessage::Text(
                                         serde_json::to_string(&ServerPayload::Pong).unwrap(),
                                     ))
-                                    .await;
-                                if let Err(err) = res {
+                                    .await
+                                {
                                     log::error!("Could not send gateway PONG payload: {}", err);
                                 }
                             }
