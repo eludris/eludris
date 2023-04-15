@@ -12,7 +12,7 @@ pub enum ServerPayload {
     ///
     /// -----
     ///
-    /// ## Example
+    /// ### Example
     ///
     /// ```json
     /// {
@@ -24,7 +24,7 @@ pub enum ServerPayload {
     ///
     /// -----
     ///
-    /// ## Example
+    /// ### Example
     ///
     /// ```json
     /// {
@@ -49,10 +49,12 @@ pub enum ClientPayload {
     /// The interval where these pings are supposed to be sent can be found in the `HELLO` payload
     /// of the [`ServerPayload`] enum.
     ///
+    /// -----
+    ///
     /// > **Note**
     /// >
-    /// > You should send your first ping in a connection after `RAND * heartbeat_interval` seconds, RAND being a random
-    /// floating number between 0 and 1
+    /// > You are supposed to send your first ping in a connection after `RAND * heartbeat_interval` seconds,
+    /// `RAND` being a random floating number between 0 and 1.
     /// >
     /// > This is done to avoid immediately overloading Pandemonium by connecting if it ever has to go down.
     Ping,
