@@ -20,6 +20,24 @@ pub enum ServerPayload {
     /// }
     /// ```
     Pong,
+    /// The event sent when the client gets gateway ratelimited.
+    ///
+    /// The client is supposed to wait `wait` milliseconds before sending any more events,
+    /// otherwise they are disconnected.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "RATE_LIMIT",
+    ///   "d": {
+    ///     "wait": 1010 // 1.01 seconds
+    ///   }
+    /// }
+    /// ```
+    RateLimit { wait: u64 },
     /// The event sent when the client receives a [`Message`]
     ///
     /// -----
