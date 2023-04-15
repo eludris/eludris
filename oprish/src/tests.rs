@@ -4,7 +4,7 @@ mod tests {
     use deadpool_redis::Connection;
     use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
     use todel::{
-        models::{InstanceInfo, InstanceRateLimits, Message, Payload},
+        models::{InstanceInfo, InstanceRateLimits, Message, ServerPayload},
         Conf,
     };
 
@@ -66,7 +66,7 @@ mod tests {
             content: "HeWoo there".to_string(),
         };
         let message_str = serde_json::to_string(&message).unwrap();
-        let payload = serde_json::to_string(&Payload::MessageCreate(message)).unwrap();
+        let payload = serde_json::to_string(&ServerPayload::MessageCreate(message)).unwrap();
 
         let pool = client.rocket().state::<Cache>().unwrap();
 
