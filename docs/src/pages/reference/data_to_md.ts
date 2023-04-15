@@ -15,12 +15,11 @@ export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
-    content += `\n\n<span class="method">${
-      info.item.method
-    }</span><span class="route">${info.item.route.replace(
-      /<.+?>/gm,
-      '<span class="special-segment">$&</span>'
-    )}</span>`;
+    content += `\n\n<span class="method">${info.item.method
+      }</span><span class="route">${info.item.route.replace(
+        /<.+?>/gm,
+        '<span class="special-segment">$&</span>'
+      )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -42,7 +41,7 @@ export default (info: ItemInfo): string => {
       }
       content += `\n${displayVariant(variant, <EnumInfo>info.item)}`;
       if (variant_example) {
-        content += `\n${example}`;
+        content += `\n${variant_example}`;
       }
     });
   } else {
@@ -93,9 +92,8 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields;
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
-    field.nullable ? '?' : ''
-  }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
+    }|${displayInlineDoc(field.doc)}|`;
 };
 
 const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
