@@ -7,7 +7,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use todel::models::Payload;
+use todel::models::{ClientPayload, ServerPayload};
 use todel::Conf;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -47,7 +47,7 @@ pub async fn handle_connection(
 ) {
     let mut rl_address = IpAddr::from_str("127.0.0.1").unwrap();
 
-    let socket = match accept_hdr_async(stream, |req: &Request, resp: Response| {
+    let mut socket = match accept_hdr_async(stream, |req: &Request, resp: Response| {
         let headers = req.headers();
 
         if let Some(ip) = headers.get("X-Real-Ip") {
@@ -85,12 +85,17 @@ pub async fn handle_connection(
         Duration::from_secs(conf.pandemonium.rate_limit.reset_after as u64),
         conf.pandemonium.rate_limit.limit,
     );
-    if let Err(()) = rate_limiter.process_rate_limit().await {
-        log::info!(
-            "Disconnected a client: {}. Reason: Client is already rate limited",
-            rl_address
-        );
-        return;
+    let mut rate_limited = false;
+    if let Err(wait) = rate_limiter.process_rate_limit().await {
+        let res = socket
+            .send(WebSocketMessage::Text(
+                serde_json::to_string(&ServerPayload::RateLimit { wait }).unwrap(),
+            ))
+            .await;
+        if let Err(err) = res {
+            log::error!("Could not send gateway RateLimit payload: {}", err);
+        }
+        rate_limited = true;
     }
 
     let (tx, mut rx) = socket.split();
@@ -101,29 +106,45 @@ pub async fn handle_connection(
     let handle_rx = async {
         while let Some(msg) = rx.next().await {
             log::trace!("New gateway message:\n{:#?}", msg);
-            if rate_limiter.process_rate_limit().await.is_err() {
-                log::info!(
-                    "Disconnected a client: {}, reason: Hit rate_limit",
-                    rl_address
-                );
-                break;
+            if let Err(wait) = rate_limiter.process_rate_limit().await {
+                if rate_limited {
+                    log::info!(
+                        "Disconnected a client: {}, reason: Hit rate_limit",
+                        rl_address
+                    );
+                    break;
+                } else {
+                    let res = tx
+                        .lock()
+                        .await
+                        .send(WebSocketMessage::Text(
+                            serde_json::to_string(&ServerPayload::RateLimit { wait }).unwrap(),
+                        ))
+                        .await;
+                    if let Err(err) = res {
+                        log::error!("Could not send gateway RateLimit payload: {}", err);
+                    }
+                    rate_limited = true;
+                }
+            } else if rate_limited {
+                rate_limited = false;
             }
             match msg {
                 Ok(data) => match data {
                     WebSocketMessage::Text(message) => {
-                        match serde_json::from_str::<Payload>(&message) {
-                            Ok(Payload::Ping) => {
+                        match serde_json::from_str::<ClientPayload>(&message) {
+                            Ok(ClientPayload::Ping) => {
                                 let mut last_ping = last_ping.lock().await;
                                 *last_ping = Instant::now();
                                 let res = tx
                                     .lock()
                                     .await
                                     .send(WebSocketMessage::Text(
-                                        serde_json::to_string(&Payload::Pong).unwrap(),
+                                        serde_json::to_string(&ServerPayload::Pong).unwrap(),
                                     ))
                                     .await;
                                 if let Err(err) = res {
-                                    log::error!("Could not send gateway PONG frame: {}", err);
+                                    log::error!("Could not send gateway PONG payload: {}", err);
                                 }
                             }
                             _ => log::debug!("Unknown gateway payload: {}", message),
