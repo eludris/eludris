@@ -47,7 +47,7 @@ pub async fn handle_connection(
 ) {
     let mut rl_address = IpAddr::from_str("127.0.0.1").unwrap();
 
-    let mut socket = match accept_hdr_async(stream, |req: &Request, resp: Response| {
+    let socket = match accept_hdr_async(stream, |req: &Request, resp: Response| {
         let headers = req.headers();
 
         if let Some(ip) = headers.get("X-Real-Ip") {
@@ -79,6 +79,10 @@ pub async fn handle_connection(
         }
     };
 
+    let (tx, mut rx) = socket.split();
+    let tx = Arc::new(Mutex::new(tx));
+    let last_ping = Arc::new(Mutex::new(Instant::now()));
+
     let mut rate_limiter = RateLimiter::new(
         cache,
         rl_address,
@@ -87,21 +91,9 @@ pub async fn handle_connection(
     );
     let mut rate_limited = false;
     if let Err(wait) = rate_limiter.process_rate_limit().await {
-        if let Err(err) = socket
-            .send(WebSocketMessage::Text(
-                serde_json::to_string(&ServerPayload::RateLimit { wait }).unwrap(),
-            ))
-            .await
-        {
-            log::error!("Could not send gateway RateLimit payload: {}", err);
-        }
+        send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
         rate_limited = true;
     }
-
-    let (tx, mut rx) = socket.split();
-    let tx = Arc::new(Mutex::new(tx));
-
-    let last_ping = Arc::new(Mutex::new(Instant::now()));
 
     let handle_rx = async {
         while let Some(msg) = rx.next().await {
@@ -114,16 +106,7 @@ pub async fn handle_connection(
                     );
                     break;
                 } else {
-                    if let Err(err) = tx
-                        .lock()
-                        .await
-                        .send(WebSocketMessage::Text(
-                            serde_json::to_string(&ServerPayload::RateLimit { wait }).unwrap(),
-                        ))
-                        .await
-                    {
-                        log::error!("Could not send gateway RateLimit payload: {}", err);
-                    }
+                    send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
                     rate_limited = true;
                 }
             } else if rate_limited {
@@ -136,16 +119,7 @@ pub async fn handle_connection(
                             Ok(ClientPayload::Ping) => {
                                 let mut last_ping = last_ping.lock().await;
                                 *last_ping = Instant::now();
-                                if let Err(err) = tx
-                                    .lock()
-                                    .await
-                                    .send(WebSocketMessage::Text(
-                                        serde_json::to_string(&ServerPayload::Pong).unwrap(),
-                                    ))
-                                    .await
-                                {
-                                    log::error!("Could not send gateway PONG payload: {}", err);
-                                }
+                                send_payload(&tx, &ServerPayload::Pong).await;
                             }
                             _ => log::debug!("Unknown gateway payload: {}", message),
                         }
@@ -210,5 +184,21 @@ async fn close_socket(
         .await
     {
         log::debug!("Couldn't close socket with {}: {}", rl_address, err);
+    }
+}
+
+async fn send_payload(
+    tx: &Arc<Mutex<SplitSink<WebSocketStream<TcpStream>, WebSocketMessage>>>,
+    payload: &ServerPayload,
+) {
+    if let Err(err) = tx
+        .lock()
+        .await
+        .send(WebSocketMessage::Text(
+            serde_json::to_string(payload).unwrap(),
+        ))
+        .await
+    {
+        log::error!("Could not send payload: {}", err);
     }
 }
