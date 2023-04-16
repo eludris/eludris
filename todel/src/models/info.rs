@@ -1,9 +1,9 @@
-use crate::{
-    conf::{EffisRateLimits, OprishRateLimits, RateLimitConf},
-    Conf,
-};
+use crate::conf::{EffisRateLimits, OprishRateLimits, RateLimitConf};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "logic")]
+use crate::Conf;
+#[cfg(feature = "logic")]
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// The instance info payload
@@ -33,6 +33,7 @@ pub struct InstanceRateLimits {
 
 #[cfg(feature = "logic")]
 impl InstanceInfo {
+    /// Creates a [`InstanceInfo`] from a [`Conf`]
     pub fn from_conf(conf: &Conf, rate_limits: bool) -> Self {
         InstanceInfo {
             instance_name: conf.instance_name.clone(),
