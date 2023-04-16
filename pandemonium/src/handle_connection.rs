@@ -108,7 +108,7 @@ pub async fn handle_connection(
             log::trace!("New gateway message:\n{:#?}", msg);
             if let Err(wait) = rate_limiter.process_rate_limit().await {
                 if rate_limited {
-                    log::info!(
+                    log::debug!(
                         "Disconnected a client: {}, reason: Hit rate_limit",
                         rl_address
                     );
@@ -182,7 +182,7 @@ pub async fn handle_connection(
 
     tokio::select! {
         _ = check_connection(last_ping.clone()) => {
-            log::info!("Dead connection with client {}", rl_address);
+            log::debug!("Dead connection with client {}", rl_address);
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Client connection dead") }, rl_address).await
         }
         _ = handle_rx => {
