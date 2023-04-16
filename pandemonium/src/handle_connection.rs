@@ -7,7 +7,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use todel::models::{ClientPayload, ServerPayload};
+use todel::models::{ClientPayload, InstanceInfo, ServerPayload};
 use todel::Conf;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -21,10 +21,16 @@ use tokio_tungstenite::{accept_hdr_async, WebSocketStream};
 use crate::rate_limit::RateLimiter;
 use crate::utils::deserialize_message;
 
+// /// Some padding to account for network latency.
+// const TIMEOUT_PADDING: Duration = Duration::from_secs(3);
+
+/// Actual timeout duration.
+const TIMEOUT: Duration = Duration::from_secs(45);
+
 /// The duration it takes for a connection to be inactive in for it to be regarded as zombified and
 /// disconnected.
-const TIMEOUT_DURATION: Duration = Duration::from_secs(48); // 45 seconds + some time to account
-                                                            // for latency
+const TIMEOUT_DURATION: Duration = Duration::from_secs(48); // TIMEOUT_PADDING
+
 /// A simple function that check's if a client's last ping was over TIMEOUT_DURATION seconds ago and
 /// closes the gateway connection if so.
 async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
@@ -94,6 +100,15 @@ pub async fn handle_connection(
         send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
         rate_limited = true;
     }
+    send_payload(
+        &tx,
+        &ServerPayload::Hello {
+            heartbeat_interval: TIMEOUT.as_millis() as u64,
+            instance_info: InstanceInfo::from_conf(&conf, false),
+            pandemonium_info: conf.pandemonium.clone(),
+        },
+    )
+    .await;
 
     let handle_rx = async {
         while let Some(msg) = rx.next().await {
