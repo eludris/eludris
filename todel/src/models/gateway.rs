@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use super::Message;
+use crate::conf::PandemoniumConf;
+
+use super::{InstanceInfo, Message};
 
 /// Pandemonium websocket payloads sent by the server to the client
 #[autodoc(category = "Gateway")]
@@ -37,7 +39,53 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    RateLimit { wait: u64 },
+    RateLimit {
+        /// The amount of milliseconds you have to wait before the rate limit ends
+        wait: u64,
+    },
+    /// The payload sent by the server when you initiate a new gateway connection.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "HELLO",
+    ///   "d": {
+    ///     "heartbeat_interval": 45000,
+    ///     "instance_info": {
+    ///       "instance_name": "EmreLand",
+    ///       "description": "More based than Oliver's instance (trust)",
+    ///       "version": "0.3.3",
+    ///       "message_limit": 2048,
+    ///       "oprish_url": "https://example.com",
+    ///       "pandemonium_url": "https://example.com",
+    ///       "effis_url": "https://example.com",
+    ///       "file_size": 20000000,
+    ///       "attachment_file_size": 100000000
+    ///     },
+    ///     "pandemonium_info": {
+    ///       "url": "https://example.com",
+    ///       "rate_limit": {
+    ///         "reset_after": 10,
+    ///         "limit": 5
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    Hello {
+        /// The amount of milliseconds your ping interval is supposed to be
+        heartbeat_interval: u64,
+        /// The instance's info
+        ///
+        /// This is the same payload you get from the [`get_instance_info`] payload without
+        /// ratelimits
+        instance_info: InstanceInfo,
+        /// The pandemonium-related configuration and ratelimit info
+        pandemonium_info: PandemoniumConf,
+    },
     /// The event sent when the client receives a [`Message`]
     ///
     /// -----
