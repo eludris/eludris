@@ -4,7 +4,7 @@ mod tests {
     use deadpool_redis::Connection;
     use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
     use todel::{
-        models::{InstanceInfo, InstanceRateLimits, Message, ServerPayload},
+        models::{InstanceInfo, Message, ServerPayload},
         Conf,
     };
 
