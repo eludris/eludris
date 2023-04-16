@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::{rocket, Cache, VERSION};
+    use crate::{rocket, Cache};
     use deadpool_redis::Connection;
     use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
     use todel::{
@@ -18,19 +18,7 @@ mod tests {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(
             response.into_string().await.unwrap(),
-            serde_json::to_string(&InstanceInfo {
-                instance_name: conf.instance_name.clone(),
-                version: VERSION,
-                description: conf.description.clone(),
-                message_limit: conf.oprish.message_limit,
-                oprish_url: &conf.oprish.url,
-                pandemonium_url: &conf.pandemonium.url,
-                effis_url: &conf.effis.url,
-                file_size: conf.effis.file_size,
-                attachment_file_size: conf.effis.attachment_file_size,
-                rate_limits: None
-            })
-            .unwrap()
+            serde_json::to_string(&InstanceInfo::from_conf(conf, false)).unwrap()
         );
 
         let response = client.get("/?rate_limits").dispatch().await;
@@ -38,23 +26,7 @@ mod tests {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(
             response.into_string().await.unwrap(),
-            serde_json::to_string(&InstanceInfo {
-                instance_name: conf.instance_name.clone(),
-                version: VERSION,
-                description: conf.description.clone(),
-                message_limit: conf.oprish.message_limit,
-                oprish_url: &conf.oprish.url,
-                pandemonium_url: &conf.pandemonium.url,
-                effis_url: &conf.effis.url,
-                file_size: conf.effis.file_size,
-                attachment_file_size: conf.effis.attachment_file_size,
-                rate_limits: Some(InstanceRateLimits {
-                    oprish: conf.oprish.rate_limits.clone(),
-                    pandemonium: conf.pandemonium.rate_limit.clone(),
-                    effis: conf.effis.rate_limits.clone(),
-                })
-            })
-            .unwrap()
+            serde_json::to_string(&InstanceInfo::from_conf(conf, true)).unwrap()
         );
     }
 
@@ -65,6 +37,7 @@ mod tests {
             author: "Woo".to_string(),
             content: "HeWoo there".to_string(),
         };
+
         let message_str = serde_json::to_string(&message).unwrap();
         let payload = serde_json::to_string(&ServerPayload::MessageCreate(message)).unwrap();
 
