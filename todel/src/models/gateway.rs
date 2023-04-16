@@ -82,7 +82,7 @@ pub enum ServerPayload {
         ///
         /// This is the same payload you get from the [`get_instance_info`] payload without
         /// ratelimits
-        instance_info: InstanceInfo,
+        instance_info: Box<InstanceInfo>,
         /// The pandemonium-related configuration and ratelimit info
         pandemonium_info: PandemoniumConf,
     },

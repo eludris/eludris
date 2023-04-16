@@ -104,7 +104,7 @@ pub async fn handle_connection(
         &tx,
         &ServerPayload::Hello {
             heartbeat_interval: TIMEOUT.as_millis() as u64,
-            instance_info: InstanceInfo::from_conf(&conf, false),
+            instance_info: Box::new(InstanceInfo::from_conf(&conf, false)),
             pandemonium_info: conf.pandemonium.clone(),
         },
     )
