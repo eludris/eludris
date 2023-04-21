@@ -29,7 +29,7 @@ import { Icon } from 'astro-icon';
 
   let theme =
     localStorage.getItem('theme') ??
-    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    (window.matchMedia?.('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light');
 
