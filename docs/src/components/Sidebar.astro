@@ -21,7 +21,7 @@ AUTODOC_ENTRIES.forEach((slug) => {
   const name = file
     .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
     .replace(/[A-Z]/gm, ' $&');
-  entries[item.category][item.item.type == ItemType.Route ? 'routes' : 'models'].push({
+  entries[item.category][item.item.type === ItemType.Route ? 'routes' : 'models'].push({
     slug,
     name
   });
