@@ -38,13 +38,13 @@ in addition to these docs.
 For more info you can check out our [Official GitHub organisation](htt[s://github.com/eludris)
 or our [website](https://eludris.pages.dev).
 
-While you're also at it consider joining our [Discord Server](https://discord.gg/amMHHjzwb9)
+And while you're at it, consider joining our [Discord Server](https://discord.gg/amMHHjzwb9)
 since that is currently mainly where we hang out, joke around and work on Eludris
 and Eludris related stuff.
 
 ## Reading the Docs
 
-The documentation is straight forward, however here are some additional clarifications
+The documentation is straightforward, however here are some additional clarifications
 on some of the points where you can get confused.
 
 ### Omittability and Nullability
@@ -57,10 +57,10 @@ names or types, here's an example of that.
 | Foo?  | Integer |
 | Bar   | String? |
 
-Now, you may be wondering what these question marks are going there, it depends
-on where the question mark is, if the question mark is next to the field name like
-in `Foo?`, then that field is omittable, meaning that it is not guaranteed to exist,
-however in a case where it exists it is **guaranteed** to be an Integer.
+Now, you may be wondering what these question marks are doing there. It depends
+on where the question mark is, if the question mark is next to the field name --
+like in `Foo?` -- that field is omittable, meaning that it is not guaranteed to
+exist. Otherwise in a case where it exists it is **guaranteed** to be an Integer.
 
-On the other hand if the question mark is next to the type like in `String?` it means
-that while the field will always be present, its value can be a `null`.
+On the other hand if the question mark is next to the type -- like in `String?` -- it means
+that, while the field will always be present, its value can be `null`.

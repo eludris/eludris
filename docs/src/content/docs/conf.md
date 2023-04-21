@@ -10,7 +10,7 @@ which is used to actually customise the behaviour of your instance's outward-fac
 APIs like rate limits and whatnot.
 
 The [eludris/eludris](https://github.com/eludris/eludris) meta repository comes with
-examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `ExampleELudris.toml`,
+examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `ExampleEludris.toml`,
 all you have to do is rename them to their respective names and add whatever configuration
 is required in `Eludris.toml`.
 

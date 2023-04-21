@@ -6,7 +6,7 @@ order: 0
 
 ## Overview
 
-The main goal with Eludris to provide a uniquely fresh but not entirely new experience. One where anyone can find (or create) a place focused around their interests while having a couple of fundamental policies that greatly improve users' experience.
+The main goal with Eludris is to provide a uniquely fresh but not entirely new experience. One where anyone can find (or create) a place focused around their interests while having a couple of fundamental policies that greatly improve users' experience.
 
 These policies include being secure, 100% FOSS, privacy respecting and decentralised, while also not inconveniencing users who don't understand what these things entail, but still enhancing their experience.
 
@@ -28,7 +28,7 @@ Communities can be either public or private.
 
 Communities can _usually_ (depends on the instance) get manually reviewed by an instance admin to get verified if requested by the community's owner.
 
-Verified communities can claim a namespace, getting their own URL invite and are indexed onto list to be easily discoverable. However, doing so adds more restrictions upon them, such as no End-To-End-Encryption, stricter moderation, and so on.
+Verified communities can claim a namespace, getting their own URL invite and are indexed onto a list to be easily discoverable. However, doing so adds more restrictions upon them, such as no End-To-End-Encryption, stricter moderation, and so on.
 
 ### Accounts Are Unique
 
@@ -91,7 +91,7 @@ T: 48 bits of the current Unix timestamp (also with the Eludris) epoch.
 
 ### KeyDB
 
-Eludris uses a non persistent KeyDB instance to store data that should be fetched with low latency, and is ephemeral such as rate-limit info.
+Eludris uses a non persistent KeyDB instance to store data that should be fetched with low latency and is ephemeral, such as rate-limit info.
 
 Here's the structure of currently used keys:
 
