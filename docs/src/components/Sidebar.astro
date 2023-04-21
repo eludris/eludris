@@ -53,8 +53,8 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
           docPages.map((entry) => (
             <li class="page">
               <a
-                href={entry.data.order == 0 ? '/' : `/docs/${entry.slug}`}
-                class={slug == entry.slug ? 'active' : ''}
+                href={entry.data.order === 0 ? '/' : `/docs/${entry.slug}`}
+                class={slug === entry.slug ? 'active' : ''}
               >
                 {entry.data.title}
               </a>
