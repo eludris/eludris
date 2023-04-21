@@ -71,52 +71,52 @@ import { Icon } from 'astro-icon';
 </script>
 
 <script>
-  const slot = document.getElementById('slot-wrapper');
-  const header = document.getElementById('header');
-  const search = document.getElementById('search');
-  const searchBar = document.getElementById('search-bar');
-  const searchInput = document.getElementById('search-input') as HTMLInputElement;
-  const searchStats = document.getElementById('search-stats');
-  const searchResults = document.getElementById('search-results');
+  const slot = document.getElementById('slot-wrapper')!;
+  const header = document.getElementById('header')!;
+  const search = document.getElementById('search')!;
+  const searchBar = document.getElementById('search-bar')!;
+  const searchInput = document.getElementById('search-input')! as HTMLInputElement;
+  const searchStats = document.getElementById('search-stats')!;
+  const searchResults = document.getElementById('search-results')!;
   let searchData: [{ text: string; route: string; content: string }] | null = null;
   let lastScroll = 0;
 
-  slot!.addEventListener('scroll', () => {
-    if (slot!.scrollTop > 0 && searchBar!.style.display == 'none') {
-      header!.style.borderBottomWidth = '1px';
+  slot.addEventListener('scroll', () => {
+    if (slot.scrollTop > 0 && searchBar!.style.display == 'none') {
+      header.style.borderBottomWidth = '1px';
     } else {
-      header!.style.borderBottomWidth = '0px';
+      header.style.borderBottomWidth = '0px';
     }
     if (Math.abs(lastScroll - slot!.scrollTop) > 50) {
       if (
         window.innerWidth < 1000 &&
-        slot!.scrollTop > lastScroll &&
-        !header!.classList.contains('header-hidden')
+        slot.scrollTop > lastScroll &&
+        !header.classList.contains('header-hidden')
       ) {
-        header!.classList.add('header-hidden');
+        header.classList.add('header-hidden');
       } else if (
         window.innerWidth < 1000 &&
-        slot!.scrollTop < lastScroll &&
-        header!.classList.contains('header-hidden')
+        slot.scrollTop < lastScroll &&
+        header.classList.contains('header-hidden')
       ) {
-        header!.classList.remove('header-hidden');
+        header.classList.remove('header-hidden');
       }
       lastScroll = slot!.scrollTop;
     }
   });
 
-  search!.addEventListener('click', () => {
+  search.addEventListener('click', () => {
     if (!searchData) {
       fetch('/search.json')
         .then((r) => r.json())
         .then((r) => (searchData = r));
     }
-    if (searchBar!.style.display == 'none') {
-      searchBar!.style.display = 'block';
-      header!.style.borderBottomWidth = '0px';
+    if (searchBar.style.display == 'none') {
+      searchBar.style.display = 'block';
+      header.style.borderBottomWidth = '0px';
       searchInput!.focus();
     } else {
-      searchBar!.style.display = 'none';
+      searchBar.style.display = 'none';
     }
   });
 
@@ -127,12 +127,12 @@ import { Icon } from 'astro-icon';
           .then((r) => r.json())
           .then((r) => (searchData = r));
       }
-      if (searchBar!.style.display == 'none') {
-        searchBar!.style.display = 'block';
-        header!.style.borderBottomWidth = '0px';
-        searchInput!.focus();
+      if (searchBar.style.display == 'none') {
+        searchBar.style.display = 'block';
+        header.style.borderBottomWidth = '0px';
+        searchInput.focus();
       } else {
-        searchBar!.style.display = 'none';
+        searchBar.style.display = 'none';
       }
       e.preventDefault();
     }
@@ -145,8 +145,8 @@ import { Icon } from 'astro-icon';
         searchStats!.style.display = 'none';
         return;
       }
-      searchStats!.style.display = 'inline-block';
-      searchResults!.replaceChildren(
+      searchStats.style.display = 'inline-block';
+      searchResults.replaceChildren(
         ...searchData
           .filter(
             (s) =>
@@ -175,7 +175,7 @@ import { Icon } from 'astro-icon';
             return anchor;
           })
       );
-      searchStats!.innerText = `found ${searchResults!.children.length} results`;
+      searchStats.innerText = `found ${searchResults!.children.length} results`;
     }
   });
 
