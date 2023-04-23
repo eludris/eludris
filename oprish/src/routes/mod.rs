@@ -2,15 +2,11 @@ pub mod messages;
 
 use rocket::{serde::json::Json, Route, State};
 use rocket_db_pools::Connection;
-use todel::{
-    http::ClientIP,
-    models::{InstanceInfo, InstanceRateLimits},
-    Conf,
-};
+use todel::{http::ClientIP, models::InstanceInfo, Conf};
 
 use crate::{
     rate_limit::{RateLimitedRouteResponse, RateLimiter},
-    Cache, VERSION,
+    Cache,
 }; // poggers
 
 #[autodoc(category = "Instance")]
@@ -23,22 +19,8 @@ pub async fn get_instance_info(
 ) -> RateLimitedRouteResponse<Json<InstanceInfo>> {
     let mut rate_limiter = RateLimiter::new("info", address, conf.inner());
     rate_limiter.process_rate_limit(&mut cache).await?;
-    rate_limiter.wrap_response(Json(InstanceInfo {
-        instance_name: conf.instance_name.clone(),
-        version: VERSION,
-        description: conf.description.clone(),
-        message_limit: conf.oprish.message_limit,
-        oprish_url: &conf.oprish.url,
-        pandemonium_url: &conf.pandemonium.url,
-        effis_url: &conf.effis.url,
-        file_size: conf.effis.file_size,
-        attachment_file_size: conf.effis.attachment_file_size,
-        rate_limits: rate_limits.then_some(InstanceRateLimits {
-            oprish: conf.oprish.rate_limits.clone(),
-            pandemonium: conf.pandemonium.rate_limit.clone(),
-            effis: conf.effis.rate_limits.clone(),
-        }),
-    }))
+
+    rate_limiter.wrap_response(Json(InstanceInfo::from_conf(conf.inner(), rate_limits)))
 }
 
 pub fn get_routes() -> Vec<Route> {

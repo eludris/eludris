@@ -30,7 +30,7 @@ async fn main() -> Result<(), anyhow::Error> {
     log::info!("Gateway started at {}", gateway_address);
 
     while let Ok((stream, addr)) = socket.accept().await {
-        log::info!("New connection on ip {}", addr);
+        log::debug!("New connection on ip {}", addr);
         let mut pubsub = match redis_client.get_async_connection().await {
             Ok(connection) => connection.into_pubsub(),
             Err(err) => {

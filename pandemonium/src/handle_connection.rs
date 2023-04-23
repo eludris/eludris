@@ -7,7 +7,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use todel::models::Payload;
+use todel::models::{ClientPayload, InstanceInfo, ServerPayload};
 use todel::Conf;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -21,10 +21,16 @@ use tokio_tungstenite::{accept_hdr_async, WebSocketStream};
 use crate::rate_limit::RateLimiter;
 use crate::utils::deserialize_message;
 
+// /// Some padding to account for network latency.
+// const TIMEOUT_PADDING: Duration = Duration::from_secs(3);
+
+/// Actual timeout duration.
+const TIMEOUT: Duration = Duration::from_secs(45);
+
 /// The duration it takes for a connection to be inactive in for it to be regarded as zombified and
 /// disconnected.
-const TIMEOUT_DURATION: Duration = Duration::from_secs(46); // 45 seconds + some time to account
-                                                            // for jitter
+const TIMEOUT_DURATION: Duration = Duration::from_secs(48); // TIMEOUT_PADDING
+
 /// A simple function that check's if a client's last ping was over TIMEOUT_DURATION seconds ago and
 /// closes the gateway connection if so.
 async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
@@ -79,52 +85,56 @@ pub async fn handle_connection(
         }
     };
 
+    let (tx, mut rx) = socket.split();
+    let tx = Arc::new(Mutex::new(tx));
+    let last_ping = Arc::new(Mutex::new(Instant::now()));
+
     let mut rate_limiter = RateLimiter::new(
         cache,
         rl_address,
         Duration::from_secs(conf.pandemonium.rate_limit.reset_after as u64),
         conf.pandemonium.rate_limit.limit,
     );
-    if let Err(()) = rate_limiter.process_rate_limit().await {
-        log::info!(
-            "Disconnected a client: {}. Reason: Client is already rate limited",
-            rl_address
-        );
-        return;
+    let mut rate_limited = false;
+    if let Err(wait) = rate_limiter.process_rate_limit().await {
+        send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
+        rate_limited = true;
     }
-
-    let (tx, mut rx) = socket.split();
-    let tx = Arc::new(Mutex::new(tx));
-
-    let last_ping = Arc::new(Mutex::new(Instant::now()));
+    send_payload(
+        &tx,
+        &ServerPayload::Hello {
+            heartbeat_interval: TIMEOUT.as_millis() as u64,
+            instance_info: Box::new(InstanceInfo::from_conf(&conf, false)),
+            pandemonium_info: conf.pandemonium.clone(),
+        },
+    )
+    .await;
 
     let handle_rx = async {
         while let Some(msg) = rx.next().await {
             log::trace!("New gateway message:\n{:#?}", msg);
-            if rate_limiter.process_rate_limit().await.is_err() {
-                log::info!(
-                    "Disconnected a client: {}, reason: Hit rate_limit",
-                    rl_address
-                );
-                break;
+            if let Err(wait) = rate_limiter.process_rate_limit().await {
+                if rate_limited {
+                    log::debug!(
+                        "Disconnected a client: {}, reason: Hit rate_limit",
+                        rl_address
+                    );
+                    break;
+                } else {
+                    send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
+                    rate_limited = true;
+                }
+            } else if rate_limited {
+                rate_limited = false;
             }
             match msg {
                 Ok(data) => match data {
                     WebSocketMessage::Text(message) => {
-                        match serde_json::from_str::<Payload>(&message) {
-                            Ok(Payload::Ping) => {
+                        match serde_json::from_str::<ClientPayload>(&message) {
+                            Ok(ClientPayload::Ping) => {
                                 let mut last_ping = last_ping.lock().await;
                                 *last_ping = Instant::now();
-                                let res = tx
-                                    .lock()
-                                    .await
-                                    .send(WebSocketMessage::Text(
-                                        serde_json::to_string(&Payload::Pong).unwrap(),
-                                    ))
-                                    .await;
-                                if let Err(err) = res {
-                                    log::error!("Could not send gateway PONG frame: {}", err);
-                                }
+                                send_payload(&tx, &ServerPayload::Pong).await;
                             }
                             _ => log::debug!("Unknown gateway payload: {}", message),
                         }
@@ -161,7 +171,7 @@ pub async fn handle_connection(
 
     tokio::select! {
         _ = check_connection(last_ping.clone()) => {
-            log::info!("Dead connection with client {}", rl_address);
+            log::debug!("Dead connection with client {}", rl_address);
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Client connection dead") }, rl_address).await
         }
         _ = handle_rx => {
@@ -189,5 +199,21 @@ async fn close_socket(
         .await
     {
         log::debug!("Couldn't close socket with {}: {}", rl_address, err);
+    }
+}
+
+async fn send_payload(
+    tx: &Arc<Mutex<SplitSink<WebSocketStream<TcpStream>, WebSocketMessage>>>,
+    payload: &ServerPayload,
+) {
+    if let Err(err) = tx
+        .lock()
+        .await
+        .send(WebSocketMessage::Text(
+            serde_json::to_string(payload).unwrap(),
+        ))
+        .await
+    {
+        log::error!("Could not send payload: {}", err);
     }
 }

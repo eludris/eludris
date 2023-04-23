@@ -1,6 +1,6 @@
 use redis::Msg;
 use std::{error::Error, fmt::Display};
-use todel::models::Payload;
+use todel::models::ServerPayload;
 
 /// An Error that represents a Payload not being found.
 #[derive(Debug)]
@@ -15,8 +15,8 @@ impl Display for PayloadNotFound {
 impl Error for PayloadNotFound {}
 
 /// A function that simplifies deserializing a message Payload.
-pub fn deserialize_message(payload: Msg) -> Result<Payload, Box<dyn Error + Send + Sync>> {
-    Ok(serde_json::from_str::<Payload>(
+pub fn deserialize_message(payload: Msg) -> Result<ServerPayload, Box<dyn Error + Send + Sync>> {
+    Ok(serde_json::from_str::<ServerPayload>(
         &payload
             .get_payload::<String>()
             .map_err(|_| PayloadNotFound)?,

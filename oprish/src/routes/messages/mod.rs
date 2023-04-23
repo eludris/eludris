@@ -5,7 +5,7 @@ use rocket::serde::json::Json;
 use rocket::{Route, State};
 use rocket_db_pools::Connection;
 use todel::http::ClientIP;
-use todel::models::{ErrorResponse, ErrorResponseData, Message, Payload, ValidationError};
+use todel::models::{ErrorResponse, ErrorResponseData, Message, ServerPayload, ValidationError};
 use todel::Conf;
 
 #[autodoc("/messages", category = "Messaging")]
@@ -35,12 +35,12 @@ pub async fn create_message(
         }
         .to_error_response()))
     } else {
-        let payload = Payload::MessageCreate(message);
+        let payload = ServerPayload::MessageCreate(message);
         cache
             .publish::<&str, String, ()>("oprish-events", serde_json::to_string(&payload).unwrap())
             .await
             .unwrap();
-        if let Payload::MessageCreate(message) = payload {
+        if let ServerPayload::MessageCreate(message) = payload {
             rate_limiter.wrap_response(Ok(Json(message)))
         } else {
             unreachable!()
