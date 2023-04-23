@@ -56,7 +56,7 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
                 } else {
                     Err(Error::new(
                         a.span(),
-                        "Cannot generated documentation for non-type generics",
+                        "Cannot generate documentation for non-type generics",
                     ))
                 }
             })?;

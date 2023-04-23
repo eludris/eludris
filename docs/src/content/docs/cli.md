@@ -1,6 +1,6 @@
 ---
 title: 'The Eludris CLI'
-description: "Everything you'll need to know to be able to use the all-mighty Eludris CLI!"
+description: "Everything you'll need to know to be able to use the almighty Eludris CLI!"
 order: 2
 ---
 
@@ -117,7 +117,7 @@ bucket.
 sudo eludris attachments remove <id>
 ```
 
-This command will remove an attachment's file from your instance along with it's
+This command will remove an attachment's file from your instance along with its
 database entry to prevent `500` errors.
 
 ### Clean
