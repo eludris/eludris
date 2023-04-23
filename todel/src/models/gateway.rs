@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::conf::PandemoniumConf;
-
 use super::{InstanceInfo, Message};
 
 /// Pandemonium websocket payloads sent by the server to the client
