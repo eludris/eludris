@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+export const getStaticPaths = async () => {
+  return (await getCollection('docs'))
+    .filter((entry) => entry.data.order != 0)
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props: { entry }
+    }));
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<Base
+  title={`${entry.data.title} - Eludris Docs`}
+  description={entry.data.description}
+  slug={entry.slug}
+>
+  <h1>{entry.data.title}</h1>
+  <Content />
+</Base>

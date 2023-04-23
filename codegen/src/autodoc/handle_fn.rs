@@ -1,26 +1,27 @@
 use std::collections::HashMap;
 
-use proc_macro::{Span, TokenStream};
+use proc_macro::Span;
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType, Type};
 
 use super::{
-    models::{ItemInfo, PathParamInfo, QueryParamInfo, RouteInfo},
-    utils::{display_path_segment, get_doc, get_type},
+    models::{Item, ParamInfo, RouteInfo},
+    utils::{display_path_segment, get_type},
 };
 
-pub fn handle_fn(attr: TokenStream, item: ItemFn) -> Result<(ItemInfo, String), Error> {
-    let name = item.sig.ident.to_string();
-    let doc = get_doc(&item.attrs)?;
-    let base = if attr.is_empty() {
-        "".to_string()
-    } else {
-        let attr: NestedMeta = syn::parse(attr)?;
+pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
+    let mut base = "".to_string();
+
+    for attr in attrs.iter() {
         if let NestedMeta::Lit(Lit::Str(lit)) = attr {
-            lit.value()
-        } else {
-            return Err(Error::new(attr.span(), "Invalid attribute args"));
+            if !base.is_empty() {
+                return Err(Error::new(
+                    attr.span(),
+                    "Duplicate arguments for route base path",
+                ));
+            }
+            base = lit.value();
         }
-    };
+    }
 
     let attr = item
         .attrs
@@ -90,29 +91,25 @@ pub fn handle_fn(attr: TokenStream, item: ItemFn) -> Result<(ItemInfo, String), 
         // if it's in the `<name>` format, we want it's type
         if segment.starts_with('<') && segment.ends_with('>') {
             let name = segment[1..segment.len() - 1].to_string();
-            path_params.push(PathParamInfo {
-                param_type: params.remove(&name).ok_or_else(|| {
-                    Error::new(
-                        Span::call_site().into(),
-                        format!("Cannot find type of path param{}", name),
-                    )
-                })?,
-                name,
-            });
+            let param_type = params.remove(&name).ok_or_else(|| {
+                Error::new(
+                    Span::call_site().into(),
+                    format!("Cannot find type of path param {}", name),
+                )
+            })?;
+            path_params.push(ParamInfo { param_type, name });
         }
     }
     for param in query.split('&') {
         if param.starts_with('<') && param.ends_with('>') {
             let name = param[1..param.len() - 1].to_string();
-            query_params.push(QueryParamInfo {
-                param_type: params.remove(&name).ok_or_else(|| {
-                    Error::new(
-                        Span::call_site().into(),
-                        format!("Cannot find type of path param{}", name),
-                    )
-                })?,
-                name,
-            });
+            let param_type = params.remove(&name).ok_or_else(|| {
+                Error::new(
+                    Span::call_site().into(),
+                    format!("Cannot find type of query param {}", name),
+                )
+            })?;
+            query_params.push(ParamInfo { param_type, name });
         }
     }
 
@@ -137,18 +134,13 @@ pub fn handle_fn(attr: TokenStream, item: ItemFn) -> Result<(ItemInfo, String), 
         }
     }
 
-    Ok((
-        ItemInfo::Route(RouteInfo {
-            name: name.clone(),
-            method,
-            route,
-            doc,
-            path_params,
-            query_params,
-            body_type,
-            return_type,
-            guards: params.into_keys().collect(),
-        }),
-        name,
-    ))
+    Ok(Item::Route(RouteInfo {
+        method,
+        route,
+        path_params,
+        query_params,
+        body_type,
+        return_type,
+        guards: params.into_keys().collect(),
+    }))
 }

@@ -1,0 +1,11 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+const entry = (await getCollection('docs')).find((entry) => entry.data.order == 0);
+
+const { Content } = await entry!.render();
+---
+
+<Base title={entry.data.title} description={entry.data.description} slug={entry.slug}>
+  <Content />
+</Base>

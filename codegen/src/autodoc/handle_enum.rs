@@ -1,21 +1,11 @@
-use proc_macro::TokenStream;
 use syn::{spanned::Spanned, Error, Fields, ItemEnum, Lit, Meta, NestedMeta, Variant};
 
 use super::{
-    models::{EnumInfo, EnumVariant, ItemInfo, StructInfo},
+    models::{EnumInfo, EnumVariant, Item},
     utils::{get_doc, get_field_infos, get_type},
 };
 
-pub fn handle_enum(attr: TokenStream, item: ItemEnum) -> Result<(ItemInfo, String), Error> {
-    if !attr.is_empty() {
-        return Err(Error::new(
-            syn::parse::<NestedMeta>(attr)?.span(),
-            "Struct items expect no attribute args",
-        ));
-    }
-
-    let name = item.ident.to_string();
-    let doc = get_doc(&item.attrs)?;
+pub fn handle_enum(_: &[NestedMeta], item: ItemEnum) -> Result<Item, Error> {
     let mut rename_all = None;
     let mut tag = None;
     let mut untagged = false;
@@ -63,18 +53,13 @@ pub fn handle_enum(attr: TokenStream, item: ItemEnum) -> Result<(ItemInfo, Strin
         variants.push(get_variant(variant)?);
     }
 
-    Ok((
-        ItemInfo::Enum(EnumInfo {
-            name: name.clone(),
-            doc,
-            content,
-            tag,
-            untagged,
-            rename_all,
-            variants,
-        }),
-        name,
-    ))
+    Ok(Item::Enum(EnumInfo {
+        content,
+        tag,
+        untagged,
+        rename_all,
+        variants,
+    }))
 }
 fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
     let doc = get_doc(&variant.attrs)?;
@@ -100,10 +85,10 @@ fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
                 field_type: get_type(&field.ty)?,
             }
         }
-        Fields::Named(struct_fields) => EnumVariant::Struct(StructInfo {
+        Fields::Named(struct_fields) => EnumVariant::Struct {
             name,
             doc,
             fields: get_field_infos(struct_fields.named.iter())?,
-        }),
+        },
     })
 }

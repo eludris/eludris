@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The message payload.
-#[autodoc]
+#[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Message {
     /// The author of message. This field has to be between 2 and 32 characters long.
