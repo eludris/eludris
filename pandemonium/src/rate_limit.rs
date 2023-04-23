@@ -36,8 +36,8 @@ impl RateLimiter {
         }
     }
 
-    /// Checks if a bucket is rate limited
-    pub async fn process_rate_limit(&mut self) -> Result<(), ()> {
+    /// Checks if a bucket is rate limited and returns the time until reset if so
+    pub async fn process_rate_limit(&mut self) -> Result<(), u64> {
         let now = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap_or(Duration::ZERO)
@@ -68,8 +68,8 @@ impl RateLimiter {
                 log::debug!("Reset bucket for {}", self.key);
             }
             if self.request_count >= self.request_limit {
-                log::info!("Rate limited bucket {}", self.key);
-                Err(())
+                log::debug!("Rate limited bucket {}", self.key);
+                Err(self.last_reset + self.reset_after.as_millis() as u64 - now)
             } else {
                 self.cache
                     .hincr::<&str, &str, u8, ()>(&self.key, "request_count", 1)
