@@ -112,6 +112,14 @@ mod file_logic {
                     .to_string(),
                 None => "attachment".to_string(),
             };
+            if name.is_empty() || name.len() > 256 {
+                return Err(ValidationError {
+                    error: "Invalid file name. File name must be between 1 and 256 characters long"
+                        .to_string(),
+                    field_name: "name".to_string(),
+                }
+                .to_error_response());
+            }
             file.persist_to(&path).await.unwrap();
             let data = fs::read(&path).await.unwrap();
 
