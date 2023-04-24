@@ -23,6 +23,7 @@ const remarkAutolinkReferenceEntries = () => {
       text.replace(/\\\[`(.+)`\]/gm, (_, p1) => {
         const item = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${p1}.json`));
         if (!item) {
+          return p1;
         }
         return `[${p1
           .replace(/(?:^|_)([a-z0-9])/gm, (_, p1) => p1.toUpperCase())
@@ -101,7 +102,10 @@ export default defineConfig({
   },
   markdown: {
     syntaxHighlight: 'prism',
-    remarkPlugins: [remarkAutolinkReferenceEntries, remarkGenerateSearchIndex],
+    remarkPlugins: [
+      remarkAutolinkReferenceEntries,
+      remarkGenerateSearchIndex
+    ],
     rehypePlugins: [
       rehypeAccessibleEmojis,
       rehypeSlug,
