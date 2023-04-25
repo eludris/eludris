@@ -75,11 +75,9 @@ mod file_logic {
     use tokio::{fs, sync::Mutex};
 
     use super::File;
+    use crate::error;
     use crate::ids::IDGenerator;
-    use crate::models::{
-        ErrorResponse, ErrorResponseData, FileData, FileMetadata, NotFoundError, ServerError,
-        ValidationError,
-    };
+    use crate::models::{ErrorResponse, FileData, FileMetadata};
 
     #[derive(Debug, Responder)]
     pub struct FetchResponse<'a> {
@@ -113,12 +111,11 @@ mod file_logic {
                 None => "attachment".to_string(),
             };
             if name.is_empty() || name.len() > 256 {
-                return Err(ValidationError {
-                    error: "Invalid file name. File name must be between 1 and 256 characters long"
-                        .to_string(),
-                    field_name: "name".to_string(),
-                }
-                .to_error_response());
+                return Err(error!(
+                    VALIDATION,
+                    "name",
+                    "Invalid file name. File name must be between 1 and 256 characters long"
+                ));
             }
             file.persist_to(&path).await.unwrap();
             let data = fs::read(&path).await.unwrap();
@@ -183,10 +180,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                                             id,
                                             e
                                         );
-                                        ServerError {
-                                            error: "Failed to strip file metadata".to_string(),
-                                        }
-                                        .to_error_response()
+                                        error!(SERVER, "Failed to strip file metadata")
                                     })?
                                     .decode()
                                     .map_err(|e| {
@@ -196,10 +190,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                                             id,
                                             e
                                         );
-                                        ServerError {
-                                            error: "Failed to strip file metadata".to_string(),
-                                        }
-                                        .to_error_response()
+                                        error!(SERVER, "Failed to strip file metadata")
                                     })?
                                     .save(&path)
                                     .map_err(|e| {
@@ -209,10 +200,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                                             id,
                                             e
                                         );
-                                        ServerError {
-                                            error: "Failed to strip file metadata".to_string(),
-                                        }
-                                        .to_error_response()
+                                        error!(SERVER, "Failed to strip file metadata")
                                     })?;
                             }
                             imagesize::blob_size(&data)
@@ -222,12 +210,11 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                         "video/mp4" | "video/webm" | "video/quicktime" => {
                             if &bucket != "attachments" {
                                 std::fs::remove_file(path).unwrap();
-                                return Err(ValidationError {
-                                    field_name: "content_type".to_string(),
-                                    error: "Non atatchment buckets can only have images and gifs"
-                                        .to_string(),
-                                }
-                                .to_error_response());
+                                return Err(error!(
+                                    VALIDATION,
+                                    "content_type",
+                                    "Non attachment buckets can only have images and gifs"
+                                ));
                             };
 
                             let mut dimensions = (None, None);
@@ -239,10 +226,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                                         id,
                                         e
                                     );
-                                    ServerError {
-                                        error: "Failed to strip file metadata".to_string(),
-                                    }
-                                    .to_error_response()
+                                    error!(SERVER, "Failed to strip file metadata")
                                 })?
                                 .streams
                                 .iter()
@@ -257,12 +241,11 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                         _ => {
                             if &bucket != "attachments" {
                                 std::fs::remove_file(path).unwrap();
-                                return Err(ValidationError {
-                                    field_name: "content_type".to_string(),
-                                    error: "Non atatchment buckets can only have images and gifs"
-                                        .to_string(),
-                                }
-                                .to_error_response());
+                                return Err(error!(
+                                    VALIDATION,
+                                    "content_type",
+                                    "Non attachment buckets can only have images and gifs"
+                                ));
                             };
 
                             (None, None)
@@ -345,7 +328,7 @@ AND bucket = ?
         ) -> Result<FetchResponse<'a>, ErrorResponse> {
             let file_data = Self::get(id, bucket, db)
                 .await
-                .ok_or_else(|| NotFoundError.to_error_response())?;
+                .ok_or_else(|| error!(NOT_FOUND))?;
             let file = fs::File::open(format!("files/{}/{}", bucket, file_data.file_id))
                 .await
                 .map_err(|e| {
@@ -355,10 +338,7 @@ AND bucket = ?
                         file_data.id,
                         e
                     );
-                    ServerError {
-                        error: "Error fetching file".to_string(),
-                    }
-                    .to_error_response()
+                    error!(SERVER, "Error fetching file")
                 })?;
             Ok(FetchResponse {
                 file,
@@ -377,7 +357,7 @@ AND bucket = ?
         ) -> Result<FetchResponse<'a>, ErrorResponse> {
             let file_data = Self::get(id, bucket, db)
                 .await
-                .ok_or_else(|| NotFoundError.to_error_response())?;
+                .ok_or_else(|| error!(NOT_FOUND))?;
             let file = fs::File::open(format!("files/{}/{}", bucket, file_data.file_id))
                 .await
                 .map_err(|e| {
@@ -387,10 +367,7 @@ AND bucket = ?
                         file_data.id,
                         e
                     );
-                    ServerError {
-                        error: "Error fetching file".to_string(),
-                    }
-                    .to_error_response()
+                    error!(SERVER, "Error fetching file")
                 })?;
             Ok(FetchResponse {
                 file,
@@ -409,7 +386,7 @@ AND bucket = ?
         ) -> Result<FileData, ErrorResponse> {
             Self::get(id, bucket, db)
                 .await
-                .ok_or_else(|| NotFoundError.to_error_response())
+                .ok_or_else(|| error!(NOT_FOUND))
                 .map(|f| f.get_file_data())
         }
 
