@@ -100,6 +100,13 @@ mod file_logic {
             db: &mut PoolConnection<MySql>,
             spoiler: bool,
         ) -> Result<FileData, ErrorResponse> {
+            if file.len() == 0 {
+                return Err(error!(
+                    VALIDATION,
+                    "file", "You cannot upload an empty file"
+                ));
+            }
+
             let id = gen.lock().await.generate_id();
             let path = PathBuf::from(format!("files/{}/{}", bucket, id));
             let name = match file.raw_name() {
