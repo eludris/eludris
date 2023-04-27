@@ -19,7 +19,7 @@ pub fn routes() -> Vec<Route> {
 
 pub fn static_routes() -> Vec<Route> {
     routes![
-        static_routes::fetch_static_file,
+        static_routes::get_static_file,
         static_routes::download_static_file,
     ]
 }
