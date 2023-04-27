@@ -11,9 +11,9 @@ pub fn routes() -> Vec<Route> {
         index::download_attachment,
         index::get_attachment_data,
         buckets::upload,
-        buckets::fetch,
-        buckets::fetch_download,
-        buckets::fetch_data,
+        buckets::get,
+        buckets::download,
+        buckets::get_data,
     ]
 }
 
