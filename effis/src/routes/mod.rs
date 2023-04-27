@@ -6,10 +6,10 @@ use rocket::Route;
 
 pub fn routes() -> Vec<Route> {
     routes![
-        index::upload,
-        index::fetch,
-        index::fetch_download,
-        index::fetch_data,
+        index::upload_attachment,
+        index::get_attachment,
+        index::download_attachment,
+        index::get_attachment_data,
         buckets::upload,
         buckets::fetch,
         buckets::fetch_download,
