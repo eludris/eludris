@@ -9,11 +9,7 @@ use rocket::{
     State,
 };
 use rocket_db_pools::Connection;
-use todel::{
-    http::ClientIP,
-    models::{ErrorResponse, FetchResponse},
-    Conf,
-};
+use todel::{http::ClientIP, logic::FetchResponse, models::ErrorResponse, Conf};
 use tokio::fs::File;
 
 /// Simple struct meant to represent static disk files

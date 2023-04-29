@@ -11,6 +11,8 @@ pub mod conf;
 pub mod http;
 #[cfg(feature = "logic")]
 pub mod ids;
+#[cfg(feature = "logic")]
+pub mod logic;
 pub mod models;
 
 pub use conf::Conf;
