@@ -102,9 +102,9 @@ pub enum ErrorResponse {
     },
 }
 
-/// Magic marco that handles instantiating [`ErrorResponse`] variants.
+/// Magic macro that handles instantiating [`ErrorResponse`] variants.
 ///
-/// It also handles wrapping and returning them when a ratelimiter is passed as the first argument.
+/// It also handles wrapping and returning them when a rate limiter is passed as the first argument.
 #[cfg(feature = "logic")]
 #[macro_export]
 macro_rules! error {
