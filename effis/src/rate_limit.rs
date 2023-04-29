@@ -5,10 +5,7 @@ use std::{
 
 use rocket::{http::Header, response::Responder};
 use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
-use todel::{
-    models::{ErrorResponse, ErrorResponseData, FileSizeRateLimitedError, RateLimitError},
-    Conf,
-};
+use todel::{models::ErrorResponse, Conf};
 
 use crate::Cache;
 
@@ -88,13 +85,10 @@ impl RateLimiter {
 
         if bytes > self.file_size_limit {
             return Err(self
-                .wrap_response::<_, ()>(
-                    FileSizeRateLimitedError {
-                        retry_after: self.last_reset + self.reset_after.as_millis() as u64 - now,
-                        bytes_left: self.file_size_limit - self.sent_bytes,
-                    }
-                    .to_error_response(),
-                )
+                .wrap_response::<_, ()>(error!(
+                    RATE_LIMITED,
+                    self.last_reset + self.reset_after.as_millis() as u64 - now
+                ))
                 .unwrap());
         }
 
@@ -129,24 +123,17 @@ impl RateLimiter {
             if self.request_count >= self.request_limit {
                 log::info!("Rate limited bucket {}", self.key);
                 Err(self
-                    .wrap_response::<_, ()>(
-                        RateLimitError {
-                            retry_after: self.last_reset + self.reset_after.as_millis() as u64
-                                - now,
-                        }
-                        .to_error_response(),
-                    )
+                    .wrap_response::<_, ()>(error!(
+                        RATE_LIMITED,
+                        self.last_reset + self.reset_after.as_millis() as u64 - now
+                    ))
                     .unwrap())
             } else if self.sent_bytes + bytes > self.file_size_limit {
                 Err(self
-                    .wrap_response::<_, ()>(
-                        FileSizeRateLimitedError {
-                            retry_after: self.last_reset + self.reset_after.as_millis() as u64
-                                - now,
-                            bytes_left: self.file_size_limit - self.sent_bytes,
-                        }
-                        .to_error_response(),
-                    )
+                    .wrap_response::<_, ()>(error!(
+                        RATE_LIMITED,
+                        self.last_reset + self.reset_after.as_millis() as u64 - now
+                    ))
                     .unwrap())
             } else {
                 cache

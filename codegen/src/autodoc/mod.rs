@@ -24,21 +24,43 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
         let attr_span = attrs.span();
 
         let mut category = None;
+        let mut hidden = false;
 
         // no drain_filter wa
         let attrs = attrs
             .into_iter()
             .filter_map(|a| {
                 if let NestedMeta::Meta(Meta::NameValue(meta)) = &a {
-                    if meta.path.is_ident("category") {
-                        if let Lit::Str(lit) = &meta.lit {
-                            category = Some(lit.value());
-                            return None;
-                        } else {
-                            return Some(Err(Error::new(
-                                meta.span(),
-                                "Expected a String for item category",
-                            )));
+                    if let Some(ident) = meta.path.get_ident() {
+                        match ident.to_string().as_str() {
+                            "category" => {
+                                if let Lit::Str(lit) = &meta.lit {
+                                    category = Some(lit.value());
+                                    return None;
+                                } else {
+                                    return Some(Err(Error::new(
+                                        meta.span(),
+                                        "Expected a String for item category",
+                                    )));
+                                }
+                            }
+                            "hidden" => {
+                                if let Lit::Bool(lit) = &meta.lit {
+                                    hidden = lit.value();
+                                    return None;
+                                } else {
+                                    return Some(Err(Error::new(
+                                        meta.span(),
+                                        "Expected a bool for item visibility",
+                                    )));
+                                }
+                            }
+                            ident => {
+                                return Some(Err(Error::new(
+                                    meta.span(),
+                                    format!("Unexpected parameter {}", ident),
+                                )));
+                            }
                         }
                     }
                 }
@@ -61,6 +83,7 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
                     name,
                     doc,
                     category,
+                    hidden,
                     package: package.clone(),
                     item: handle_fn::handle_fn(&attrs, item)?,
                 }
@@ -72,6 +95,7 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
                     name,
                     doc,
                     category,
+                    hidden,
                     package: package.clone(),
                     item: handle_enum::handle_enum(&attrs, item)?,
                 }
@@ -83,6 +107,7 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
                     name,
                     doc,
                     category,
+                    hidden,
                     package: package.clone(),
                     item: handle_struct::handle_struct(&attrs, item)?,
                 }

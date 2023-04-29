@@ -82,6 +82,7 @@ export interface ItemInfo {
   name: string;
   doc: string;
   category: string;
+  hidden: boolean;
   package: string;
   item: Item;
 }

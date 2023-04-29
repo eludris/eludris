@@ -3,7 +3,7 @@ use rocket_db_pools::Connection;
 use todel::{
     http::ClientIP,
     ids::IDGenerator,
-    models::{ErrorResponseData, FetchResponse, File, FileData, FileUpload, ValidationError},
+    models::{ErrorResponse, FetchResponse, File, FileData, FileUpload},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -27,28 +27,7 @@ pub async fn upload<'a>(
     rate_limiter
         .process_rate_limit(upload.file.len(), &mut cache)
         .await?;
-    if !BUCKETS.contains(&bucket) {
-        return Err(rate_limiter
-            .wrap_response::<_, ()>(
-                ValidationError {
-                    field_name: "bucket".to_string(),
-                    error: "Unknown bucket".to_string(),
-                }
-                .to_error_response(),
-            )
-            .unwrap());
-    }
-    if upload.file.len() == 0 {
-        Err(rate_limiter
-            .wrap_response::<_, ()>(
-                ValidationError {
-                    field_name: "file".to_string(),
-                    error: "You cannot upload empty files".to_string(),
-                }
-                .to_error_response(),
-            )
-            .unwrap())?;
-    }
+    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
     let upload = upload.into_inner();
     let file = File::create(
         upload.file,
@@ -63,7 +42,7 @@ pub async fn upload<'a>(
 }
 
 #[get("/<bucket>/<id>")]
-pub async fn fetch<'a>(
+pub async fn get<'a>(
     bucket: &'a str,
     id: u128,
     ip: ClientIP,
@@ -73,17 +52,7 @@ pub async fn fetch<'a>(
 ) -> RateLimitedRouteResponse<FetchResponse<'a>> {
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    if !BUCKETS.contains(&bucket) {
-        return Err(rate_limiter
-            .wrap_response::<_, ()>(
-                ValidationError {
-                    field_name: "bucket".to_string(),
-                    error: "Unknown bucket".to_string(),
-                }
-                .to_error_response(),
-            )
-            .unwrap());
-    }
+    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
     let file = File::fetch_file(id, bucket, &mut db)
         .await
         .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
@@ -91,7 +60,7 @@ pub async fn fetch<'a>(
 }
 
 #[get("/<bucket>/<id>/download")]
-pub async fn fetch_download<'a>(
+pub async fn download<'a>(
     bucket: &'a str,
     id: u128,
     ip: ClientIP,
@@ -101,17 +70,7 @@ pub async fn fetch_download<'a>(
 ) -> RateLimitedRouteResponse<FetchResponse<'a>> {
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    if !BUCKETS.contains(&bucket) {
-        return Err(rate_limiter
-            .wrap_response::<_, ()>(
-                ValidationError {
-                    field_name: "bucket".to_string(),
-                    error: "Unknown bucket".to_string(),
-                }
-                .to_error_response(),
-            )
-            .unwrap());
-    }
+    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
     let file = File::fetch_file_download(id, bucket, &mut db)
         .await
         .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
@@ -119,7 +78,7 @@ pub async fn fetch_download<'a>(
 }
 
 #[get("/<bucket>/<id>/data")]
-pub async fn fetch_data<'a>(
+pub async fn get_data<'a>(
     bucket: &'a str,
     id: u128,
     ip: ClientIP,
@@ -129,19 +88,16 @@ pub async fn fetch_data<'a>(
 ) -> RateLimitedRouteResponse<Json<FileData>> {
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    if !BUCKETS.contains(&bucket) {
-        return Err(rate_limiter
-            .wrap_response::<_, ()>(
-                ValidationError {
-                    field_name: "bucket".to_string(),
-                    error: "Unknown bucket".to_string(),
-                }
-                .to_error_response(),
-            )
-            .unwrap());
-    }
+    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
     let file = File::fetch_file_data(id, bucket, &mut db)
         .await
         .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
     rate_limiter.wrap_response(Json(file))
+}
+
+fn check_bucket(bucket: &str) -> Result<(), ErrorResponse> {
+    if !BUCKETS.contains(&bucket) {
+        return Err(error!(VALIDATION, "bucket", "Unknown bucket"));
+    }
+    Ok(())
 }

@@ -6,20 +6,20 @@ use rocket::Route;
 
 pub fn routes() -> Vec<Route> {
     routes![
-        index::upload,
-        index::fetch,
-        index::fetch_download,
-        index::fetch_data,
+        index::upload_attachment,
+        index::get_attachment,
+        index::download_attachment,
+        index::get_attachment_data,
         buckets::upload,
-        buckets::fetch,
-        buckets::fetch_download,
-        buckets::fetch_data,
+        buckets::get,
+        buckets::download,
+        buckets::get_data,
     ]
 }
 
 pub fn static_routes() -> Vec<Route> {
     routes![
-        static_routes::fetch_static_file,
+        static_routes::get_static_file,
         static_routes::download_static_file,
     ]
 }

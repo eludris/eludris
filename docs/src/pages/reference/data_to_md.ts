@@ -83,14 +83,14 @@ const displayFields = (fields: FieldInfo[]): string => {
 
 const displayField = (field: FieldInfo): string => {
   const innerType =
-    field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.name}.json`));
+    field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.field_type}.json`));
   if (innerType) {
-    let innerData: StructInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+    let innerData: StructInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString()).item;
     let fields = '';
     innerData.fields.forEach((field) => {
-      fields += `\n${displayField(field)}`;
+      fields += `${displayField(field)}\n`;
     });
-    return fields;
+    return fields.trim();
   }
   return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
     }|${displayInlineDoc(field.doc)}|`;
@@ -197,7 +197,7 @@ const displayDoc = (doc: string | null | undefined): string => {
 
 const displayInlineDoc = (doc: string | null | undefined): string => {
   return displayDoc(doc)
-    .replace(/\n{2,}/gm, 'nbsp;')
+    .replace(/\n{2,}/gm, '<br><br>')
     .replace(/(\S)\n(\S)/gm, '$1 $2');
 };
 

@@ -13,18 +13,20 @@ let entries: { [key: string]: { models: Child[]; routes: Child[] } } = {};
 
 AUTODOC_ENTRIES.forEach((slug) => {
   const item: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${slug}`).toString());
-  slug = slug.split('.')[0];
-  const file = slug.split('/')[1];
-  if (!entries[item.category]) {
-    entries[item.category] = { models: [], routes: [] };
+  if (!item.hidden) {
+    slug = slug.split('.')[0];
+    const file = slug.split('/')[1];
+    if (!entries[item.category]) {
+      entries[item.category] = { models: [], routes: [] };
+    }
+    const name = file
+      .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+      .replace(/[A-Z]/gm, ' $&');
+    entries[item.category][item.item.type === ItemType.Route ? 'routes' : 'models'].push({
+      slug,
+      name
+    });
   }
-  const name = file
-    .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
-    .replace(/[A-Z]/gm, ' $&');
-  entries[item.category][item.item.type === ItemType.Route ? 'routes' : 'models'].push({
-    slug,
-    name
-  });
 });
 
 const docPages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
