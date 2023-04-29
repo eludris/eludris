@@ -19,7 +19,10 @@ pub async fn create_message(
     let mut rate_limiter = RateLimiter::new("message_create", address, conf.inner());
     rate_limiter.process_rate_limit(&mut cache).await?;
 
-    let message = message.into_inner();
+    let mut message = message.into_inner();
+    message.author = message.author.trim().to_string();
+    message.content = message.content.trim().to_string();
+
     if message.author.len() < 2 || message.author.len() > 32 {
         error!(
             rate_limiter,

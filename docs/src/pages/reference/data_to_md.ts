@@ -197,7 +197,7 @@ const displayDoc = (doc: string | null | undefined): string => {
 
 const displayInlineDoc = (doc: string | null | undefined): string => {
   return displayDoc(doc)
-    .replace(/\n{2,}/gm, 'nbsp;')
+    .replace(/\n{2,}/gm, '<br><br>')
     .replace(/(\S)\n(\S)/gm, '$1 $2');
 };
 
