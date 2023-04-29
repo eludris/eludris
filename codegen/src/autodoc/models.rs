@@ -3,8 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ItemInfo {
     pub name: String,
-    pub category: String,
     pub doc: Option<String>,
+    pub category: String,
+    pub hidden: bool,
     pub package: String,
     pub item: Item,
 }

@@ -21,7 +21,7 @@ pub enum ServerPayload {
     /// }
     /// ```
     Pong,
-    /// The event sent when the client gets gateway ratelimited.
+    /// The event sent when the client gets gateway rate limited.
     ///
     /// The client is supposed to wait `wait` milliseconds before sending any more events,
     /// otherwise they are disconnected.

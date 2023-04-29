@@ -3,7 +3,7 @@ use rocket_db_pools::Connection;
 use todel::{
     http::ClientIP,
     ids::IDGenerator,
-    models::{ErrorResponseData, FetchResponse, File, FileData, FileUpload, ValidationError},
+    models::{FetchResponse, File, FileData, FileUpload},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -14,7 +14,7 @@ use crate::{
 };
 
 #[post("/", data = "<upload>")]
-pub async fn upload<'a>(
+pub async fn upload_attachment<'a>(
     upload: Form<FileUpload<'a>>,
     ip: ClientIP,
     mut cache: Connection<Cache>,
@@ -26,17 +26,6 @@ pub async fn upload<'a>(
     rate_limiter
         .process_rate_limit(upload.file.len(), &mut cache)
         .await?;
-    if upload.file.len() == 0 {
-        Err(rate_limiter
-            .wrap_response::<_, ()>(
-                ValidationError {
-                    field_name: "file".to_string(),
-                    error: "You cannot upload empty files".to_string(),
-                }
-                .to_error_response(),
-            )
-            .unwrap())?;
-    }
     let upload = upload.into_inner();
     let file = File::create(
         upload.file,
@@ -51,7 +40,7 @@ pub async fn upload<'a>(
 }
 
 #[get("/<id>")]
-pub async fn fetch<'a>(
+pub async fn get_attachment<'a>(
     id: u128,
     ip: ClientIP,
     mut cache: Connection<Cache>,
@@ -67,7 +56,7 @@ pub async fn fetch<'a>(
 }
 
 #[get("/<id>/download")]
-pub async fn fetch_download<'a>(
+pub async fn download_attachment<'a>(
     id: u128,
     ip: ClientIP,
     mut cache: Connection<Cache>,
@@ -83,7 +72,7 @@ pub async fn fetch_download<'a>(
 }
 
 #[get("/<id>/data")]
-pub async fn fetch_data<'a>(
+pub async fn get_attachment_data<'a>(
     id: u128,
     ip: ClientIP,
     mut cache: Connection<Cache>,

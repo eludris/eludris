@@ -16,8 +16,10 @@ export const getStaticPaths = () => {
       .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
       .replace(/[A-Z]/gm, ' $&')
       .trim();
-    const data = JSON.parse(readFileSync(`public/autodoc/${slug}.json`).toString());
-    paths.push({ params: { slug }, props: { slug, name, data } });
+    const data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${slug}.json`).toString());
+    if (!data.hidden) {
+      paths.push({ params: { slug }, props: { slug, name, data } });
+    }
   });
 
   return paths;
