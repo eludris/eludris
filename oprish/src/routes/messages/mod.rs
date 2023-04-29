@@ -28,8 +28,7 @@ pub async fn create_message(
             rate_limiter,
             VALIDATION, "author", "Message author has to be between 2 and 32 characters long"
         );
-    } else if message.content.is_empty() || message.content.len() > conf.oprish.message_limit
-    {
+    } else if message.content.is_empty() || message.content.len() > conf.oprish.message_limit {
         error!(
             rate_limiter,
             VALIDATION,

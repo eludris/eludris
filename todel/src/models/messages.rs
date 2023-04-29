@@ -11,6 +11,6 @@ pub struct Message {
     /// The content of the message. This field has to be at-least 2 characters long. The upper limit
     /// is the instance's [`InstanceInfo`] `message_limit`.
     ///
-    /// You cannot send messages which are just whitespace.
+    /// The content will be trimmed from leading and trailing whitespace.
     pub content: String,
 }
