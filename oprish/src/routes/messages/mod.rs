@@ -21,13 +21,14 @@ pub async fn create_message(
 
     let mut message = message.into_inner();
     message.author = message.author.trim().to_string();
+    message.content = message.content.trim().to_string();
 
     if message.author.len() < 2 || message.author.len() > 32 {
         error!(
             rate_limiter,
             VALIDATION, "author", "Message author has to be between 2 and 32 characters long"
         );
-    } else if message.content.trim().is_empty() || message.content.len() > conf.oprish.message_limit
+    } else if message.content.is_empty() || message.content.len() > conf.oprish.message_limit
     {
         error!(
             rate_limiter,
