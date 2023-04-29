@@ -11,3 +11,6 @@ pub use gateway::*;
 pub use info::*;
 pub use messages::*;
 pub use response::*;
+
+#[cfg(feature = "logic")]
+pub use crate::logic::*;

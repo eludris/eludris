@@ -6,13 +6,14 @@ extern crate lazy_static;
 #[macro_use]
 pub extern crate todel_codegen;
 
+#[cfg(feature = "logic")]
+mod logic;
+
 pub mod conf;
 #[cfg(feature = "http")]
 pub mod http;
 #[cfg(feature = "logic")]
 pub mod ids;
-#[cfg(feature = "logic")]
-pub mod logic;
 pub mod models;
 
 pub use conf::Conf;

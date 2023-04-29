@@ -3,8 +3,7 @@ use rocket_db_pools::Connection;
 use todel::{
     http::ClientIP,
     ids::IDGenerator,
-    logic::{FetchResponse, FileUpload},
-    models::{ErrorResponse, File, FileData},
+    models::{ErrorResponse, FetchResponse, File, FileData, FileUpload},
     Conf,
 };
 use tokio::sync::Mutex;
