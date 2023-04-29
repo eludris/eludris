@@ -13,4 +13,7 @@ pub use messages::*;
 pub use response::*;
 
 #[cfg(feature = "logic")]
-pub use crate::logic::*;
+mod logic;
+
+#[cfg(feature = "logic")]
+pub use logic::*;
