@@ -112,7 +112,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                 let mime = tree_magic_mini::from_u8(&data);
                 let (width, height) = match mime {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
-                        if mime == "image/jepg" {
+                        if mime == "image/jpeg" {
                             ImageReader::open(&path)
                                 .map_err(|e| {
                                     log::error!(
