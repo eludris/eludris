@@ -27,7 +27,7 @@ pub async fn upload<'a>(
     rate_limiter
         .process_rate_limit(upload.file.len(), &mut cache)
         .await?;
-    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+    check_bucket(bucket).map_err(|e| rate_limiter.add_headers(e))?;
     let upload = upload.into_inner();
     let file = File::create(
         upload.file,
@@ -37,7 +37,7 @@ pub async fn upload<'a>(
         upload.spoiler,
     )
     .await
-    .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+    .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(Json(file))
 }
 
@@ -52,10 +52,10 @@ pub async fn get<'a>(
 ) -> RateLimitedRouteResponse<FetchResponse<'a>> {
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+    check_bucket(bucket).map_err(|e| rate_limiter.add_headers(e))?;
     let file = File::fetch_file(id, bucket, &mut db)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(file)
 }
 
@@ -70,10 +70,10 @@ pub async fn download<'a>(
 ) -> RateLimitedRouteResponse<FetchResponse<'a>> {
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+    check_bucket(bucket).map_err(|e| rate_limiter.add_headers(e))?;
     let file = File::fetch_file_download(id, bucket, &mut db)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(file)
 }
 
@@ -88,10 +88,10 @@ pub async fn get_data<'a>(
 ) -> RateLimitedRouteResponse<Json<FileData>> {
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    check_bucket(bucket).map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+    check_bucket(bucket).map_err(|e| rate_limiter.add_headers(e))?;
     let file = File::fetch_file_data(id, bucket, &mut db)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(Json(file))
 }
 

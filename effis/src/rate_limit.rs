@@ -165,8 +165,8 @@ impl RateLimiter {
         }
     }
 
-    pub fn wrap_response<T, E>(&self, data: T) -> Result<RateLimitHeaderWrapper<T>, E> {
-        Ok(RateLimitHeaderWrapper {
+    pub fn add_headers<T>(&self, data: T) -> RateLimitHeaderWrapper<T> {
+        RateLimitHeaderWrapper {
             inner: data,
             rate_limit_reset: Header::new(
                 "X-RateLimit-Reset",
@@ -189,6 +189,10 @@ impl RateLimiter {
                 "X-RateLimit-Sent-Bytes",
                 self.sent_bytes.to_string(),
             ),
-        })
+        }
+    }
+
+    pub fn wrap_response<T, E>(&self, data: T) -> Result<RateLimitHeaderWrapper<T>, E> {
+        Ok(self.add_headers(data))
     }
 }

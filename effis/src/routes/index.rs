@@ -35,7 +35,7 @@ pub async fn upload_attachment<'a>(
         upload.spoiler,
     )
     .await
-    .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+    .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(Json(file))
 }
 
@@ -51,7 +51,7 @@ pub async fn get_attachment<'a>(
     rate_limiter.process_rate_limit(0, &mut cache).await?;
     let file = File::fetch_file(id, "attachments", &mut db)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(file)
 }
 
@@ -67,7 +67,7 @@ pub async fn download_attachment<'a>(
     rate_limiter.process_rate_limit(0, &mut cache).await?;
     let file = File::fetch_file_download(id, "attachments", &mut db)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(file)
 }
 
@@ -83,6 +83,6 @@ pub async fn get_attachment_data<'a>(
     rate_limiter.process_rate_limit(0, &mut cache).await?;
     let file = File::fetch_file_data(id, "attachments", &mut db)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(Json(file))
 }
