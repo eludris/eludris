@@ -39,7 +39,7 @@ pub async fn get_static_file<'a>(
         content_type,
     } = get_file(name)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
 
     rate_limiter.wrap_response(FetchResponse {
         file,
@@ -70,7 +70,7 @@ pub async fn download_static_file<'a>(
         content_type,
     } = get_file(name)
         .await
-        .map_err(|e| rate_limiter.wrap_response::<_, ()>(e).unwrap())?;
+        .map_err(|e| rate_limiter.add_headers(e))?;
 
     rate_limiter.wrap_response(Ok(FetchResponse {
         file,
