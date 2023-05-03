@@ -11,3 +11,9 @@ pub use gateway::*;
 pub use info::*;
 pub use messages::*;
 pub use response::*;
+
+#[cfg(feature = "logic")]
+mod logic;
+
+#[cfg(feature = "logic")]
+pub use logic::*;
