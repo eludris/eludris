@@ -66,8 +66,8 @@ A Eludris ID is a 64 bit (8 byte) number, structured like so:
 ╰──────────────────────────────────────────────────────────╯╰────────╯╰────────╯
                              │                                  │         │
                              │                                  │8 bit (1 byte) sequence
-                             │                    8 bit (8 byte) worker ID
-              32 bit (4 byte) Unix timestamp
+                             │                    8 bit (1 byte) worker ID
+              48 bit (6 byte) Unix timestamp
 ```
 
 T: A Unix timestamp with the Eludris epoch (1,650,000,000).
@@ -91,7 +91,7 @@ Generating unique IDs gets a bit challenging when considering federation, unless
 take the simple approach of including the authority of every instance in every ID,
 which Eludris does.
 
-Starting from `0.5` instances will stop being just numerical values and will adapt
+Starting from `0.5`, instances will stop being just numerical values and will adapt
 into a new format of `AUTHORITY/RESOURCE_TYPE/ID`, so for example `eludris.dev/users/305017820775710720`.
 
 <!-- subject to change -->

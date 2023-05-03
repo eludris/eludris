@@ -35,7 +35,7 @@ impl IDGenerator {
             worker_id: env::var("ELUDRIS_WORKER_ID")
                 .map(|v| {
                     v.parse()
-                        .expect("Invalid ELUDRIS_WORKED_ID environment variable")
+                        .expect("Invalid ELUDRIS_WORKER_ID environment variable")
                 })
                 .unwrap_or(0),
         }
