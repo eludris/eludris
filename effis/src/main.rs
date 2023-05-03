@@ -17,10 +17,7 @@ use rocket::{
     Build, Config, Rocket,
 };
 use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
-use todel::{
-    ids::{generate_instance_id, IDGenerator},
-    Conf,
-};
+use todel::{ids::IDGenerator, Conf};
 use tokio::fs;
 
 pub const BUCKETS: [&str; 1] = ["attachments"];
@@ -84,7 +81,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         ));
 
     Ok(rocket::custom(config)
-        .manage(Mutex::new(IDGenerator::new(generate_instance_id())))
+        .manage(Mutex::new(IDGenerator::new()))
         .manage(conf)
         .attach(DB::init())
         .attach(Cache::init())

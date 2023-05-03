@@ -1,20 +1,13 @@
 //! A simple collection of ID related utilities.
 
-use std::time::{Duration, SystemTime};
+use std::{
+    env,
+    time::{Duration, SystemTime},
+};
 
 lazy_static! {
     pub static ref ELUDRIS_EPOCH: SystemTime =
         SystemTime::UNIX_EPOCH + Duration::from_secs(1_650_000_000);
-}
-
-/// Generate an instance id
-pub fn generate_instance_id() -> u64 {
-    // This is just a 48 bit Unix timestamp
-    SystemTime::now()
-        .duration_since(*ELUDRIS_EPOCH)
-        .expect("Couldn't get current timestamp")
-        .as_secs()
-        & 0xFFFFFFFFFFFF
 }
 
 /// An abstraction for generating spec-compliant IDs and handling incrementing them
@@ -22,81 +15,83 @@ pub fn generate_instance_id() -> u64 {
 /// ## Example
 ///
 /// ```rust
-/// use todel::ids::{IDGenerator, generate_instance_id};
+/// use todel::ids::IDGenerator;
 ///
-/// let instance_id = generate_instance_id(); // This is ideally fetched from a database.
-/// let mut generator = IDGenerator::new(instance_id); // Create a new ID generator with your instance ID.
+/// let mut generator = IDGenerator::new(); // Create a new ID generator.
 ///
 /// generator.generate_id(); // Generate an ID which also increments the sequence.
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IDGenerator {
-    instance_id: u64,
-    sequence: u16,
+    sequence: u8,
+    worker_id: u8,
 }
 
 impl IDGenerator {
     /// Create a new IDGenerator from an instance ID.
-    pub fn new(instance_id: u64) -> Self {
+    pub fn new() -> Self {
         Self {
-            instance_id,
             sequence: 0,
+            worker_id: env::var("ELUDRIS_WORKER_ID")
+                .map(|v| {
+                    v.parse()
+                        .expect("Invalid ELUDRIS_WORKED_ID environment variable")
+                })
+                .unwrap_or(0),
         }
     }
 
     /// Generate a new ID and handle incrementing the sequence
-    pub fn generate_id(&mut self) -> u128 {
-        if self.sequence == u16::MAX {
+    pub fn generate_id(&mut self) -> u64 {
+        if self.sequence == u8::MAX {
             self.sequence = 0
         } else {
             self.sequence += 1;
         }
-        (SystemTime::now()
+        SystemTime::now()
             .duration_since(*ELUDRIS_EPOCH)
             .expect("Couldn't get current timestamp")
-            .as_secs() as u128)
-            << 64
-            | (self.instance_id as u128) << 16
-            | self.sequence as u128
+            .as_secs()
+            << 16
+            | (self.worker_id as u64) << 8
+            | self.sequence as u64
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{generate_instance_id, IDGenerator};
+    use super::IDGenerator;
 
     #[test]
     fn id_generator() {
-        let instance_id = generate_instance_id();
-        let mut generator = IDGenerator::new(instance_id);
+        let mut generator = IDGenerator::new();
 
         let id = generator.generate_id();
-        assert_eq!(id & 0xFFFF, 1);
-        assert_eq!((id & 0xFFFFFFFFFFFF0000) >> 16, instance_id as u128);
+        assert_eq!(id & 0xFF, 1);
+        assert_eq!(id >> 8 & 0xFF, 0);
 
         let id = generator.generate_id();
-        assert_eq!(id & 0xFFFF, 2);
-        assert_eq!((id & 0xFFFFFFFFFFFF0000) >> 16, instance_id as u128);
+        assert_eq!(id & 0xFF, 2);
+        assert_eq!(id >> 8 & 0xFF, 0);
     }
 
     #[test]
     fn id_generator_overflow() {
-        let instance_id = generate_instance_id();
         let mut generator = IDGenerator {
-            instance_id,
-            sequence: u16::MAX - 1,
+            sequence: u8::MAX - 1,
+            worker_id: 3,
         };
 
         let id = generator.generate_id();
-        assert_eq!(id & 0xFFFF, u16::MAX as u128);
-        assert_eq!((id & 0xFFFFFFFFFFFF0000) >> 16, instance_id as u128);
+        assert_eq!(id & 0xFF, u8::MAX as u64);
+        assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
 
         let id = generator.generate_id();
-        assert_eq!(id & 0xFFFF, 0);
-        assert_eq!((id & 0xFFFFFFFFFFFF0000) >> 16, instance_id as u128);
+        assert_eq!(id & 0xFF, 0);
+        assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
 
         let id = generator.generate_id();
-        assert_eq!(id & 0xFFFF, 1);
-        assert_eq!((id & 0xFFFFFFFFFFFF0000) >> 16, instance_id as u128);
+        assert_eq!(id & 0xFF, 1);
+        assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
     }
 }
