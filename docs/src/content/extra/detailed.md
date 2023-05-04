@@ -76,7 +76,7 @@ W: The id of the worker that generated this ID.
 
 > **Note**
 >
-> You are expected to pass worker IDs to your Eludris microservices assuming you're
+> You are expected to pass worker IDs to your Eludris microservices, assuming you're
 > running them in a cluster-fashion where you have multiple instances of a microservice
 > running.
 >
