@@ -17,12 +17,12 @@
           "name": "file_id",
           "ordinal": 0,
           "type_info": {
-            "char_set": 224,
+            "char_set": 63,
             "flags": {
-              "bits": 4097
+              "bits": 4129
             },
-            "max_size": 160,
-            "type": "VarString"
+            "max_size": 20,
+            "type": "LongLong"
           }
         },
         {
@@ -81,24 +81,24 @@
           "name": "id",
           "ordinal": 0,
           "type_info": {
-            "char_set": 224,
+            "char_set": 63,
             "flags": {
-              "bits": 4099
+              "bits": 4131
             },
-            "max_size": 160,
-            "type": "VarString"
+            "max_size": 20,
+            "type": "LongLong"
           }
         },
         {
           "name": "file_id",
           "ordinal": 1,
           "type_info": {
-            "char_set": 224,
+            "char_set": 63,
             "flags": {
-              "bits": 4097
+              "bits": 4129
             },
-            "max_size": 160,
-            "type": "VarString"
+            "max_size": 20,
+            "type": "LongLong"
           }
         },
         {
@@ -109,7 +109,7 @@
             "flags": {
               "bits": 4097
             },
-            "max_size": 256,
+            "max_size": 1024,
             "type": "VarString"
           }
         },

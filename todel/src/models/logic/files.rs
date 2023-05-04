@@ -82,7 +82,7 @@ AND bucket = ?
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ",
-                id.to_string(),
+                id,
                 file_id,
                 name,
                 content_type,
@@ -98,7 +98,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
 
             Self {
                 id,
-                file_id: file_id.parse().unwrap(),
+                file_id,
                 name,
                 content_type,
                 hash,
@@ -245,8 +245,8 @@ AND bucket = ?
         .fetch_one(&mut *db)
         .await
         .map(|r| Self {
-            id: r.id.parse().unwrap(),
-            file_id: r.file_id.parse().unwrap(),
+            id: r.id,
+            file_id: r.file_id,
             name: r.name,
             content_type: r.content_type,
             hash: r.hash,

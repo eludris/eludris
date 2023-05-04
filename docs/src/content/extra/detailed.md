@@ -58,36 +58,46 @@ Discord-styled application commands will be available. However -- unlike Discord
 
 ### IDs
 
-A Eludris ID is a 128 bit (16 byte) number, structured like so:
+A Eludris ID is a 64 bit (8 byte) number, structured like so:
 
 ```
- 12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678
- TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  IIIIIIII  IIIIIIII  IIIIIIII  IIIIIIII  IIIIIIII  IIIIIIII  SSSSSSSS  SSSSSSSS
-╰──────────────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────╯╰──────────────────╯
-                                       │                                                                     │                                       │
-                                       │                                                                     │                          16 bit (2 byte) sequence.
-                                       │                                                       48 bits (6 byte) Instance ID.
-                        64 bit (8 byte) Unix timestamp.
+ 12345678  12345678  12345678  12345678  12345678  12345678  12345678  12345678
+ TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  WWWWWWWW  SSSSSSSS
+╰──────────────────────────────────────────────────────────╯╰────────╯╰────────╯
+                             │                                  │         │
+                             │                                  │8 bit (1 byte) sequence
+                             │                    8 bit (1 byte) worker ID
+              48 bit (6 byte) Unix timestamp
 ```
 
-T: A Unix timestamp with the Eludris epoch (1,650,000,000)─.
+T: A Unix timestamp with the Eludris epoch (1,650,000,000).
 
-I: The id of the instance that generated this ID.
+W: The id of the worker that generated this ID.
+
+> **Note**
+>
+> You are expected to pass worker IDs to your Eludris microservices, assuming you're
+> running them in a cluster-fashion where you have multiple instances of a microservice
+> running.
+>
+> You can pass the worker ID using the `ELUDRIS_WORKER_ID` environment variable where it
+> has to be a valid 8-bit integer. By default the worker ID is `0`.
 
 S: The sequence number of this ID
 
-An instance ID is a 48 bit (6 byte) number, structured like so:
+#### Federation & IDs
 
-```
- 12345678  12345678  12345678  12345678  12345678  12345678  12345678 12345678
- TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT  TTTTTTTT TTTTTTTT
-╰─────────────────────────────────────────────────────────────────────────────╯
-                                       │
-                                       │
-                        48 bit (6 byte) Unix timestamp.
-```
+Generating unique IDs gets a bit challenging when considering federation, unless you
+take the simple approach of including the authority of every instance in every ID,
+which Eludris does.
 
-T: 48 bits of the current Unix timestamp (also with the Eludris) epoch.
+Starting from `0.5`, instances will stop being just numerical values and will adapt
+into a new format of `AUTHORITY/RESOURCE_TYPE/ID`, so for example `eludris.dev/users/305017820775710720`.
+
+<!-- subject to change -->
+
+There will be some special cases for common IDs such as `@NAME:AUTHORITY` for users,
+`#ID:AUTHORITY` for channels and `NAME:AUTHORITY` for public communities.
 
 ### KeyDB
 

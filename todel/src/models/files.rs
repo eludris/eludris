@@ -1,12 +1,9 @@
 use serde::{Deserialize, Serialize};
-use serde_with::{serde_as, DisplayFromStr};
 
 /// The data Effis provides for files
-#[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileData {
-    #[serde_as(as = "DisplayFromStr")]
-    pub id: u128,
+    pub id: u64,
     pub name: String,
     pub bucket: String,
     #[serde(default = "spoiler_default")]
@@ -46,8 +43,8 @@ pub enum FileMetadata {
 
 #[cfg(feature = "logic")]
 pub struct File {
-    pub id: u128,
-    pub file_id: u128,
+    pub id: u64,
+    pub file_id: u64,
     pub name: String,
     pub content_type: String,
     pub hash: String,
