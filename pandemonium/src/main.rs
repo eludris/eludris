@@ -55,6 +55,7 @@ async fn main() -> Result<(), anyhow::Error> {
             pubsub,
             Arc::clone(&conf),
         ));
+        log::trace!("Spawned connection handling task for {}", addr);
     }
 
     Ok(())
