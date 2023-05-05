@@ -24,7 +24,7 @@ async fn main() -> Result<(), anyhow::Error> {
         client
             .get_async_connection()
             .await
-            .context("Could't get an async connection to redis")?,
+            .context("Couldn't get an async connection to redis")?,
     ));
 
     let conf = Arc::new(Conf::new_from_env()?);
