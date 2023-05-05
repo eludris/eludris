@@ -47,7 +47,7 @@ async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
 pub async fn handle_connection(
     stream: TcpStream,
     addr: SocketAddr,
-    cache: Connection,
+    cache: Arc<Mutex<Connection>>,
     pubsub: PubSub,
     conf: Arc<Conf>,
 ) {

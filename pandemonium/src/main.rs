@@ -5,7 +5,7 @@ mod utils;
 use anyhow::Context;
 use std::{env, sync::Arc};
 use todel::Conf;
-use tokio::{net::TcpListener, task};
+use tokio::{net::TcpListener, sync::Mutex, task};
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -19,7 +19,13 @@ async fn main() -> Result<(), anyhow::Error> {
         env::var("PANDEMONIUM_PORT").unwrap_or_else(|_| "7160".to_string())
     );
 
-    let redis_client = redis::Client::open(redis_url)?;
+    let client = redis::Client::open(redis_url)?;
+    let cache = Arc::new(Mutex::new(
+        client
+            .get_async_connection()
+            .await
+            .context("Could't get an async connection to redis")?,
+    ));
 
     let conf = Arc::new(Conf::new_from_env()?);
 
@@ -31,7 +37,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     while let Ok((stream, addr)) = socket.accept().await {
         log::debug!("New connection on ip {}", addr);
-        let mut pubsub = match redis_client.get_async_connection().await {
+        let mut pubsub = match client.get_async_connection().await {
             Ok(connection) => connection.into_pubsub(),
             Err(err) => {
                 log::warn!("Couldn't get an async connection to redis, {:?}", err);
@@ -42,17 +48,10 @@ async fn main() -> Result<(), anyhow::Error> {
             log::warn!("Couldn't subscribe to oprish-events: {:?}", err);
             continue;
         }
-        let cache = match redis_client.get_async_connection().await {
-            Ok(connection) => connection,
-            Err(err) => {
-                log::warn!("Couldn't get an async connection to redis, {:?}", err);
-                continue;
-            }
-        };
         task::spawn(handle_connection::handle_connection(
             stream,
             addr,
-            cache,
+            Arc::clone(&cache),
             pubsub,
             Arc::clone(&conf),
         ));
