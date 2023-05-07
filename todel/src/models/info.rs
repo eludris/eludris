@@ -7,18 +7,50 @@ use crate::Conf;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Represents information about the connected Eludris instance.
+///
+/// -----
+///
+/// # Example
+///
+/// ```json
+/// {
+///   "instance_name": "eludris",
+///   "description": "The *almost* official Eludris instance - ooliver.\nThis is **not** a testing instance as it is bridged to Eludis. Use your own local instance for testing.",
+///   "version": "0.3.2",
+///   "message_limit": 2000,
+///   "oprish_url": "https://api.eludris.gay",
+///   "pandemonium_url": "wss://ws.eludris.gay/",
+///   "effis_url": "https://cdn.eludris.gay",
+///   "file_size": 20000000,
+///   "attachment_file_size": 25000000
+/// }
+/// ```
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo {
+    /// The name of the instance.
     pub instance_name: String,
+    /// The description of the instance.
+    ///
+    /// This is between 1 and 2048 characters long.
     pub description: Option<String>,
+    /// The Eludris version the instance is running.
     pub version: String,
+    /// The maximum length of a message's content.
     pub message_limit: usize,
+    /// The URL of the instance's Oprish (REST API) endpoint.
     pub oprish_url: String,
+    /// The URL of the instance's Pandemonium (WebSocket API) endpoint.
     pub pandemonium_url: String,
+    /// The URL of the instance's Effis (CDN) endpoint.
     pub effis_url: String,
+    /// The maximum file size (in bytes) of an asset.
     pub file_size: u64,
+    /// The maximum file size (in bytes) of an attachment.
     pub attachment_file_size: u64,
+    /// The rate limits that apply to the connected Eludris instance.
+    ///
+    /// This is not present if the `rate_limits` query parameter is not set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rate_limits: Option<InstanceRateLimits>,
 }
