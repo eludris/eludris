@@ -9,6 +9,28 @@ use crate::{
     Cache,
 }; // poggers
 
+/// Get information about the instance you're sending this request to.
+///
+/// Most of this data comes from the instance's configuration.
+///
+/// -----
+///
+/// # Example
+///
+/// ```sh
+/// curl https://api.eludris.gay/
+///
+/// {
+///   "instance_name": "eludris",
+///   "description": "The *almost* official Eludris instance - ooliver.\nThis is **not** a testing instance as it is bridged to Eludis. Use your own local instance for testing.",
+///   "version": "0.3.2",
+///   "message_limit": 2000,
+///   "oprish_url": "https://api.eludris.gay",
+///   "pandemonium_url": "wss://ws.eludris.gay/",
+///   "effis_url": "https://cdn.eludris.gay",
+///   "file_size": 20000000,
+///   "attachment_file_size": 25000000
+/// }
 #[autodoc(category = "Instance")]
 #[get("/?<rate_limits>")]
 pub async fn get_instance_info(
