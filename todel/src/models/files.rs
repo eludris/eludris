@@ -1,14 +1,37 @@
 use serde::{Deserialize, Serialize};
 
-/// The data Effis provides for files
+/// Represents a file stored on Effis.
+///
+/// -----
+///
+/// # Example
+///
+/// ```json
+/// {
+///   "id": 2195354353667,
+///   "name": "das_ding.png",
+///   "bucket": "attachments",
+///   "metadata": {
+///     "type": "image",
+///     "width": 1600,
+///     "height": 1600
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileData {
+    /// The ID of the file.
     pub id: u64,
+    /// The name of the file.
     pub name: String,
+    /// The bucket the file is stored in.
     pub bucket: String,
+    /// If the file is spoilered.
     #[serde(default = "spoiler_default")]
     #[serde(skip_serializing_if = "is_false")]
     pub spoiler: bool,
+    /// The [`FileMetadata`] of the file.
     pub metadata: FileMetadata,
 }
 
