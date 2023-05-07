@@ -2,11 +2,33 @@ use serde::{Deserialize, Serialize};
 
 use super::RateLimitConf;
 
-/// Oprish rate limit config.
+/// Rate limits that apply to Oprish (The REST API).
+///
+/// # Example
+///
+/// ```json
+/// {
+///   "info": {
+///     "reset_after": 5,
+///     "limit": 2
+///   },
+///   "message_create": {
+///     "reset_after": 5,
+///     "limit": 10
+///   },
+///   "rate_limits": {
+///     "reset_after": 5,
+///     "limit": 2
+///   }
+/// }
+/// ```
+#[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OprishRateLimits {
+    /// Rate limits for the `GET /` endpoint.
     #[serde(default = "info_default")]
     pub info: RateLimitConf,
+    /// Rate limits for the `POST /messages` endpoint.
     #[serde(default = "message_create_default")]
     pub message_create: RateLimitConf,
     #[serde(default = "rate_limits_default")]
