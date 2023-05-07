@@ -41,10 +41,27 @@ pub struct EffisRateLimits {
     pub fetch_file: RateLimitConf,
 }
 
+/// Represents a single rate limit for Effis.
+///
+/// -----
+///
+/// # Example
+///
+/// ```json
+/// {
+///   "reset_after": 60,
+///   "limit": 5,
+///   "file_size_limit": 30000000
+/// }
+/// ```
+#[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EffisRateLimitConf {
+    /// The amount of seconds after which the rate limit resets.
     pub reset_after: u32,
+    /// The amount of requests that can be made within the `reset_after` interval.
     pub limit: u32,
+    /// The maximum amount of bytes that can be sent within the `reset_after` interval.
     #[serde(deserialize_with = "deserialize_file_size")]
     pub file_size_limit: u64,
 }
