@@ -8,6 +8,22 @@ use todel::http::ClientIP;
 use todel::models::{ErrorResponse, Message, ServerPayload};
 use todel::Conf;
 
+/// Post a message to Eludris.
+///
+/// -----
+///
+/// # Example
+///
+/// ```sh
+/// curl \
+///   --json '{"author":"Not a weeb","content":"Hello, World!"}' \
+///   https://api.eludris.gay/messages
+///
+/// {
+///   "author": "Not a weeb",
+///   "content": "Hello, World!"
+/// }
+/// ```
 #[autodoc("/messages", category = "Messaging")]
 #[post("/", data = "<message>")]
 pub async fn create_message(
