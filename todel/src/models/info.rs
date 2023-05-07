@@ -6,7 +6,7 @@ use crate::Conf;
 #[cfg(feature = "logic")]
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// The instance info payload
+/// Represents information about the connected Eludris instance.
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo {
@@ -23,11 +23,15 @@ pub struct InstanceInfo {
     pub rate_limits: Option<InstanceRateLimits>,
 }
 
-/// The type which represents all of an instance's rate limit configuration
+/// Represents all rate limits that apply to the connected Eludris instance.
+#[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceRateLimits {
+    /// Rate limits for Oprish (The REST API).
     pub oprish: OprishRateLimits,
+    /// Rate limits for Pandemonium (The WebSocket API).
     pub pandemonium: RateLimitConf,
+    /// Rate limits for Effis (The CDN).
     pub effis: EffisRateLimits,
 }
 
