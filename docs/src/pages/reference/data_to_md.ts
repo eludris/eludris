@@ -15,11 +15,12 @@ export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
-    content += `\n\n<span class="method">${info.item.method
-      }</span><span class="route">${info.item.route.replace(
-        /<.+?>/gm,
-        '<span class="special-segment">$&</span>'
-      )}</span>`;
+    content += `\n\n<span class="method">${
+      info.item.method
+    }</span><span class="route">${info.item.route.replace(
+      /<.+?>/gm,
+      '<span class="special-segment">$&</span>'
+    )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -85,15 +86,18 @@ const displayField = (field: FieldInfo): string => {
   const innerType =
     field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.field_type}.json`));
   if (innerType) {
-    let innerData: StructInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString()).item;
+    let innerData: StructInfo = JSON.parse(
+      readFileSync(`public/autodoc/${innerType}`).toString()
+    ).item;
     let fields = '';
     innerData.fields.forEach((field) => {
       fields += `${displayField(field)}\n`;
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
-    }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
+    field.nullable ? '?' : ''
+  }|${displayInlineDoc(field.doc)}|`;
 };
 
 const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
@@ -163,8 +167,15 @@ const displayRoute = (item: RouteInfo): string => {
   }
   if (item.body_type) {
     content += '\n\n## Request Body';
-    let body_type = item.body_type.replace(/Json<(.+)>/gm, '$1');
-    content += `\n\n${displayType(body_type)}`;
+    let body_type = item.body_type;
+    if (body_type.startsWith('Json<')) {
+      content += `\n\nA JSON ${displayType(body_type)}`;
+    } else if (body_type.startsWith('Form<')) {
+      content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
+    } else {
+      content += `\n\n${displayType(body_type)}`;
+    }
+
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
       let innerData: StructInfo | EnumInfo = JSON.parse(
@@ -215,6 +226,7 @@ const displayType = (type: string): string => {
   type = type
     .replace(/Option<(.+)>/gm, '$1')
     .replace(/Json<(.+)>/gm, '$1')
+    .replace(/Form<(.+)>/gm, '$1')
     .replace(/</gm, '\\<');
   let entry = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
   return entry ? `[${type}](/reference/${entry})` : type;

@@ -47,21 +47,29 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
         PathArguments::AngleBracketed(args) => {
             let mut arg_strings = vec![];
 
-            args.args.iter().try_for_each(|a| {
-                if let GenericArgument::Type(Type::Path(ty)) = a {
+            args.args.iter().try_for_each(|a| match a {
+                GenericArgument::Type(Type::Path(ty)) => {
                     arg_strings.push(display_path_segment(ty.path.segments.last().ok_or_else(
                         || Error::new(ty.path.span(), "Cannot extract type from field"),
                     )?)?);
                     Ok(())
-                } else {
-                    Err(Error::new(
-                        a.span(),
-                        "Cannot generate documentation for non-type generics",
-                    ))
                 }
+                GenericArgument::Type(Type::Reference(ty)) => {
+                    arg_strings.push(get_type(&ty.elem)?);
+                    Ok(())
+                }
+                GenericArgument::Lifetime(_) => Ok(()),
+                _ => Err(Error::new(
+                    a.span(),
+                    "Cannot generate documentation for non-type generics",
+                )),
             })?;
 
-            format!("{}<{}>", segment.ident, arg_strings.join(", "))
+            if !arg_strings.is_empty() {
+                format!("{}<{}>", segment.ident, arg_strings.join(", "))
+            } else {
+                segment.ident.to_string()
+            }
         }
         _ => {
             return Err(Error::new(

@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use proc_macro::Span;
-use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType, Type};
+use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType};
 
 use super::{
     models::{Item, ParamInfo, RouteInfo},
-    utils::{display_path_segment, get_type},
+    utils::get_type,
 };
 
 pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
@@ -51,14 +51,9 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         if let FnArg::Typed(param) = param {
             if let Pat::Ident(ident) = *param.pat {
                 let name = ident.ident.to_string();
-                if let Type::Path(ty) = *param.ty {
-                    let param_type =
-                        display_path_segment(ty.path.segments.last().ok_or_else(|| {
-                            Error::new(ty.path.span(), "Cannot extract type from field")
-                        })?)?;
+                if let Ok(param_type) = get_type(&param.ty) {
                     params.insert(name, param_type);
                 } else {
-                    // we still want these as guards
                     params.insert(name, "Guard".to_string());
                 }
             }
