@@ -246,7 +246,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
         Ok(file.get_file_data())
     }
 
-    async fn get<'a>(id: u128, bucket: &'a str, db: &mut PoolConnection<MySql>) -> Option<Self> {
+    async fn get<'a>(id: u64, bucket: &'a str, db: &mut PoolConnection<MySql>) -> Option<Self> {
         sqlx::query!(
             "
 SELECT *
@@ -274,7 +274,7 @@ AND bucket = ?
     }
 
     pub async fn fetch_file<'a>(
-        id: u128,
+        id: u64,
         bucket: &'a str,
         db: &mut PoolConnection<MySql>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
@@ -303,7 +303,7 @@ AND bucket = ?
     }
 
     pub async fn fetch_file_download<'a>(
-        id: u128,
+        id: u64,
         bucket: &'a str,
         db: &mut PoolConnection<MySql>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
@@ -332,7 +332,7 @@ AND bucket = ?
     }
 
     pub async fn fetch_file_data<'a>(
-        id: u128,
+        id: u64,
         bucket: &'a str,
         db: &mut PoolConnection<MySql>,
     ) -> Result<FileData, ErrorResponse> {

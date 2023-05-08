@@ -41,7 +41,7 @@ pub async fn upload_attachment<'a>(
 
 #[get("/<id>")]
 pub async fn get_attachment<'a>(
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -57,7 +57,7 @@ pub async fn get_attachment<'a>(
 
 #[get("/<id>/download")]
 pub async fn download_attachment<'a>(
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -73,7 +73,7 @@ pub async fn download_attachment<'a>(
 
 #[get("/<id>/data")]
 pub async fn get_attachment_data<'a>(
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,

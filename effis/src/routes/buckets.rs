@@ -85,7 +85,7 @@ pub async fn upload_file<'a>(
 #[get("/<bucket>/<id>")]
 pub async fn get_file<'a>(
     bucket: &'a str,
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -118,7 +118,7 @@ pub async fn get_file<'a>(
 #[get("/<bucket>/<id>/download")]
 pub async fn download_file<'a>(
     bucket: &'a str,
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -136,7 +136,7 @@ pub async fn download_file<'a>(
 #[get("/<bucket>/<id>/data")]
 pub async fn get_data<'a>(
     bucket: &'a str,
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,

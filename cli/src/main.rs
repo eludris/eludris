@@ -74,7 +74,7 @@ enum AttachmentSubcommand {
     /// Removes an attachment
     Remove {
         /// The id of the attchment to be removed
-        id: u128,
+        id: u64,
     },
 }
 
