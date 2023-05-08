@@ -100,8 +100,23 @@ pub async fn get_file<'a>(
     rate_limiter.wrap_response(file)
 }
 
+/// Download a file by ID from a specific bucket.
+///
+/// The `Content-Deposition` header is set to `attachment`.
+/// Use the [`get_file`] endpoint to get `Content-Deposition` set to `inline`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/attachments/2198189244420/download
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<bucket>/<id>/download")]
-pub async fn download<'a>(
+pub async fn download_file<'a>(
     bucket: &'a str,
     id: u128,
     ip: ClientIP,
