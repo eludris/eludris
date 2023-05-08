@@ -13,8 +13,34 @@ use crate::{
     Cache, BUCKETS, DB,
 };
 
+/// Upload a file to Effis under a specific bucket.
+/// At the moment, only the attachments bucket is supported.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -F file=@trolley.mp4 \
+///   -F spoiler=true \
+///   https://cdn.eludris.gay/attachments/
+///
+/// {
+///   "id": 2198189244420,
+///   "name": "trolley.mp4",
+///   "bucket": "attachments",
+///   "spoiler": true,
+///   "metadata": {
+///     "type": "video",
+///     "width": 576,
+///     "height": 682
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[post("/<bucket>", data = "<upload>")]
-pub async fn upload<'a>(
+pub async fn upload_file<'a>(
     bucket: &'a str,
     upload: Form<FileUpload<'a>>,
     ip: ClientIP,

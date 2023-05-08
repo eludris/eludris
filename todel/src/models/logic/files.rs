@@ -21,6 +21,21 @@ pub struct FetchResponse<'a> {
     pub content_type: ContentType,
 }
 
+/// The data format for uploading a file.
+///
+/// This is a `multipart/form-data` form.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -F file=@trolley.mp4 \
+///   -F spoiler=true \
+///   https://cdn.eludris.gay/attachments/
+/// ```
+#[autodoc(category = "Files")]
 #[derive(Debug, FromForm)]
 pub struct FileUpload<'a> {
     pub file: TempFile<'a>,
