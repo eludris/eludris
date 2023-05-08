@@ -133,8 +133,31 @@ pub async fn download_file<'a>(
     rate_limiter.wrap_response(file)
 }
 
+/// Get a file's metadata by ID from a specific bucket.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   https://cdn.eludris.gay/attachments/2198189244420/data
+///
+/// {
+///   "id": 2198189244420,
+///   "name": "trolley.mp4",
+///   "bucket": "attachments",
+///   "spoiler": true,
+///   "metadata": {
+///     "type": "video",
+///     "width": 576,
+///     "height": 682
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<bucket>/<id>/data")]
-pub async fn get_data<'a>(
+pub async fn get_file_data<'a>(
     bucket: &'a str,
     id: u64,
     ip: ClientIP,
