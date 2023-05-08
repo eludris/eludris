@@ -70,6 +70,22 @@ pub async fn get_static_file<'a>(
     })
 }
 
+/// Download a static file by its name.
+/// Static files are added by the instance owner and cannot be externally modified.
+///
+/// The `Content-Deposition` header is set to `attachment`.
+/// Use the [`get_static_file`] endpoint to get `Content-Deposition` set to `inline`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/static/pengin.mp4/download
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<name>/download", rank = 1)]
 pub async fn download_static_file<'a>(
     name: &'a str,
