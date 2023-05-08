@@ -13,6 +13,31 @@ use crate::{
     Cache, DB,
 };
 
+/// Upload an attachment to Effis under a specific bucket.
+/// This is a shortcut to [`upload_file`] with the attachments bucket.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -F file=@thang-big.png \
+///   -F spoiler=false \
+///   https://cdn.eludris.gay/
+///
+/// {
+///   "id": 2199681302540,
+///   "name": "thang-big.png",
+///   "bucket": "attachments",
+///   "metadata": {
+///     "type": "image",
+///     "width": 702,
+///     "height": 702
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[post("/", data = "<upload>")]
 pub async fn upload_attachment<'a>(
     upload: Form<FileUpload<'a>>,
