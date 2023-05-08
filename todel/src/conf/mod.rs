@@ -110,10 +110,13 @@ impl Default for EffisConf {
     }
 }
 
-/// RateLimit config data.
+/// Represents a single rate limit.
+#[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RateLimitConf {
+    /// The amount of seconds after which the rate limit resets.
     pub reset_after: u32,
+    /// The amount of requests that can be made within the `reset_after` interval.
     pub limit: u32,
 }
 
