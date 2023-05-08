@@ -32,12 +32,12 @@ pub fn get_doc(attrs: &[Attribute]) -> Result<Option<String>, Error> {
 }
 
 pub fn get_type(ty: &Type) -> Result<String, Error> {
-    if let Type::Path(ty) = ty {
-        Ok(display_path_segment(ty.path.segments.last().ok_or_else(
+    match ty {
+        Type::Path(ty) => Ok(display_path_segment(ty.path.segments.last().ok_or_else(
             || Error::new(ty.span(), "Cannot get last segment of type path"),
-        )?)?)
-    } else {
-        Err(Error::new(ty.span(), "Cannot document non-path types"))
+        )?)?),
+        Type::Reference(ty) => get_type(&ty.elem),
+        _ => Err(Error::new(ty.span(), "Cannot document non-path types")),
     }
 }
 

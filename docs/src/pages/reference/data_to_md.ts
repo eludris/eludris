@@ -40,7 +40,7 @@ export default (info: ItemInfo): string => {
         variant_example = parts.join('-----');
         content += `\n\n${displayDoc(doc)}`;
       }
-      content += `\n${displayVariant(variant, <EnumInfo>info.item)}`;
+      content += `\n${displayVariant(variant, <EnumInfo>info.item, info.name)}`;
       if (variant_example) {
         content += `\n${variant_example}`;
       }
@@ -100,21 +100,25 @@ const displayField = (field: FieldInfo): string => {
   }|${displayInlineDoc(field.doc)}|`;
 };
 
-const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
+const getTagDescription = (tag: string, model: string): string => {
+  return `The ${tag} of this ${model} variant.`;
+};
+
+const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): string => {
   let content = '';
   if (variant.type == VariantType.Unit) {
     if (item.tag) {
       content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${switchCase(
         variant.name,
         item.rename_all
-      )}"|The tag of this variant`;
+      )}"|${getTagDescription(item.tag, model)}`;
     }
   } else if (variant.type == VariantType.Tuple) {
     if (item.tag) {
       content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${switchCase(
         variant.name,
         item.rename_all
-      )}"|The tag of this variant`;
+      )}"|${getTagDescription(item.tag, model)}`;
       if (item.content) {
         content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
       }
@@ -133,10 +137,10 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
   } else if (variant.type == VariantType.Struct) {
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
-      content += `\n|${item.tag}|"${switchCase(
-        variant.name,
-        item.rename_all
-      )}"|The tag of this variant|`;
+      content += `\n|${item.tag}|"${switchCase(variant.name, item.rename_all)}|${getTagDescription(
+        item.tag,
+        model
+      )}`;
       if (item.content) {
         content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant`;
         content += '\n\nWith the data of this variant being:';
@@ -220,14 +224,22 @@ const switchCase = (content: string, new_case: string | null): string => {
 };
 
 const displayType = (type: string): string => {
-  if (type == 'u32' || type == 'u64' || type == 'usize') {
-    return 'Number';
-  }
   type = type
     .replace(/Option<(.+)>/gm, '$1')
     .replace(/Json<(.+)>/gm, '$1')
     .replace(/Form<(.+)>/gm, '$1')
     .replace(/</gm, '\\<');
+
+  if (type == 'u32' || type == 'u64' || type == 'usize') {
+    return 'Number';
+  } else if (type == 'bool') {
+    return 'Boolean';
+  } else if (type == 'str') {
+    return 'String';
+  } else if (type == 'TempFile') {
+    return 'File';
+  }
+
   let entry = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
   return entry ? `[${type}](/reference/${entry})` : type;
 };

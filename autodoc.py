@@ -38,7 +38,6 @@ if __name__ == "__main__":
             ["cargo", "build", "-p", crate, "--all-features"], env=os.environ
         )
         for item in crate_path.iterdir():
-            print(item)
             items.append(f"{crate}/{item.name}")
 
     autodoc_path.joinpath("index.json").write_text(json.dumps(items))
