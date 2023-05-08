@@ -96,6 +96,22 @@ pub async fn get_attachment<'a>(
     rate_limiter.wrap_response(file)
 }
 
+/// Get an attachment by ID.
+/// This is a shortcut to [`download_file`] with the attachments bucket.
+///
+/// The `Content-Deposition` header is set to `attachment`.
+/// Use the [`get_attachment`] endpoint to get `Content-Deposition` set to `inline`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/attachments/2199681302540/download
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<id>/download")]
 pub async fn download_attachment<'a>(
     id: u64,
