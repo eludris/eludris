@@ -122,5 +122,12 @@ pub enum ClientPayload {
     /// `RAND` being a random floating number between 0 and 1.
     /// >
     /// > This is done to avoid immediately overloading Pandemonium by connecting if it ever has to go down.
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// > {"op":"PING"}
+    /// < {"op":"PONG"}
+    /// ```
     Ping,
 }
