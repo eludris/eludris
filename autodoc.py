@@ -11,7 +11,7 @@ CRATES = ["todel", "oprish", "effis"]  # The other crates do not have autodoc in
 EXTRA_COMMAND_ENV = {"ELUDRIS_AUTODOC": "1"}
 
 # Logging setup
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format="%(message)s", level=logging.INFO)
 log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
@@ -34,8 +34,11 @@ if __name__ == "__main__":
         crate_path = autodoc_path.joinpath(crate)
         crate_path.mkdir()
         log.info(f"\033[3;35mCompiling \033[1;35m{crate}...\033[0m")
-        subprocess.run(["cargo", "build", "-p", crate], env=os.environ)
+        subprocess.run(
+            ["cargo", "build", "-p", crate, "--all-features"], env=os.environ
+        )
         for item in crate_path.iterdir():
+            print(item)
             items.append(f"{crate}/{item.name}")
 
     autodoc_path.joinpath("index.json").write_text(json.dumps(items))
