@@ -23,6 +23,22 @@ struct StaticFile<'a> {
     content_type: Option<ContentType>,
 }
 
+/// Get a static file by its name.
+/// Static files are added by the instance owner and cannot be externally modified.
+///
+/// The `Content-Deposition` header is set to `inline`.
+/// Use the [`download_static_file`] endpoint to get `Content-Deposition` set to `attachment`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/static/pengin.mp4
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<name>", rank = 1)]
 pub async fn get_static_file<'a>(
     name: &'a str,
