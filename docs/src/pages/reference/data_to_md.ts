@@ -11,14 +11,22 @@ import {
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
+const TYPE_OVERRIDES: Record<string, string> = {
+  FetchResponse: 'Raw file content.'
+};
+
 export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
+    const route = info.item.route.replace(/<.+?>/gm, (match) => {
+      // Replace angle brackets with HTML character entities
+      return match.replace('<', '&lt;').replace('>', '&gt;');
+    });
     content += `\n\n<span class="method">${
       info.item.method
-    }</span><span class="route">${info.item.route.replace(
-      /<.+?>/gm,
+    }</span><span class="route">${route.replace(
+      /&lt;*.+?&gt;/gm,
       '<span class="special-segment">$&</span>'
     )}</span>`;
   }
@@ -54,7 +62,7 @@ export default (info: ItemInfo): string => {
   return content;
 };
 
-const briefItem = (item: StructInfo | EnumInfo): string => {
+const briefItem = (item: StructInfo | EnumInfo, model: string): string => {
   if (item.type == ItemType.Struct) {
     if (!item.fields.length) {
       return '';
@@ -65,7 +73,7 @@ const briefItem = (item: StructInfo | EnumInfo): string => {
     let content = '';
     item.variants.forEach((variant) => {
       content += `\n- ${uncodeName(variant.name)}\n\n${variant.doc ?? ''}`;
-      content += `\n${displayVariant(variant, item)}`;
+      content += `\n${displayVariant(variant, item, model)}`;
     });
     return content;
   }
@@ -128,10 +136,8 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
         entry.endsWith(`/${variant.field_type}.json`)
       );
       if (innerType) {
-        let innerData: StructInfo | EnumInfo = JSON.parse(
-          readFileSync(`public/autodoc/${innerType}`).toString()
-        ).item;
-        content += `\n\n${briefItem(innerData)}`;
+        let data = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(data.item, data.name)}`;
       }
     }
   } else if (variant.type == VariantType.Struct) {
@@ -180,10 +186,8 @@ const displayRoute = (item: RouteInfo): string => {
 
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
-      let innerData: StructInfo | EnumInfo = JSON.parse(
-        readFileSync(`public/autodoc/${innerType}`).toString()
-      ).item;
-      content += `\n\n${briefItem(innerData)}`;
+      let data: any = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
   if (item.return_type) {
@@ -195,10 +199,8 @@ const displayRoute = (item: RouteInfo): string => {
     content += `\n\n${displayType(return_type)}`;
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
     if (innerType) {
-      let innerData: StructInfo | EnumInfo = JSON.parse(
-        readFileSync(`public/autodoc/${innerType}`).toString()
-      ).item;
-      content += `\n\n${briefItem(innerData)}`;
+      let data: any = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
   return content.substring(2); // to remove the first double newline
@@ -236,6 +238,8 @@ const displayType = (type: string): string => {
     return 'String';
   } else if (type == 'TempFile') {
     return 'File';
+  } else if (type in TYPE_OVERRIDES) {
+    return TYPE_OVERRIDES[type];
   }
 
   let entry = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
