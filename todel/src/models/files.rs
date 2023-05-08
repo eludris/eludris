@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// -----
 ///
-/// # Example
+/// ### Example
 ///
 /// ```json
 /// {
@@ -47,7 +47,7 @@ fn spoiler_default() -> bool {
 ///
 /// -----
 ///
-/// # Examples
+/// ### Examples
 ///
 /// ```json
 /// {

@@ -7,7 +7,7 @@ use super::RateLimitConf;
 ///
 /// -----
 ///
-/// # Example
+/// ### Example
 ///
 /// ```json
 /// {
@@ -45,7 +45,7 @@ pub struct EffisRateLimits {
 ///
 /// -----
 ///
-/// # Example
+/// ### Example
 ///
 /// ```json
 /// {

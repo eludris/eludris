@@ -15,7 +15,7 @@ use crate::{
 ///
 /// -----
 ///
-/// # Example
+/// ### Example
 ///
 /// ```sh
 /// curl https://api.eludris.gay/

@@ -12,7 +12,7 @@ use todel::Conf;
 ///
 /// -----
 ///
-/// # Example
+/// ### Example
 ///
 /// ```sh
 /// curl \
