@@ -22,7 +22,43 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 ///   "pandemonium_url": "wss://ws.eludris.gay/",
 ///   "effis_url": "https://cdn.eludris.gay",
 ///   "file_size": 20000000,
-///   "attachment_file_size": 25000000
+///   "attachment_file_size": 25000000,
+///   "rate_limits": {
+///     "oprish": {
+///       "info": {
+///         "reset_after": 5,
+///         "limit": 2
+///       },
+///       "message_create": {
+///         "reset_after": 5,
+///         "limit": 10
+///       },
+///       "rate_limits": {
+///         "reset_after": 5,
+///         "limit": 2
+///       }
+///     },
+///     "pandemonium": {
+///       "reset_after": 10,
+///       "limit": 5
+///     },
+///     "effis": {
+///       "assets": {
+///         "reset_after": 60,
+///         "limit": 5,
+///         "file_size_limit": 30000000
+///       },
+///       "attachments": {
+///         "reset_after": 180,
+///         "limit": 20,
+///         "file_size_limit": 500000000
+///       },
+///       "fetch_file": {
+///         "reset_after": 60,
+///         "limit": 30
+///       }
+///     }
+///   }
 /// }
 /// ```
 #[autodoc(category = "Instance")]
@@ -56,6 +92,49 @@ pub struct InstanceInfo {
 }
 
 /// Represents all rate limits that apply to the connected Eludris instance.
+///
+/// -----
+///
+/// ### Example
+
+/// ```json
+/// {
+///   "oprish": {
+///     "info": {
+///       "reset_after": 5,
+///       "limit": 2
+///     },
+///     "message_create": {
+///       "reset_after": 5,
+///       "limit": 10
+///     },
+///     "rate_limits": {
+///       "reset_after": 5,
+///       "limit": 2
+///     }
+///   },
+///   "pandemonium": {
+///     "reset_after": 10,
+///     "limit": 5
+///   },
+///   "effis": {
+///     "assets": {
+///       "reset_after": 60,
+///       "limit": 5,
+///       "file_size_limit": 30000000
+///     },
+///     "attachments": {
+///       "reset_after": 180,
+///       "limit": 20,
+///       "file_size_limit": 500000000
+///     },
+///     "fetch_file": {
+///       "reset_after": 60,
+///       "limit": 30
+///     }
+///   }
+/// }
+/// ```
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceRateLimits {

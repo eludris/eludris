@@ -111,6 +111,17 @@ impl Default for EffisConf {
 }
 
 /// Represents a single rate limit.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "reset_after": 60,
+///   "limit": 30
+/// }
+/// ```
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RateLimitConf {

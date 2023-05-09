@@ -4,6 +4,8 @@ use super::RateLimitConf;
 
 /// Rate limits that apply to Oprish (The REST API).
 ///
+/// -----
+///
 /// ### Example
 ///
 /// ```json
