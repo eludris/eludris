@@ -15,7 +15,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// ```json
 /// {
 ///   "instance_name": "eludris",
-///   "description": "The *almost* official Eludris instance - ooliver.\nThis is **not** a testing instance as it is bridged to Eludis. Use your own local instance for testing.",
+///   "description": "The *almost* official Eludris instance - ooliver.",
 ///   "version": "0.3.2",
 ///   "message_limit": 2000,
 ///   "oprish_url": "https://api.eludris.gay",
