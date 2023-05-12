@@ -20,10 +20,8 @@ export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
-    const route = info.item.route.replace(/<.+?>/gm, (match) => {
-      // Replace angle brackets with HTML character entities
-      return match.replace('<', '&lt;').replace('>', '&gt;');
-    });
+    // Replace angle brackets with HTML character entities
+    const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
     content += `\n\n<span class="method">${
       info.item.method
     }</span><span class="route">${route.replace(
