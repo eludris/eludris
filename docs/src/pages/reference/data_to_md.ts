@@ -137,10 +137,8 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
   } else if (variant.type == VariantType.Struct) {
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
-      content += `\n|${item.tag}|"${switchCase(variant.name, item.rename_all)}|${getTagDescription(
-        item.tag,
-        model
-      )}`;
+      let desc = getTagDescription(item.tag, model);
+      content += `\n|${item.tag}|"${switchCase(variant.name, item.rename_all)}|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant`;
         content += '\n\nWith the data of this variant being:';
