@@ -55,3 +55,51 @@ pub async fn create_message(
 pub fn get_routes() -> Vec<Route> {
     routes![create_message]
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{rocket, Cache};
+    use deadpool_redis::Connection;
+    use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
+    use todel::{
+        models::{Message, ServerPayload},
+    };
+
+    #[rocket::async_test]
+    async fn create_message() {
+        let client = Client::untracked(rocket().unwrap()).await.unwrap();
+        let message = Message {
+            author: "Woo".to_string(),
+            content: "HeWoo there".to_string(),
+        };
+
+        let message_str = serde_json::to_string(&message).unwrap();
+        let payload = serde_json::to_string(&ServerPayload::MessageCreate(message)).unwrap();
+
+        let pool = client.rocket().state::<Cache>().unwrap();
+
+        let cache = pool.get().await.unwrap();
+        let mut cache = Connection::take(cache).into_pubsub();
+        cache.subscribe("oprish-events").await.unwrap();
+
+        let response = client
+            .post("/messages/")
+            .body(&message_str)
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), message_str);
+
+        assert_eq!(
+            cache
+                .into_on_message()
+                .next()
+                .await
+                .unwrap()
+                .get_payload::<String>()
+                .unwrap(),
+            payload
+        );
+    }
+}
