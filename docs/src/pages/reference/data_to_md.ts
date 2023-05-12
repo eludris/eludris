@@ -7,7 +7,8 @@ import {
   ItemType,
   StructInfo,
   VariantType,
-  RouteInfo
+  RouteInfo,
+  Item
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
@@ -62,13 +63,13 @@ export default (info: ItemInfo): string => {
   return content;
 };
 
-const briefItem = (item: StructInfo | EnumInfo, model: string): string => {
+const briefItem = (item: Item, model: string): string => {
   if (item.type == ItemType.Struct) {
     if (!item.fields.length) {
       return '';
     }
     return displayFields(item.fields);
-  } else {
+  } else if (item.type == ItemType.Enum) {
     console.log(item);
     let content = '';
     item.variants.forEach((variant) => {
@@ -76,6 +77,8 @@ const briefItem = (item: StructInfo | EnumInfo, model: string): string => {
       content += `\n${displayVariant(variant, item, model)}`;
     });
     return content;
+  } else {
+    throw new Error(`Unexpected item type: ${item.type}`);
   }
 };
 
@@ -136,7 +139,7 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
         entry.endsWith(`/${variant.field_type}.json`)
       );
       if (innerType) {
-        let data = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
         content += `\n\n${briefItem(data.item, data.name)}`;
       }
     }
@@ -186,7 +189,7 @@ const displayRoute = (item: RouteInfo): string => {
 
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
-      let data: any = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
       content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
@@ -199,7 +202,7 @@ const displayRoute = (item: RouteInfo): string => {
     content += `\n\n${displayType(return_type)}`;
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
     if (innerType) {
-      let data: any = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
       content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
