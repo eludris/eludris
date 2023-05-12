@@ -29,12 +29,9 @@ pub fn get_routes() -> Vec<Route> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{rocket};
+    use crate::rocket;
     use rocket::{http::Status, local::asynchronous::Client};
-    use todel::{
-        models::{InstanceInfo},
-        Conf,
-    };
+    use todel::{models::InstanceInfo, Conf};
 
     #[rocket::async_test]
     async fn index() {

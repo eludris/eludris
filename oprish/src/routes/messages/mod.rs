@@ -61,9 +61,7 @@ mod tests {
     use crate::{rocket, Cache};
     use deadpool_redis::Connection;
     use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
-    use todel::{
-        models::{Message, ServerPayload},
-    };
+    use todel::models::{Message, ServerPayload};
 
     #[rocket::async_test]
     async fn create_message() {
