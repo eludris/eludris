@@ -74,18 +74,18 @@ fn spoiler_default() -> bool {
 pub enum FileMetadata {
     Text,
     Image {
-        // The width of the image in pixels.
+        /// The width of the image in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         width: Option<usize>,
-        // The height of the image in pixels.
+        /// The height of the image in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         height: Option<usize>,
     },
     Video {
-        // The width of the video in pixels.
+        /// The width of the video in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         width: Option<usize>,
-        // The height of the video in pixels.
+        /// The height of the video in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         height: Option<usize>,
     },
