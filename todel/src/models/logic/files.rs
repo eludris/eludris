@@ -1,7 +1,7 @@
 #![allow(clippy::unnecessary_lazy_evaluations)] // Needed because rocket
 use std::path::PathBuf;
 
-use image::io::Reader as ImageReader;
+use image::{io::Reader as ImageReader, ImageFormat};
 use rocket::{
     fs::TempFile,
     http::{ContentType, Header},
@@ -128,30 +128,31 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                 let (width, height) = match mime {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
-                            ImageReader::open(&path)
+                            let mut reader = ImageReader::open(&path)
                                 .map_err(|e| {
                                     log::error!(
-                                        "Failed to strip file metadata on {} with id {}: {:?}",
+                                        "Failed to strip file metadata on {} while opening file with id {}: {:?}",
+                                        name,
+                                        id,
+                                        e
+                                    );
+                                    error!(SERVER, "Failed to strip file metadata")
+                                })?;
+                            reader.set_format(ImageFormat::Jpeg);
+                                reader.decode()
+                                .map_err(|e| {
+                                    log::error!(
+                                        "Failed to strip file metadata on {} while decoding with id {}: {:?}",
                                         name,
                                         id,
                                         e
                                     );
                                     error!(SERVER, "Failed to strip file metadata")
                                 })?
-                                .decode()
+                                .save_with_format(&path, ImageFormat::Jpeg)
                                 .map_err(|e| {
                                     log::error!(
-                                        "Failed to strip file metadata on {} with id {}: {:?}",
-                                        name,
-                                        id,
-                                        e
-                                    );
-                                    error!(SERVER, "Failed to strip file metadata")
-                                })?
-                                .save(&path)
-                                .map_err(|e| {
-                                    log::error!(
-                                        "Failed to strip image metadata on {} with id {}: {:?}",
+                                        "Failed to strip image metadata on {} while saving with id {}: {:?}",
                                         name,
                                         id,
                                         e
