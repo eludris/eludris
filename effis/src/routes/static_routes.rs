@@ -133,15 +133,23 @@ async fn get_file(name: &str) -> Result<StaticFile, ErrorResponse> {
         None => None,
     };
 
-    let file = File::open(Path::new("./files/static").join(path))
-        .await
-        .map_err(|e| {
-            if e.kind() == ErrorKind::NotFound {
-                error!(NOT_FOUND)
-            } else {
-                error!(SERVER, "Failed to get static file from storage")
-            }
-        })?;
+    let file = File::open(
+        Path::new(
+            #[cfg(test)]
+            "../files/static",
+            #[cfg(not(test))]
+            "files/static",
+        )
+        .join(path),
+    )
+    .await
+    .map_err(|e| {
+        if e.kind() == ErrorKind::NotFound {
+            error!(NOT_FOUND)
+        } else {
+            error!(SERVER, "Failed to get static file from storage")
+        }
+    })?;
 
     log::debug!("Fetched static file {}", name);
 

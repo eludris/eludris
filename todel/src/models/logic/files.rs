@@ -58,6 +58,9 @@ impl File {
         }
 
         let id = gen.lock().await.generate_id();
+        #[cfg(test)]
+        let path = PathBuf::from(format!("../files/{}/{}", bucket, id));
+        #[cfg(not(test))]
         let path = PathBuf::from(format!("files/{}/{}", bucket, id));
         let name = match file.raw_name() {
             Some(name) => PathBuf::from(name.dangerous_unsafe_unsanitized_raw().as_str())
