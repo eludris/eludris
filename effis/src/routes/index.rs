@@ -178,7 +178,7 @@ mod tests {
     use tokio::fs;
 
     async fn test_upload_file(client: &Client, file_name: &str, spoiler: bool) -> FileData {
-        let data = fs::read(format!("../tests/{}", file_name)).await.unwrap();
+        let file_data = fs::read(format!("../tests/{}", file_name)).await.unwrap();
 
         let body: Vec<u8> = [
             "--BOUNDARY\r\n".bytes().collect(),
@@ -189,7 +189,7 @@ mod tests {
             .bytes()
             .collect(),
             "\r\nContent-Type: text/plain\r\n\r\n".bytes().collect(),
-            data.to_vec(),
+            file_data.to_vec(),
             "\r\n--BOUNDARY\r\n".bytes().collect(),
             r#"Content-Disposition: form-data; name="spoiler""#
                 .bytes()
@@ -217,7 +217,20 @@ mod tests {
         assert_eq!(data.spoiler, spoiler);
         assert_eq!(data.bucket, "attachments");
 
+        let response = client
+            .get(uri!(get_attachment_data(data.id)))
+            .dispatch()
+            .await;
+        assert_eq!(response.into_json::<FileData>().await.unwrap(), data);
+
         let response = client.get(uri!(get_attachment(data.id))).dispatch().await;
+        assert_eq!(response.into_bytes().await.unwrap(), file_data);
+
+        let response = client
+            .get(uri!(download_attachment(data.id)))
+            .dispatch()
+            .await;
+        assert_eq!(response.into_bytes().await.unwrap(), file_data);
 
         data
     }
@@ -243,5 +256,19 @@ mod tests {
                 height: Some(280)
             }
         );
+
+        let data = test_upload_file(&client, "test-video.mp4", false).await;
+
+        assert_eq!(
+            data.metadata,
+            FileMetadata::Video {
+                width: Some(8),
+                height: Some(8)
+            }
+        );
+
+        let data = test_upload_file(&client, "test-other", false).await;
+
+        assert_eq!(data.metadata, FileMetadata::Other);
     }
 }
