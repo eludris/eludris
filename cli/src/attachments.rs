@@ -4,7 +4,7 @@ use anyhow::{bail, Context};
 use eludris::new_database_connection;
 use tokio::fs;
 
-pub async fn remove(id: u128) -> anyhow::Result<()> {
+pub async fn remove(id: u64) -> anyhow::Result<()> {
     if !Path::new(&format!("/usr/eludris/files/attachments/{}", id)).exists() {
         bail!("Could not find attachment with id {}", id);
     }

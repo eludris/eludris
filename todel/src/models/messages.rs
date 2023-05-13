@@ -1,6 +1,17 @@
 use serde::{Deserialize, Serialize};
 
 /// The message payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "author": "Not a weeb",
+///   "content": "Hello, World!"
+/// }
+/// ```
 #[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Message {
