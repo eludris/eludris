@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The data Effis provides for files
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FileData {
     pub id: u64,
     pub name: String,
@@ -21,7 +21,7 @@ fn spoiler_default() -> bool {
 }
 
 /// The enum representing all the possible Effis supported file metadatas
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[serde(tag = "type")]
 pub enum FileMetadata {
