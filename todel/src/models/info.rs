@@ -141,9 +141,6 @@ pub struct InstanceRateLimits {
     /// Rate limits for Oprish (The REST API).
     pub oprish: OprishRateLimits,
     /// Rate limits for Pandemonium (The WebSocket API).
-    ///
-    /// This is the rate limit for sending messages to the gateway,
-    /// and for connecting.
     pub pandemonium: RateLimitConf,
     /// Rate limits for Effis (The CDN).
     pub effis: EffisRateLimits,
