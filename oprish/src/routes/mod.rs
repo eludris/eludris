@@ -29,6 +29,7 @@ pub fn get_routes() -> Vec<Route> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::rocket;
     use rocket::{http::Status, local::asynchronous::Client};
     use todel::{models::InstanceInfo, Conf};
@@ -38,7 +39,10 @@ mod tests {
         let client = Client::untracked(rocket().unwrap()).await.unwrap();
         let conf = &client.rocket().state::<Conf>().unwrap();
 
-        let response = client.get("/").dispatch().await;
+        let response = client
+            .get(uri!(get_instance_info(rate_limits = false)))
+            .dispatch()
+            .await;
 
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(
@@ -46,7 +50,10 @@ mod tests {
             serde_json::to_string(&InstanceInfo::from_conf(conf, false)).unwrap()
         );
 
-        let response = client.get("/?rate_limits").dispatch().await;
+        let response = client
+            .get(uri!(get_instance_info(rate_limits = true)))
+            .dispatch()
+            .await;
 
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(

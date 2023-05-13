@@ -58,6 +58,7 @@ pub fn get_routes() -> Vec<Route> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::{rocket, Cache};
     use deadpool_redis::Connection;
     use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
@@ -81,7 +82,7 @@ mod tests {
         cache.subscribe("oprish-events").await.unwrap();
 
         let response = client
-            .post("/messages/")
+            .post(uri!(create_message))
             .body(&message_str)
             .dispatch()
             .await;
