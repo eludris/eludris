@@ -62,7 +62,7 @@ impl RateLimiter {
             _ => unreachable!(),
         };
         Self {
-            key: format!("rate_limit:{}:{}-{}", identifier, bucket, attachment_bucket),
+            key: format!("rate_limit:{}:{}:{}", identifier, bucket, attachment_bucket),
             reset_after: Duration::from_secs(*reset_after as u64),
             request_limit: *request_limit,
             file_size_limit,
