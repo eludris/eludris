@@ -159,3 +159,47 @@ async fn get_file(name: &str) -> Result<StaticFile, ErrorResponse> {
         content_type,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::rocket;
+    use rocket::{http::Status, local::asynchronous::Client};
+    use tokio::fs;
+
+    use super::*;
+
+    #[rocket::async_test]
+    async fn test_static() {
+        let client = Client::untracked(rocket().unwrap()).await.unwrap();
+        let file_data = fs::read("../tests/test-video.mp4").await.unwrap();
+        fs::copy("../tests/test-video.mp4", "../files/static/test-video.mp4")
+            .await
+            .unwrap();
+
+        let response = client
+            .get(uri!("/static", get_static_file("test-video.mp4")))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_bytes().await.unwrap(), file_data);
+
+        let response = client
+            .get(uri!("/static", download_static_file("test-video.mp4")))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_bytes().await.unwrap(), file_data);
+
+        fs::remove_file("../files/static/test-video.mp4")
+            .await
+            .unwrap();
+
+        let response = client
+            .get(uri!("/static", get_static_file("test-video.mp4")))
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::NotFound);
+    }
+}

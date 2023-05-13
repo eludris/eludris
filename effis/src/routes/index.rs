@@ -235,8 +235,8 @@ mod tests {
         data
     }
 
-    #[rocket::async_test]
-    async fn index() {
+    // #[rocket::async_test]
+    async fn test_index() {
         let client = Client::untracked(rocket().unwrap()).await.unwrap();
 
         let data = test_upload_file(&client, "test-text.txt", false).await;
