@@ -23,3 +23,6 @@ cli/README.md
 
 !codegen
 codegen/README.md
+
+!integration-tests
+integration-tests/README.md
