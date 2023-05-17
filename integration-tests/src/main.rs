@@ -2,13 +2,14 @@ use std::env;
 use std::sync::Arc;
 use std::time::Duration;
 
-use anyhow::{Error, Result};
+use anyhow::{bail, Error, Result};
 use futures::future::try_join_all;
 use futures::stream::{SplitSink, SplitStream, StreamExt};
 use futures::SinkExt;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use reqwest::header::HeaderValue;
-use todel::models::{ClientPayload, InstanceInfo, ServerPayload};
+use reqwest::header::{self, HeaderValue};
+use reqwest::Client;
+use todel::models::{ClientPayload, InstanceInfo, Message, ServerPayload};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::time;
@@ -38,7 +39,35 @@ async fn main() -> Result<()> {
     try_join_all((0..=u8::MAX).map(|client_id| {
         let state = Arc::clone(&state);
         async move {
-            let (rx, tx) = connect_gateway(&state, client_id).await?;
+            let ip = format!("192.168.100.{}", client_id);
+            let (_, mut rx) = connect_gateway(&state, &ip).await?;
+            let mut headers = header::HeaderMap::new();
+            headers.insert("X-Real-IP", HeaderValue::from_str(&ip)?);
+            let client = Client::builder().default_headers(headers).build()?;
+            client
+                .post(format!("{}/messages", state.instance_info.oprish_url))
+                .json(&Message {
+                    author: ip.clone(),
+                    content: format!("Message from client {}", client_id),
+                })
+                .send()
+                .await?;
+            let mut received = 0;
+            loop {
+                if let Some(message) = rx.next().await {
+                    if let Ok(WSMessage::Text(message)) = message {
+                        if let Ok(ServerPayload::MessageCreate(_)) = serde_json::from_str(&message)
+                        {
+                            received += 1;
+                            if received == u8::MAX {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    bail!("Couldn't receive all of the messages");
+                }
+            }
             Ok::<(), Error>(())
         }
     }))
@@ -49,7 +78,7 @@ async fn main() -> Result<()> {
 
 async fn connect_gateway(
     state: &Arc<State>,
-    client_id: u8,
+    ip: &str,
 ) -> Result<(
     Arc<Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, WSMessage>>>,
     SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>,
@@ -59,8 +88,6 @@ async fn connect_gateway(
         .pandemonium_url
         .as_str()
         .into_client_request()?;
-    let ip = format!("192.168.100.{}", client_id);
-    log::trace!("Connected to pandemonium as {}", ip);
     request
         .headers_mut()
         .insert("X-Real-IP", HeaderValue::from_str(&ip)?);
@@ -68,32 +95,38 @@ async fn connect_gateway(
     let (tx, mut rx) = socket.split();
     let tx = Arc::new(Mutex::new(tx));
     loop {
-        if let Some(Ok(WSMessage::Text(message))) = rx.next().await {
-            if let Ok(ServerPayload::Hello {
-                heartbeat_interval, ..
-            }) = serde_json::from_str(&message)
-            {
-                let tx = Arc::clone(&tx);
-                let starting_beat = state.rng.lock().await.gen_range(0..heartbeat_interval);
-                tokio::spawn(async move {
-                    time::sleep(Duration::from_millis(starting_beat)).await;
-                    loop {
-                        tx.lock()
-                            .await
-                            .send(WSMessage::Text(
-                                serde_json::to_string(&ClientPayload::Ping)
-                                    .expect("Could not serialise ping payload"),
-                            ))
-                            .await
-                            .expect("Could not send ping payload");
-                        time::sleep(Duration::from_millis(heartbeat_interval)).await;
-                    }
-                });
-                break;
+        if let Some(message) = rx.next().await {
+            if let Ok(WSMessage::Text(message)) = message {
+                if let Ok(ServerPayload::Hello {
+                    heartbeat_interval, ..
+                }) = serde_json::from_str(&message)
+                {
+                    let inner_tx = Arc::clone(&tx);
+                    let starting_beat = state.rng.lock().await.gen_range(0..heartbeat_interval);
+                    tokio::spawn(async move {
+                        time::sleep(Duration::from_millis(starting_beat)).await;
+                        loop {
+                            inner_tx
+                                .lock()
+                                .await
+                                .send(WSMessage::Text(
+                                    serde_json::to_string(&ClientPayload::Ping)
+                                        .expect("Could not serialise ping payload"),
+                                ))
+                                .await
+                                .expect("Could not send ping payload");
+                            time::sleep(Duration::from_millis(heartbeat_interval)).await;
+                        }
+                    });
+                    // making sure that it stays connected
+                    time::sleep(Duration::from_millis(heartbeat_interval)).await;
+                    break Ok((tx, rx));
+                }
             }
+        } else {
+            bail!("Could not find `Hello` Payload");
         }
     }
-    Ok((tx, rx))
 }
 
 #[cfg(test)]
