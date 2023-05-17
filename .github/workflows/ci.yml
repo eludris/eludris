@@ -58,7 +58,7 @@ jobs:
 
 
       - name: Test Eludris
-        run: test.py --logs
+        run: ./test.py --logs
         env:
           REDIS_URL: "redis://127.0.0.1:6379"
 
