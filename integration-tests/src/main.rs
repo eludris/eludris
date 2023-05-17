@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
         let state = Arc::clone(&state);
         async move {
             let ip = format!("192.168.100.{}", client_id);
-            let (_, mut rx) = connect_gateway(&state, &ip).await?;
+            let (_, mut rx) = connect_gateway(&state, &ip, client_id).await?;
             let mut headers = header::HeaderMap::new();
             headers.insert("X-Real-IP", HeaderValue::from_str(&ip)?);
             let client = Client::builder().default_headers(headers).build()?;
@@ -52,6 +52,9 @@ async fn main() -> Result<()> {
                 })
                 .send()
                 .await?;
+            if client_id == 0 {
+                log::info!("Sent message");
+            }
             let mut received = 0;
             loop {
                 if let Some(message) = rx.next().await {
@@ -68,6 +71,9 @@ async fn main() -> Result<()> {
                     bail!("Couldn't receive all of the messages");
                 }
             }
+            if client_id == 0 {
+                log::info!("Received 256 messages");
+            }
             Ok::<(), Error>(())
         }
     }))
@@ -79,6 +85,7 @@ async fn main() -> Result<()> {
 async fn connect_gateway(
     state: &Arc<State>,
     ip: &str,
+    client_id: u8,
 ) -> Result<(
     Arc<Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, WSMessage>>>,
     SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>,
@@ -91,6 +98,9 @@ async fn connect_gateway(
     request
         .headers_mut()
         .insert("X-Real-IP", HeaderValue::from_str(&ip)?);
+    if client_id == 0 {
+        log::info!("Connecting to pandemonium");
+    }
     let (socket, _) = connect_async(request).await?;
     let (tx, mut rx) = socket.split();
     let tx = Arc::new(Mutex::new(tx));
@@ -118,6 +128,9 @@ async fn connect_gateway(
                             time::sleep(Duration::from_millis(heartbeat_interval)).await;
                         }
                     });
+                    if client_id == 0 {
+                        log::info!("Waiting to check connection stability");
+                    }
                     // making sure that it stays connected
                     time::sleep(Duration::from_millis(heartbeat_interval)).await;
                     break Ok((tx, rx));
