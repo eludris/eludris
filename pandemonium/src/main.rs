@@ -2,19 +2,23 @@ mod handle_connection;
 mod rate_limit;
 mod utils;
 
-use anyhow::Context;
+#[cfg(test)]
+use std::sync::Once;
 use std::{env, sync::Arc};
+
+use anyhow::Context;
 use todel::Conf;
 use tokio::{net::TcpListener, sync::Mutex, task};
+
+#[cfg(test)]
+static INIT: Once = Once::new();
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     #[cfg(test)]
-    if let Ok(dir) = env::current_dir() {
-        if dir.file_name().map(|f| f.to_str()) == Some(Some("pandemonium")) {
-            env::set_current_dir("..")?;
-        }
-    }
+    INIT.call_once(|| {
+        env::set_current_dir("..").expect("Could not set the current directory");
+    });
     dotenvy::dotenv().ok();
     env_logger::init();
 

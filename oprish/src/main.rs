@@ -8,12 +8,17 @@ mod rate_limit;
 mod routes;
 
 use std::env;
+#[cfg(test)]
+use std::sync::Once;
 
 use anyhow::Context;
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::Database;
 use routes::*;
 use todel::Conf;
+
+#[cfg(test)]
+static INIT: Once = Once::new();
 
 #[derive(Database)]
 #[database("cache")]
@@ -22,11 +27,9 @@ pub struct Cache(deadpool_redis::Pool);
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        if let Ok(dir) = env::current_dir() {
-            if dir.file_name().map(|f| f.to_str()) == Some(Some("oprish")) {
-                env::set_current_dir("..")?;
-            }
-        }
+        INIT.call_once(|| {
+            env::set_current_dir("..").expect("Could not set the current directory");
+        });
         dotenvy::dotenv().ok();
         env_logger::try_init().ok();
     }

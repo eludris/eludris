@@ -7,6 +7,8 @@ mod cors;
 mod rate_limit;
 mod routes;
 
+#[cfg(test)]
+use std::sync::Once;
 use std::{env, path::Path};
 
 use anyhow::Context;
@@ -22,6 +24,9 @@ use tokio::fs;
 
 pub const BUCKETS: [&str; 1] = ["attachments"];
 
+#[cfg(test)]
+static INIT: Once = Once::new();
+
 #[derive(Database)]
 #[database("db")]
 pub struct DB(MySqlPool);
@@ -33,11 +38,9 @@ pub struct Cache(Pool);
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        if let Ok(dir) = env::current_dir() {
-            if dir.file_name().map(|f| f.to_str()) == Some(Some("effis")) {
-                env::set_current_dir("..")?;
-            }
-        }
+        INIT.call_once(|| {
+            env::set_current_dir("..").expect("Could not set the current directory");
+        });
         dotenvy::dotenv().ok();
         env_logger::try_init().ok();
     }
