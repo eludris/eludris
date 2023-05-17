@@ -98,7 +98,7 @@ mod tests {
         cache.subscribe("oprish-events").await.unwrap();
 
         let response = client
-            .post(uri!(create_message))
+            .post(uri!("/messages", create_message))
             .body(&message_str)
             .dispatch()
             .await;

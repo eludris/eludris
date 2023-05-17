@@ -9,6 +9,12 @@ use tokio::{net::TcpListener, sync::Mutex, task};
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    #[cfg(test)]
+    if let Ok(dir) = env::current_dir() {
+        if dir.file_name().map(|f| f.to_str()) == Some(Some("pandemonium")) {
+            env::set_current_dir("..")?;
+        }
+    }
     dotenvy::dotenv().ok();
     env_logger::init();
 

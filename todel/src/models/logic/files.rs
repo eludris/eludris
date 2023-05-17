@@ -58,9 +58,6 @@ impl File {
         }
 
         let id = gen.lock().await.generate_id();
-        #[cfg(test)]
-        let path = PathBuf::from(format!("../files/{}/{}", bucket, id));
-        #[cfg(not(test))]
         let path = PathBuf::from(format!("files/{}/{}", bucket, id));
         let name = match file.raw_name() {
             Some(name) => PathBuf::from(name.dangerous_unsafe_unsanitized_raw().as_str())
@@ -78,6 +75,7 @@ impl File {
         }
         file.persist_to(&path).await.unwrap();
         let data = fs::read(&path).await.unwrap();
+        log::info!("{:?}", path.canonicalize());
 
         let hash = sha256::digest(&data[..]);
         let file = if let Ok((file_id, content_type, width, height)) = sqlx::query!(

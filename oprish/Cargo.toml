@@ -15,6 +15,6 @@ env_logger = "0.9.0"
 todel = { features = ["http"], path = "../todel", version = "0.3.0" }
 deadpool-redis = "0.10.2"
 rocket_db_pools = { version = "0.1.0-rc.2", features = ["deadpool_redis"] }
-dotenv = "0.15.0"
 anyhow = "1.0.66"
 tokio = { version = "1.22.0", features = ["rt-multi-thread", "macros"] }
+dotenvy = "0.15.7"

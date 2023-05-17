@@ -97,7 +97,7 @@ async fn connect_gateway(
         .into_client_request()?;
     request
         .headers_mut()
-        .insert("X-Real-IP", HeaderValue::from_str(&ip)?);
+        .insert("X-Real-IP", HeaderValue::from_str(ip)?);
     if client_id == 0 {
         log::info!("Connecting to pandemonium");
     }
@@ -128,11 +128,6 @@ async fn connect_gateway(
                             time::sleep(Duration::from_millis(heartbeat_interval)).await;
                         }
                     });
-                    if client_id == 0 {
-                        log::info!("Waiting to check connection stability");
-                    }
-                    // making sure that it stays connected
-                    time::sleep(Duration::from_millis(heartbeat_interval)).await;
                     break Ok((tx, rx));
                 }
             }

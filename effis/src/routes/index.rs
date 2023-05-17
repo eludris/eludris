@@ -178,7 +178,7 @@ mod tests {
     use tokio::fs;
 
     async fn test_upload_file(client: &Client, file_name: &str, spoiler: bool) -> FileData {
-        let file_data = fs::read(format!("../tests/{}", file_name)).await.unwrap();
+        let file_data = fs::read(format!("tests/{}", file_name)).await.unwrap();
 
         let body: Vec<u8> = [
             "--BOUNDARY\r\n".bytes().collect(),
@@ -235,7 +235,7 @@ mod tests {
         data
     }
 
-    // #[rocket::async_test]
+    #[rocket::async_test]
     async fn test_index() {
         let client = Client::untracked(rocket().unwrap()).await.unwrap();
 

@@ -133,23 +133,15 @@ async fn get_file(name: &str) -> Result<StaticFile, ErrorResponse> {
         None => None,
     };
 
-    let file = File::open(
-        Path::new(
-            #[cfg(test)]
-            "../files/static",
-            #[cfg(not(test))]
-            "files/static",
-        )
-        .join(path),
-    )
-    .await
-    .map_err(|e| {
-        if e.kind() == ErrorKind::NotFound {
-            error!(NOT_FOUND)
-        } else {
-            error!(SERVER, "Failed to get static file from storage")
-        }
-    })?;
+    let file = File::open(Path::new("files/static").join(path))
+        .await
+        .map_err(|e| {
+            if e.kind() == ErrorKind::NotFound {
+                error!(NOT_FOUND)
+            } else {
+                error!(SERVER, "Failed to get static file from storage")
+            }
+        })?;
 
     log::debug!("Fetched static file {}", name);
 
@@ -171,8 +163,8 @@ mod tests {
     #[rocket::async_test]
     async fn test_static() {
         let client = Client::untracked(rocket().unwrap()).await.unwrap();
-        let file_data = fs::read("../tests/test-video.mp4").await.unwrap();
-        fs::copy("../tests/test-video.mp4", "../files/static/test-video.mp4")
+        let file_data = fs::read("tests/test-video.mp4").await.unwrap();
+        fs::copy("tests/test-video.mp4", "files/static/test-video.mp4")
             .await
             .unwrap();
 
@@ -192,7 +184,7 @@ mod tests {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_bytes().await.unwrap(), file_data);
 
-        fs::remove_file("../files/static/test-video.mp4")
+        fs::remove_file("files/static/test-video.mp4")
             .await
             .unwrap();
 

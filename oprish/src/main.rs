@@ -22,10 +22,14 @@ pub struct Cache(deadpool_redis::Pool);
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        env::set_var("ELUDRIS_CONF", "../tests/Eludris.toml");
+        if let Ok(dir) = env::current_dir() {
+            if dir.file_name().map(|f| f.to_str()) == Some(Some("oprish")) {
+                env::set_current_dir("..")?;
+            }
+        }
+        dotenvy::dotenv().ok();
+        env_logger::try_init().ok();
     }
-    dotenv::dotenv().ok();
-    env_logger::try_init().ok();
 
     let config = Config::figment()
         .merge((
@@ -67,6 +71,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
 
 #[rocket::main]
 async fn main() -> Result<(), anyhow::Error> {
+    dotenvy::dotenv().ok();
+    env_logger::init();
+
     let _ = rocket()?
         .launch()
         .await

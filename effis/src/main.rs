@@ -33,7 +33,11 @@ pub struct Cache(Pool);
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        env::set_var("ELUDRIS_CONF", "../tests/Eludris.toml");
+        if let Ok(dir) = env::current_dir() {
+            if dir.file_name().map(|f| f.to_str()) == Some(Some("effis")) {
+                env::set_current_dir("..")?;
+            }
+        }
         dotenvy::dotenv().ok();
         env_logger::try_init().ok();
     }
