@@ -18,9 +18,15 @@ async fn main() -> Result<(), anyhow::Error> {
     #[cfg(test)]
     INIT.call_once(|| {
         env::set_current_dir("..").expect("Could not set the current directory");
+        env::set_var("ELUDRIS_CONF", "tests/Eludris.toml");
+        dotenvy::dotenv().ok();
+        env_logger::init();
     });
-    dotenvy::dotenv().ok();
-    env_logger::init();
+    #[cfg(not(test))]
+    {
+        dotenvy::dotenv().ok();
+        env_logger::init();
+    }
 
     let redis_url = env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1".to_string());
     let gateway_address = format!(

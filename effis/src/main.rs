@@ -40,9 +40,10 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     {
         INIT.call_once(|| {
             env::set_current_dir("..").expect("Could not set the current directory");
+            env::set_var("ELUDRIS_CONF", "tests/Eludris.toml");
+            dotenvy::dotenv().ok();
+            env_logger::init();
         });
-        dotenvy::dotenv().ok();
-        env_logger::try_init().ok();
     }
 
     let conf = Conf::new_from_env()?;
