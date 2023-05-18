@@ -88,8 +88,6 @@ impl RateLimiter {
             .unwrap_or(Duration::ZERO)
             .as_millis() as u64;
 
-        log::debug!("{}", bytes);
-
         if bytes > self.file_size_limit {
             return Err(self
                 .wrap_response::<_, ()>(error!(
