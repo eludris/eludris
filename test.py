@@ -46,10 +46,12 @@ if __name__ == "__main__":
             kill_microservices(pids)
             exit(1)
 
+    env["ELUDRIS_CONF"] = "tests/Eludris.toml"
     for crate in CRATES:
         log.info(f"\033[3;35mStarting \033[1;35m{crate}...\033[0m")
         process = subprocess.Popen(
             ["cargo", "run", "-p", crate],
+            env=env,
             stdout=outbuff,
             stderr=outbuff,
         )

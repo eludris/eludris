@@ -56,7 +56,7 @@ pub async fn upload_attachment<'a>(
         upload.file,
         "attachments".to_string(),
         gen.inner(),
-        &mut *db,
+        &mut db,
         upload.spoiler,
     )
     .await
