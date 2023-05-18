@@ -63,12 +63,13 @@ jobs:
           args: sqlx-cli
 
       - name: Run migrations
-        run: sqlx migrate run
+        run: sqlx migrate run --database-url mysql://root:root@127.0.0.1:3306/eludris
 
       - name: Test Eludris
         run: ./test.py --logs
         env:
           REDIS_URL: "redis://127.0.0.1:6379"
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/eludris"
 
   clippy:
     name: Clippy; Destroyer of Realities.
