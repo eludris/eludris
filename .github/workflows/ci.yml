@@ -56,6 +56,14 @@ jobs:
         with:
           command: build
 
+      - name: Install sqlx
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: sqlx-cli
+
+      - name: Run migrations
+        run: sqlx migrate run
 
       - name: Test Eludris
         run: ./test.py --logs
