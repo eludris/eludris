@@ -75,7 +75,6 @@ impl File {
         }
         file.persist_to(&path).await.unwrap();
         let data = fs::read(&path).await.unwrap();
-        log::info!("{:?}", path.canonicalize());
 
         let hash = sha256::digest(&data[..]);
         let file = if let Ok((file_id, content_type, width, height)) = sqlx::query!(
