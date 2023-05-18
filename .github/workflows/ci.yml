@@ -50,6 +50,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - uses: FedericoCarboni/setup-ffmpeg@v2
+        id: setup-ffmpeg
+
       - run: docker-compose -f tests/docker-compose.yml up -d
 
       - uses: actions-rs/cargo@v1
