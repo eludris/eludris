@@ -8,9 +8,9 @@ documentation.workspace = true
 
 [dependencies]
 todel = { features = ["http"], version = "0.3.0", path = "../todel" }
-anyhow = "1.0.66"
+anyhow = "1.0.71"
 dotenvy = "0.15.6"
-env_logger = "0.9.1"
+env_logger = "0.10.0"
 log = "0.4.17"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_db_pools = { version = "0.1.0-rc.2", features = ["deadpool_redis", "sqlx_mysql"] }
