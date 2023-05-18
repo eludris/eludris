@@ -4,9 +4,8 @@ use std::{
 };
 
 use crate::Cache;
-use deadpool_redis::redis::AsyncCommands;
 use rocket::http::Header;
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{models::ErrorResponse, Conf};
 
 pub type RateLimitedRouteResponse<T> =

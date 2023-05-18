@@ -13,7 +13,7 @@ use std::sync::Once;
 
 use anyhow::Context;
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::Database;
+use rocket_db_pools::{deadpool_redis::Pool, Database};
 use routes::*;
 use todel::Conf;
 
@@ -22,7 +22,7 @@ static INIT: Once = Once::new();
 
 #[derive(Database)]
 #[database("cache")]
-pub struct Cache(deadpool_redis::Pool);
+pub struct Cache(Pool);
 
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]

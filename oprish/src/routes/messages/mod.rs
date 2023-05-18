@@ -1,8 +1,8 @@
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 use crate::Cache;
-use deadpool_redis::redis::AsyncCommands;
 use rocket::serde::json::Json;
 use rocket::{Route, State};
+use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 use rocket_db_pools::Connection;
 use todel::http::ClientIP;
 use todel::models::{ErrorResponse, Message, ServerPayload};
@@ -76,8 +76,8 @@ pub fn get_routes() -> Vec<Route> {
 mod tests {
     use super::*;
     use crate::{rocket, Cache};
-    use deadpool_redis::Connection;
     use rocket::{futures::StreamExt, http::Status, local::asynchronous::Client};
+    use rocket_db_pools::deadpool_redis::Connection;
     use todel::models::{Message, ServerPayload};
 
     #[rocket::async_test]
