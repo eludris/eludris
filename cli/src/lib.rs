@@ -1,29 +1,76 @@
-use std::{ffi::OsStr, path::Path, process::Stdio, time::Duration};
+use std::{env, path::Path, process::Stdio, time::Duration};
 
-use anyhow::{anyhow, bail, Context};
+use anyhow::{bail, Context, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
+use serde::{Deserialize, Serialize};
 use sqlx::{Connection, MySqlConnection};
 use tokio::{fs, process::Command};
-use users::{get_current_uid, get_user_by_uid};
 
-pub fn check_user_permissions() -> anyhow::Result<()> {
-    let user =
-        get_user_by_uid(get_current_uid()).ok_or_else(|| anyhow!("Could not get user data"))?;
-    if user.name() != OsStr::new("root") {
-        log::info!("User is not root, bailing");
-        bail!("You must be root to run this command. Try sudo?");
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Config {
+    pub eludris_dir: String,
+}
+
+pub async fn get_user_config() -> Result<Option<Config>> {
+    let config_dir = Path::new(
+        &env::var("XDG_CONFIG_HOME")
+            .or_else(|_| env::var("HOME").map(|home| format!("{}/.config", home)))
+            .context("Could not determine config path")?,
+    )
+    .join("eludris");
+
+    if !config_dir.exists() {
+        fs::create_dir_all(&config_dir)
+            .await
+            .context("Could not create config directory")?;
     }
 
+    let config_path = config_dir.join("Cli.toml");
+
+    if !config_path.exists() {
+        Ok(None)
+    } else {
+        let config = fs::read_to_string(config_path)
+            .await
+            .context("Could not read config file")?;
+        Ok(Some(
+            toml::from_str(&config).context("Could not parse config file")?,
+        ))
+    }
+}
+
+pub async fn update_config_file(config: &Config) -> Result<()> {
+    let config_dir = Path::new(
+        &env::var("XDG_CONFIG_HOME")
+            .or_else(|_| env::var("HOME").map(|home| format!("{}/.config", home)))
+            .context("Could not determine config path")?,
+    )
+    .join("eludris");
+
+    if !config_dir.exists() {
+        fs::create_dir_all(&config_dir)
+            .await
+            .context("Could not create config directory")?;
+    }
+
+    let config_path = config_dir.join("Cli.toml");
+
+    fs::write(
+        config_path,
+        toml::to_string(&config).context("Could not serialize default config")?,
+    )
+    .await
+    .context("Could not find config file")?;
     Ok(())
 }
 
-pub fn check_eludris_exists() -> anyhow::Result<bool> {
-    let path = Path::new("/usr/eludris");
+pub fn check_eludris_exists(config: &Config) -> Result<bool> {
+    let path = Path::new(&config.eludris_dir);
     if !path.is_dir() && path.exists() {
         bail!("An Eludris file exists but it is not a directory");
     }
-    Ok(path.exists())
+    Ok(path.join("Eludris.toml").exists())
 }
 
 pub fn new_progress_bar(message: &str) -> ProgressBar {
@@ -44,18 +91,18 @@ pub fn end_progress_bar(bar: ProgressBar, message: &str) {
     bar.finish_with_message(message.to_string());
 }
 
-pub fn new_docker_command() -> Command {
+pub fn new_docker_command(config: &Config) -> Command {
     let mut command = Command::new("docker-compose");
-    command // One can never be *too* sure
-        .current_dir("/usr/eludris")
+    command
+        .current_dir(&config.eludris_dir)
         .arg("-f")
-        .arg("/usr/eludris/docker-compose.override.yml")
+        .arg("docker-compose.override.yml")
         .arg("-f")
-        .arg("/usr/eludris/docker-compose.yml");
+        .arg("docker-compose.yml");
     command
 }
 
-pub async fn new_database_connection() -> anyhow::Result<MySqlConnection> {
+pub async fn new_database_connection() -> Result<MySqlConnection> {
     let stdout = Command::new("docker")
         .arg("inspect")
         .arg("-f")
@@ -74,11 +121,12 @@ pub async fn new_database_connection() -> anyhow::Result<MySqlConnection> {
 }
 
 pub async fn download_file(
+    config: &Config,
     client: &Client,
     name: &str,
     next: bool,
     save_name: Option<&str>,
-) -> anyhow::Result<()> {
+) -> Result<()> {
     log::info!("Fetching {}", name);
     let file = client
         .get(format!(
@@ -99,8 +147,11 @@ pub async fn download_file(
         .await
         .context("Failed to fetch necessary files for setup")?;
     log::info!("Writing {}", name);
-    fs::write(format!("/usr/eludris/{}", save_name.unwrap_or(name)), file)
-        .await
-        .context("Could not write setup files")?;
+    fs::write(
+        format!("{}/{}", config.eludris_dir, save_name.unwrap_or(name)),
+        file,
+    )
+    .await
+    .context("Could not write setup files")?;
     Ok(())
 }
