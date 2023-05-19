@@ -82,7 +82,7 @@ pub async fn get_instance_info(
     rate_limiter.wrap_response(Json(InstanceInfo::from_conf(conf.inner(), rate_limits)))
 }
 
-#[autodoc(cateory = "Authentication & Identity")]
+#[autodoc(category = "Authentication & Identity")]
 #[get("/sex")]
 pub async fn achieve_sex() -> &'static str {
     "uwoooh seggs"
