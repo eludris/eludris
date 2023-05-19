@@ -82,8 +82,14 @@ pub async fn get_instance_info(
     rate_limiter.wrap_response(Json(InstanceInfo::from_conf(conf.inner(), rate_limits)))
 }
 
+#[autodoc(cateory = "Authentication & Identity")]
+#[get("/sex")]
+pub async fn achieve_sex() -> &'static str {
+    "uwoooh seggs"
+}
+
 pub fn get_routes() -> Vec<Route> {
-    routes![get_instance_info]
+    routes![get_instance_info, achieve_sex]
 }
 
 #[cfg(test)]
@@ -118,6 +124,18 @@ mod tests {
         assert_eq!(
             response.into_string().await.unwrap(),
             serde_json::to_string(&InstanceInfo::from_conf(conf, true)).unwrap()
+        );
+    }
+
+    #[rocket::async_test]
+    async fn sex() {
+        let client = Client::untracked(rocket().unwrap()).await.unwrap();
+        let response = client.get(uri!(achieve_sex)).dispatch().await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "uwoooh seggs".to_string()
         );
     }
 }
