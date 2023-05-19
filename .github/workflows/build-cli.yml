@@ -19,7 +19,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest] #, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -40,13 +40,13 @@ jobs:
           args: --release -p eludris
 
       # Windows scripting isn't the same.
-      # - name: Get Variables (Windows)
-      #   run: |
-      #     echo "$env:GITHUB_ENV"
-      #     echo ("TAG=" + $env:GITHUB_REF.replace('refs/tags/', '')) >> $env:GITHUB_ENV
-      #     echo "PATH=eludris.exe" >> $env:GITHUB_ENV
-      #     echo "OS=Windows" >> $env:GITHUB_ENV
-      #   if: matrix.os == 'windows-latest'
+      - name: Get Variables (Windows)
+        run: |
+          echo "$env:GITHUB_ENV"
+          echo ("TAG=" + $env:GITHUB_REF.replace('refs/tags/', '')) >> $env:GITHUB_ENV
+          echo "PATH=eludris.exe" >> $env:GITHUB_ENV
+          echo "OS=Windows" >> $env:GITHUB_ENV
+        if: matrix.os == 'windows-latest'
 
       - name: Get Variables (MacOS)
         run: |
