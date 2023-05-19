@@ -82,6 +82,13 @@ pub async fn get_instance_info(
     rate_limiter.wrap_response(Json(InstanceInfo::from_conf(conf.inner(), rate_limits)))
 }
 
+/// This route helps you achieve the very poGGerSu thing known as sex.
+///
+/// Bet RMS doesn't have this haha L.
+///
+/// -----
+///
+/// ples don't aboose ty
 #[autodoc(category = "Authentication & Identity")]
 #[get("/sex")]
 pub async fn achieve_sex() -> &'static str {
