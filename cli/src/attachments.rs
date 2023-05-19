@@ -8,7 +8,7 @@ pub async fn remove(id: u64) -> anyhow::Result<()> {
     let config = get_user_config()
         .await?
         .context("Could not find user config")?;
-    if !Path::new(&format!("{}/files/attachments/{}",  config.eludris_dir, id)).exists() {
+    if !Path::new(&format!("{}/files/attachments/{}", config.eludris_dir, id)).exists() {
         bail!("Could not find attachment with id {}", id);
     }
 
