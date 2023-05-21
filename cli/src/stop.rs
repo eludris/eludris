@@ -1,10 +1,12 @@
 use anyhow::Context;
-use eludris::{check_user_permissions, new_docker_command};
+use eludris::{get_user_config, new_docker_command};
 
 pub async fn stop() -> anyhow::Result<()> {
-    check_user_permissions()?;
+    let config = get_user_config()
+        .await?
+        .context("Could not find user config")?;
 
-    new_docker_command()
+    new_docker_command(&config)
         .arg("down")
         .spawn()
         .context("Could not spawn stop command")?

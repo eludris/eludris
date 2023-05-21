@@ -4,8 +4,8 @@ use anyhow::{bail, Context};
 use console::Style;
 use dialoguer::{theme, Confirm, Editor, Input};
 use eludris::{
-    check_eludris_exists, check_user_permissions, download_file, end_progress_bar,
-    new_docker_command, new_progress_bar,
+    check_eludris_exists, download_file, end_progress_bar, get_user_config, new_docker_command,
+    new_progress_bar,
 };
 use reqwest::Client;
 use todel::Conf;
@@ -14,26 +14,33 @@ use tokio::fs;
 use crate::clean;
 
 pub async fn deploy(next: bool) -> anyhow::Result<()> {
-    check_user_permissions()?;
+    let config = get_user_config()
+        .await?
+        .context("Could not find user config")?;
 
-    if !check_eludris_exists()? {
+    if !check_eludris_exists(&config)? {
         let bar = new_progress_bar("Eludris directory not found, setting up...");
-        fs::create_dir("/usr/eludris")
-            .await
-            .context("Could not create Eludris directory")?;
 
         let client = Client::new();
         download_file(
+            &config,
             &client,
             "docker-compose.prebuilt.yml",
             next,
             Some("docker-compose.yml"),
         )
         .await?;
-        download_file(&client, "docker-compose.override.yml", next, None).await?;
-        download_file(&client, ".example.env", next, Some(".env")).await?;
-        download_file(&client, "Eludris.example.toml", next, Some("Eludris.toml")).await?;
-        fs::create_dir("/usr/eludris/files")
+        download_file(&config, &client, "docker-compose.override.yml", next, None).await?;
+        download_file(&config, &client, ".example.env", next, Some(".env")).await?;
+        download_file(
+            &config,
+            &client,
+            "Eludris.example.toml",
+            next,
+            Some("Eludris.toml"),
+        )
+        .await?;
+        fs::create_dir(format!("{}/files", config.eludris_dir))
             .await
             .context("Could not create effis files directory")?;
         end_progress_bar(bar, "Finished setting up instance files");
@@ -63,7 +70,7 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
             };
             break;
         }
-        let mut base_conf = fs::read_to_string("/usr/eludris/Eludris.toml")
+        let mut base_conf = fs::read_to_string(format!("{}/Eludris.toml", config.eludris_dir))
             .await
             .context("Could not read Eludris.toml file")?;
         loop {
@@ -81,7 +88,7 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
                     let conf = Conf::from_str(&conf_string);
                     match conf {
                         Ok(_) => {
-                            fs::write("/usr/eludris/Eludris.toml", conf_string)
+                            fs::write(format!("{}/Eludris.toml", config.eludris_dir), conf_string)
                                 .await
                                 .context("Could not write new config to Eludris.toml")?;
                             break;
@@ -120,7 +127,7 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
         );
     }
 
-    let command = new_docker_command()
+    let command = new_docker_command(&config)
         .arg("up")
         .arg("-d")
         .spawn()
