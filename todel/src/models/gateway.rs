@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::{InstanceInfo, Message};
 use crate::conf::PandemoniumConf;
 
-/// Pandemonium websocket payloads sent by the server to the client
+/// Pandemonium websocket payloads sent by the server to the client.
 #[autodoc(category = "Gateway")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -75,9 +75,9 @@ pub enum ServerPayload {
     /// }
     /// ```
     Hello {
-        /// The amount of milliseconds your ping interval is supposed to be
+        /// The amount of milliseconds your ping interval is supposed to be.
         heartbeat_interval: u64,
-        /// The instance's info
+        /// The instance's info.
         ///
         /// This is the same payload you get from the [`get_instance_info`] payload without
         /// ratelimits
@@ -85,7 +85,7 @@ pub enum ServerPayload {
         /// The pandemonium-related configuration and ratelimit info
         pandemonium_info: PandemoniumConf,
     },
-    /// The event sent when the client receives a [`Message`]
+    /// The event sent when the client receives a [`Message`].
     ///
     /// -----
     ///
@@ -103,7 +103,7 @@ pub enum ServerPayload {
     MessageCreate(Message),
 }
 
-/// Pandemonium websocket payloads sent by the client to the server
+/// Pandemonium websocket payloads sent by the client to the server.
 #[autodoc(category = "Gateway")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -122,5 +122,12 @@ pub enum ClientPayload {
     /// `RAND` being a random floating number between 0 and 1.
     /// >
     /// > This is done to avoid immediately overloading Pandemonium by connecting if it ever has to go down.
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// > {"op":"PING"}
+    /// < {"op":"PONG"}
+    /// ```
     Ping,
 }

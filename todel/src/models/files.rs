@@ -1,14 +1,37 @@
 use serde::{Deserialize, Serialize};
 
-/// The data Effis provides for files
+/// Represents a file stored on Effis.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "id": 2195354353667,
+///   "name": "das_ding.png",
+///   "bucket": "attachments",
+///   "metadata": {
+///     "type": "image",
+///     "width": 1600,
+///     "height": 1600
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileData {
+    /// The ID of the file.
     pub id: u64,
+    /// The name of the file.
     pub name: String,
+    /// The bucket the file is stored in.
     pub bucket: String,
+    /// If the file is spoilered.
     #[serde(default = "spoiler_default")]
     #[serde(skip_serializing_if = "is_false")]
     pub spoiler: bool,
+    /// The [`FileMetadata`] of the file.
     pub metadata: FileMetadata,
 }
 
@@ -20,21 +43,49 @@ fn spoiler_default() -> bool {
     false
 }
 
-/// The enum representing all the possible Effis supported file metadatas
+/// The enum representing all the possible Effis supported file metadatas.
+///
+/// -----
+///
+/// ### Examples
+///
+/// ```json
+/// {
+///   "type": "text"
+/// }
+/// {
+///   "type": "image",
+///   "width": 5120,
+///   "height": 1440
+/// }
+/// {
+///   "type": "video",
+///   "width": 1920,
+///   "height": 1080
+/// }
+/// {
+///   "type": "other"
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[serde(tag = "type")]
 pub enum FileMetadata {
     Text,
     Image {
+        /// The width of the image in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         width: Option<usize>,
+        /// The height of the image in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         height: Option<usize>,
     },
     Video {
+        /// The width of the video in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         width: Option<usize>,
+        /// The height of the video in pixels.
         #[serde(skip_serializing_if = "Option::is_none")]
         height: Option<usize>,
     },

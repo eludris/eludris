@@ -13,6 +13,31 @@ use crate::{
     Cache, DB,
 };
 
+/// Upload an attachment to Effis under a specific bucket.
+/// This is a shortcut to [`upload_file`] with the attachments bucket.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -F file=@thang-big.png \
+///   -F spoiler=false \
+///   https://cdn.eludris.gay/
+///
+/// {
+///   "id": 2199681302540,
+///   "name": "thang-big.png",
+///   "bucket": "attachments",
+///   "metadata": {
+///     "type": "image",
+///     "width": 702,
+///     "height": 702
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[post("/", data = "<upload>")]
 pub async fn upload_attachment<'a>(
     upload: Form<FileUpload<'a>>,
@@ -39,9 +64,25 @@ pub async fn upload_attachment<'a>(
     rate_limiter.wrap_response(Json(file))
 }
 
+/// Get an attachment by ID.
+/// This is a shortcut to [`get_file`] with the attachments bucket.
+///
+/// The `Content-Deposition` header is set to `inline`.
+/// Use the [`download_attachment`] endpoint to get `Content-Deposition` set to `attachment`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/2199681302540
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<id>")]
 pub async fn get_attachment<'a>(
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -55,9 +96,25 @@ pub async fn get_attachment<'a>(
     rate_limiter.wrap_response(file)
 }
 
+/// Get an attachment by ID.
+/// This is a shortcut to [`download_file`] with the attachments bucket.
+///
+/// The `Content-Deposition` header is set to `attachment`.
+/// Use the [`get_attachment`] endpoint to get `Content-Deposition` set to `inline`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/attachments/2199681302540/download
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<id>/download")]
 pub async fn download_attachment<'a>(
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -71,9 +128,31 @@ pub async fn download_attachment<'a>(
     rate_limiter.wrap_response(file)
 }
 
+/// Get a file's metadata by ID from a specific bucket.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   https://cdn.eludris.gay/2198189244420/data
+///
+/// {
+///   "id": 2199681302540,
+///   "name": "thang-big.png",
+///   "bucket": "attachments",
+///   "metadata": {
+///     "type": "image",
+///     "width": 702,
+///     "height": 702
+///   }
+/// }
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<id>/data")]
 pub async fn get_attachment_data<'a>(
-    id: u128,
+    id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,

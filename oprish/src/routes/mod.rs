@@ -9,6 +9,65 @@ use crate::{
     Cache,
 }; // poggers
 
+/// Get information about the instance you're sending this request to.
+///
+/// Most of this data comes from the instance's configuration.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://api.eludris.gay/?rate_limits
+///
+/// {
+///   "instance_name": "eludris",
+///   "description": "The *almost* official Eludris instance - ooliver.",
+///   "version": "0.3.2",
+///   "message_limit": 2000,
+///   "oprish_url": "https://api.eludris.gay",
+///   "pandemonium_url": "wss://ws.eludris.gay/",
+///   "effis_url": "https://cdn.eludris.gay",
+///   "file_size": 20000000,
+///   "attachment_file_size": 25000000,
+///   "rate_limits": {
+///     "oprish": {
+///       "info": {
+///         "reset_after": 5,
+///         "limit": 2
+///       },
+///       "message_create": {
+///         "reset_after": 5,
+///         "limit": 10
+///       },
+///       "rate_limits": {
+///         "reset_after": 5,
+///         "limit": 2
+///       }
+///     },
+///     "pandemonium": {
+///       "reset_after": 10,
+///       "limit": 5
+///     },
+///     "effis": {
+///       "assets": {
+///         "reset_after": 60,
+///         "limit": 5,
+///         "file_size_limit": 30000000
+///       },
+///       "attachments": {
+///         "reset_after": 180,
+///         "limit": 20,
+///         "file_size_limit": 500000000
+///       },
+///       "fetch_file": {
+///         "reset_after": 60,
+///         "limit": 30
+///       }
+///     }
+///   }
+/// }
+/// ```
 #[autodoc(category = "Instance")]
 #[get("/?<rate_limits>")]
 pub async fn get_instance_info(

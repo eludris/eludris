@@ -7,19 +7,27 @@ import {
   ItemType,
   StructInfo,
   VariantType,
-  RouteInfo
+  RouteInfo,
+  Item
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
+
+const TYPE_OVERRIDES: Record<string, string> = {
+  FetchResponse: 'Raw file content.'
+};
 
 export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
-    content += `\n\n<span class="method">${info.item.method
-      }</span><span class="route">${info.item.route.replace(
-        /<.+?>/gm,
-        '<span class="special-segment">$&</span>'
-      )}</span>`;
+    // Replace angle brackets with HTML character entities
+    const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
+    content += `\n\n<span class="method">${
+      info.item.method
+    }</span><span class="route">${route.replace(
+      /&lt;*.+?&gt;/gm,
+      '<span class="special-segment">$&</span>'
+    )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -39,7 +47,7 @@ export default (info: ItemInfo): string => {
         variant_example = parts.join('-----');
         content += `\n\n${displayDoc(doc)}`;
       }
-      content += `\n${displayVariant(variant, <EnumInfo>info.item)}`;
+      content += `\n${displayVariant(variant, <EnumInfo>info.item, info.name)}`;
       if (variant_example) {
         content += `\n${variant_example}`;
       }
@@ -53,20 +61,22 @@ export default (info: ItemInfo): string => {
   return content;
 };
 
-const briefItem = (item: StructInfo | EnumInfo): string => {
+const briefItem = (item: Item, model: string): string => {
   if (item.type == ItemType.Struct) {
     if (!item.fields.length) {
       return '';
     }
     return displayFields(item.fields);
-  } else {
+  } else if (item.type == ItemType.Enum) {
     console.log(item);
     let content = '';
     item.variants.forEach((variant) => {
       content += `\n- ${uncodeName(variant.name)}\n\n${variant.doc ?? ''}`;
-      content += `\n${displayVariant(variant, item)}`;
+      content += `\n${displayVariant(variant, item, model)}`;
     });
     return content;
+  } else {
+    throw new Error(`Unexpected item type: ${item.type}`);
   }
 };
 
@@ -85,32 +95,37 @@ const displayField = (field: FieldInfo): string => {
   const innerType =
     field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.field_type}.json`));
   if (innerType) {
-    let innerData: StructInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString()).item;
+    let innerData: StructInfo = JSON.parse(
+      readFileSync(`public/autodoc/${innerType}`).toString()
+    ).item;
     let fields = '';
     innerData.fields.forEach((field) => {
       fields += `${displayField(field)}\n`;
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
-    }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
+    field.nullable ? '?' : ''
+  }|${displayInlineDoc(field.doc)}|`;
 };
 
-const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
+const getTagDescription = (tag: string, model: string): string => {
+  return `The ${tag} of this ${model} variant.`;
+};
+
+const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): string => {
   let content = '';
   if (variant.type == VariantType.Unit) {
     if (item.tag) {
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${switchCase(
-        variant.name,
-        item.rename_all
-      )}"|The tag of this variant`;
+      let name = switchCase(variant.name, item.rename_all);
+      let desc = getTagDescription(item.tag, model);
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${name}"|${desc}`;
     }
   } else if (variant.type == VariantType.Tuple) {
     if (item.tag) {
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${switchCase(
-        variant.name,
-        item.rename_all
-      )}"|The tag of this variant`;
+      let name = switchCase(variant.name, item.rename_all);
+      let desc = getTagDescription(item.tag, model);
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${name}"|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
       }
@@ -120,19 +135,16 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo): string => {
         entry.endsWith(`/${variant.field_type}.json`)
       );
       if (innerType) {
-        let innerData: StructInfo | EnumInfo = JSON.parse(
-          readFileSync(`public/autodoc/${innerType}`).toString()
-        ).item;
-        content += `\n\n${briefItem(innerData)}`;
+        let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(data.item, data.name)}`;
       }
     }
   } else if (variant.type == VariantType.Struct) {
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
-      content += `\n|${item.tag}|"${switchCase(
-        variant.name,
-        item.rename_all
-      )}"|The tag of this variant|`;
+      let name = switchCase(variant.name, item.rename_all);
+      let desc = getTagDescription(item.tag, model);
+      content += `\n|${item.tag}|"${name}"|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant`;
         content += '\n\nWith the data of this variant being:';
@@ -163,14 +175,19 @@ const displayRoute = (item: RouteInfo): string => {
   }
   if (item.body_type) {
     content += '\n\n## Request Body';
-    let body_type = item.body_type.replace(/Json<(.+)>/gm, '$1');
-    content += `\n\n${displayType(body_type)}`;
+    let body_type = item.body_type;
+    if (body_type.startsWith('Json<')) {
+      content += `\n\nA JSON ${displayType(body_type)}`;
+    } else if (body_type.startsWith('Form<')) {
+      content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
+    } else {
+      content += `\n\n${displayType(body_type)}`;
+    }
+
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
-      let innerData: StructInfo | EnumInfo = JSON.parse(
-        readFileSync(`public/autodoc/${innerType}`).toString()
-      ).item;
-      content += `\n\n${briefItem(innerData)}`;
+      let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
   if (item.return_type) {
@@ -182,10 +199,8 @@ const displayRoute = (item: RouteInfo): string => {
     content += `\n\n${displayType(return_type)}`;
     const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
     if (innerType) {
-      let innerData: StructInfo | EnumInfo = JSON.parse(
-        readFileSync(`public/autodoc/${innerType}`).toString()
-      ).item;
-      content += `\n\n${briefItem(innerData)}`;
+      let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
   return content.substring(2); // to remove the first double newline
@@ -209,13 +224,24 @@ const switchCase = (content: string, new_case: string | null): string => {
 };
 
 const displayType = (type: string): string => {
-  if (type == 'u32' || type == 'u64' || type == 'usize') {
-    return 'Number';
-  }
   type = type
     .replace(/Option<(.+)>/gm, '$1')
     .replace(/Json<(.+)>/gm, '$1')
+    .replace(/Form<(.+)>/gm, '$1')
     .replace(/</gm, '\\<');
+
+  if (type == 'u32' || type == 'u64' || type == 'usize') {
+    return 'Number';
+  } else if (type == 'bool') {
+    return 'Boolean';
+  } else if (type == 'str') {
+    return 'String';
+  } else if (type == 'TempFile') {
+    return 'File';
+  } else if (type in TYPE_OVERRIDES) {
+    return TYPE_OVERRIDES[type];
+  }
+
   let entry = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
   return entry ? `[${type}](/reference/${entry})` : type;
 };
