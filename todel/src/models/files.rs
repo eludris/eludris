@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 /// }
 /// ```
 #[autodoc(category = "Files")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FileData {
     /// The ID of the file.
     pub id: u64,
@@ -68,7 +68,7 @@ fn spoiler_default() -> bool {
 /// }
 /// ```
 #[autodoc(category = "Files")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[serde(tag = "type")]
 pub enum FileMetadata {

@@ -2,15 +2,31 @@ mod handle_connection;
 mod rate_limit;
 mod utils;
 
-use anyhow::Context;
+#[cfg(test)]
+use std::sync::Once;
 use std::{env, sync::Arc};
+
+use anyhow::Context;
 use todel::Conf;
 use tokio::{net::TcpListener, sync::Mutex, task};
 
+#[cfg(test)]
+static INIT: Once = Once::new();
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    dotenvy::dotenv().ok();
-    env_logger::init();
+    #[cfg(test)]
+    INIT.call_once(|| {
+        env::set_current_dir("..").expect("Could not set the current directory");
+        env::set_var("ELUDRIS_CONF", "tests/Eludris.toml");
+        dotenvy::dotenv().ok();
+        env_logger::init();
+    });
+    #[cfg(not(test))]
+    {
+        dotenvy::dotenv().ok();
+        env_logger::init();
+    }
 
     let redis_url = env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1".to_string());
     let gateway_address = format!(
