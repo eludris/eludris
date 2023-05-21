@@ -14,10 +14,12 @@ CRATES = ["oprish", "pandemonium", "effis"]
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 log = logging.getLogger(__name__)
 
+
 def kill_microservices(pids: dict[str, int]):
     for crate, pid in pids.items():
         log.info(f"\033[3;35mStopping \033[1;35m{crate}...\033[0m")
         os.kill(pid, signal.SIGINT)
+
 
 if __name__ == "__main__":
     repo_dir = pathlib.Path(os.path.realpath(__file__)).parent
@@ -42,7 +44,10 @@ if __name__ == "__main__":
             stderr=outbuff,
         )
         if process.returncode != 0:
-            log.error(f"\033[1;31mFailed to compile {crate}\033[0m")
+            log.error(
+                f"\033[1;31mFailed to compile {crate} with error code {process.returncode}"
+                "\033[0m. Consider running again with `--logs` for more info"
+            )
             kill_microservices(pids)
             exit(1)
 
@@ -64,7 +69,10 @@ if __name__ == "__main__":
         stderr=outbuff,
     )
     if process.returncode != 0:
-        log.error("\033[1;31mWorkspace tests failed\033[0m")
+        log.error(
+            f"\033[1;31mWorkspace tests failed with code {process.returncode}"
+            "\033[0m. Consider running again with `--logs` for more info"
+        )
         kill_microservices(pids)
         exit(1)
 
@@ -86,7 +94,10 @@ if __name__ == "__main__":
         stderr=outbuff,
     )
     if process.returncode != 0:
-        log.error("\033[1;31mIntegration tests failed\033[0m")
+        log.error(
+            f"\033[1;31mIntegration tests failed with code {process.returncode}\033[0m."
+            " Consider running again with `--logs` for more info"
+        )
         kill_microservices(pids)
         exit(1)
 
