@@ -1,43 +1,11 @@
-# Make sure to copy this file into `Eludris.toml`
-
-# You can uncomment the sections that you want and change their config values,
-# this is just the defaults.
-
-instance_name = "eludris-testing-instance" # This is required, has to be over 0 characters long.
-
-# Optional instance description, can be from 1 to 2048 characters long.
+instance_name = "eludris-testing-instance"
 description = "a testing instance used for testing eludris in tests, powered by deraild's servers"
 
-# With rate limits, reset_after is the number of seconds between every bucket reset.
-
 [oprish]
-#message_limit = 2048 # The maximum message content length.
-url = "http://0.0.0.0:7159" # This instance's Oprish url
-
-#[oprish.rate_limits]
-#info = { reset_after = 5, limit = 2}
-#message_create = { reset_after = 5, limit = 10}
-#rate_limits = { reset_after = 5, limit = 2 }
+url = "http://0.0.0.0:7159"
 
 [pandemonium]
-url = "ws://0.0.0.0:7160" # This instance's Pandemonium url
-#rate_limit = { reset_after = 10, limit = 5}
+url = "ws://0.0.0.0:7160"
 
 [effis]
-#file_size = "20MB" # The maximum file size for all the assets
-#attachment_file_size = "100MB" # The maximum file size for the attachment bucket
-url = "http://0.0.0.0:7161" # This instance's Effis url
-
-# Effis rate limits are special, you're not only limited by how many requests per
-# bucket reset, but also by how big the files you upload are, so assuming a rate limit
-# with a limit of 5 and a file_size_limit of 10MB, I can either upload 1 10MB file
-# (if the effis.file_size allows so) or for example 5 2MB files, after either of
-# which I get rate limited.
-
-#[effis.rate_limits]
-# The rate limit for all buckets besides the attachments one, these buckets are
-# stuff like avatars, guild icons, etc.
-#assets = { reset_after = 60, limit = 5, file_size_limit = "30MB"}
-#attachments = { reset_after = 180, limit = 20 file_size_limit = "500MB" }
-# This is a normal rate limit
-#fetch_file = { reset_after = 60, limit = 30 }
+url = "http://0.0.0.0:7161"
