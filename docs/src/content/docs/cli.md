@@ -7,10 +7,6 @@ order: 2
 The Eludris CLI is a tool that's meant to handle all the heavy lifting that comes
 with initially starting an Eludris instance and managing it until the end of time.
 
-> **Note**
->
-> There are no plans to support Windows in the near future.
-
 ## Installation
 
 You can install the Eludris CLI in a couple of ways, mainly you can either:
@@ -33,6 +29,10 @@ If you need any help with using the Eludris CLI at any time you should always ch
 the help command by running `eludris --help`. This will almost always tell you what
 you want to know.
 
+Upon using the CLI for the first time you will get prompted for some config questions
+namely about where to put the Eludris instance.
+This can be changed at any time by editing the config file found in `~/.config/eludris/Cli.toml`
+
 ## Commands
 
 Here's a list of the commands the Eludris CLI has along with a few extra notes.
@@ -40,13 +40,13 @@ Here's a list of the commands the Eludris CLI has along with a few extra notes.
 ### Deploy
 
 ```sh
-sudo eludris deploy [--next]
+eludris deploy [--next]
 ```
 
 This command will start up your Eludris instance using our pre-built Docker images.
 
 Additionally if no instance is already found on your machine it will take you on
-a step by step process to create one at `/usr/eludris`.
+a step by step process to create one in your configured Eludris directory.
 
 Using the `--next` flag will make you use the latest development version of Eludris
 for your instance instead.
@@ -61,7 +61,7 @@ for your instance instead.
 ### Stop
 
 ```sh
-sudo eludris stop
+eludris stop
 ```
 
 This command will stop all the microservices in your instance along with all the
@@ -70,7 +70,7 @@ other databases and such.
 ### Update
 
 ```sh
-sudo eludris update [--next]
+eludris update [--next]
 ```
 
 This command will update your instance's version of Eludris to the latest available
@@ -81,7 +81,7 @@ Using the `--next` flag makes you update to the latest development version of EL
 ### Logs
 
 ```sh
-sudo eludris logs
+eludris logs
 ```
 
 This command will show you your instance's logs and wait for new ones.
@@ -93,7 +93,7 @@ This is a command group which is meant to help deal with static assets.
 #### Add
 
 ```sh
-sudo eludris static add <path-to-file>
+eludris static add <path-to-file>
 ```
 
 This command will add a new static asset to your instance's Effis.
@@ -101,7 +101,7 @@ This command will add a new static asset to your instance's Effis.
 #### Remove
 
 ```sh
-sudo eludris static remove <name>
+eludris static remove <name>
 ```
 
 This command will remove a static asset from your instance's Effis.
@@ -114,7 +114,7 @@ bucket.
 #### Remove
 
 ```sh
-sudo eludris attachments remove <id>
+eludris attachments remove <id>
 ```
 
 This command will remove an attachment's file from your instance along with its
@@ -123,7 +123,7 @@ database entry to prevent `500` errors.
 ### Clean
 
 ```sh
-sudo eludris clean
+eludris clean
 ```
 
 This command will remove your Eludris instance along with all the database files.
