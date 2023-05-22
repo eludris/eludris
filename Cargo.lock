@@ -573,7 +573,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "effis"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -599,7 +599,7 @@ dependencies = [
 
 [[package]]
 name = "eludris"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "clap",
@@ -1174,7 +1174,7 @@ dependencies = [
 
 [[package]]
 name = "integration-tests"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -1600,7 +1600,7 @@ dependencies = [
 
 [[package]]
 name = "oprish"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -1622,7 +1622,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "pandemonium"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -2766,7 +2766,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "todel"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "ffprobe",
@@ -2788,7 +2788,7 @@ dependencies = [
 
 [[package]]
 name = "todel_codegen"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "quote",
  "serde",
