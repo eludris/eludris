@@ -1,1 +1,11 @@
-instance_name = "h"
+instance_name = "eludris-testing-instance"
+description = "a testing instance used for testing eludris in tests, powered by deraild's servers"
+
+[oprish]
+url = "http://0.0.0.0:7159"
+
+[pandemonium]
+url = "ws://0.0.0.0:7160"
+
+[effis]
+url = "http://0.0.0.0:7161"

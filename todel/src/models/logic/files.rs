@@ -1,7 +1,7 @@
 #![allow(clippy::unnecessary_lazy_evaluations)] // Needed because rocket
 use std::path::PathBuf;
 
-use image::io::Reader as ImageReader;
+use image::{io::Reader as ImageReader, ImageFormat};
 use rocket::{
     fs::TempFile,
     http::{ContentType, Header},
@@ -21,6 +21,21 @@ pub struct FetchResponse<'a> {
     pub content_type: ContentType,
 }
 
+/// The data format for uploading a file.
+///
+/// This is a `multipart/form-data` form.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -F file=@trolley.mp4 \
+///   -F spoiler=true \
+///   https://cdn.eludris.gay/attachments/
+/// ```
+#[autodoc(category = "Files")]
 #[derive(Debug, FromForm)]
 pub struct FileUpload<'a> {
     pub file: TempFile<'a>,
@@ -113,30 +128,31 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                 let (width, height) = match mime {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
-                            ImageReader::open(&path)
+                            let mut reader = ImageReader::open(&path)
                                 .map_err(|e| {
                                     log::error!(
-                                        "Failed to strip file metadata on {} with id {}: {:?}",
+                                        "Failed to strip file metadata on {} while opening file with id {}: {:?}",
+                                        name,
+                                        id,
+                                        e
+                                    );
+                                    error!(SERVER, "Failed to strip file metadata")
+                                })?;
+                            reader.set_format(ImageFormat::Jpeg);
+                                reader.decode()
+                                .map_err(|e| {
+                                    log::error!(
+                                        "Failed to strip file metadata on {} while decoding with id {}: {:?}",
                                         name,
                                         id,
                                         e
                                     );
                                     error!(SERVER, "Failed to strip file metadata")
                                 })?
-                                .decode()
+                                .save_with_format(&path, ImageFormat::Jpeg)
                                 .map_err(|e| {
                                     log::error!(
-                                        "Failed to strip file metadata on {} with id {}: {:?}",
-                                        name,
-                                        id,
-                                        e
-                                    );
-                                    error!(SERVER, "Failed to strip file metadata")
-                                })?
-                                .save(&path)
-                                .map_err(|e| {
-                                    log::error!(
-                                        "Failed to strip image metadata on {} with id {}: {:?}",
+                                        "Failed to strip image metadata on {} while saving with id {}: {:?}",
                                         name,
                                         id,
                                         e
@@ -231,7 +247,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
         Ok(file.get_file_data())
     }
 
-    async fn get<'a>(id: u128, bucket: &'a str, db: &mut PoolConnection<MySql>) -> Option<Self> {
+    async fn get<'a>(id: u64, bucket: &'a str, db: &mut PoolConnection<MySql>) -> Option<Self> {
         sqlx::query!(
             "
 SELECT *
@@ -259,7 +275,7 @@ AND bucket = ?
     }
 
     pub async fn fetch_file<'a>(
-        id: u128,
+        id: u64,
         bucket: &'a str,
         db: &mut PoolConnection<MySql>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
@@ -288,7 +304,7 @@ AND bucket = ?
     }
 
     pub async fn fetch_file_download<'a>(
-        id: u128,
+        id: u64,
         bucket: &'a str,
         db: &mut PoolConnection<MySql>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
@@ -317,7 +333,7 @@ AND bucket = ?
     }
 
     pub async fn fetch_file_data<'a>(
-        id: u128,
+        id: u64,
         bucket: &'a str,
         db: &mut PoolConnection<MySql>,
     ) -> Result<FileData, ErrorResponse> {

@@ -16,7 +16,7 @@ keywords = ["eludris"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.68"
+anyhow = "1.0.71"
 clap = { version = "4.1.1", features = ["derive"] }
 console = "0.15.5"
 dialoguer = "0.10.3"
@@ -24,7 +24,8 @@ env_logger = "0.10.0"
 indicatif = "0.17.3"
 log = "0.4.17"
 reqwest = { version = "0.11.14" }
+serde = { version = "1.0.163", features = ["derive"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "macros", "mysql", "offline"] }
 todel = { version = "0.3.2", path = "../todel", features = ["logic"] }
 tokio = { version = "1.24.2", features = ["rt-multi-thread", "macros", "process"] }
-users = "0.11.0"
+toml = "0.7.4"

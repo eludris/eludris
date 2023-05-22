@@ -9,6 +9,8 @@ interface Child {
   name: string;
 }
 
+const sortChildren = (a: Child, b: Child) => a.name.localeCompare(b.name);
+
 let entries: { [key: string]: { models: Child[]; routes: Child[] } } = {};
 
 AUTODOC_ENTRIES.forEach((slug) => {
@@ -76,7 +78,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
               <summary>{crate[0].toUpperCase() + crate.substring(1)}</summary>
               <ul>
                 {children.models.length > 0 &&
-                  children.models.sort().map((child) => (
+                  children.models.sort(sortChildren).map((child) => (
                     <li class="page">
                       <a
                         href={`/reference/${child.slug}`}
@@ -87,7 +89,7 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
                     </li>
                   ))}
                 {children.routes.length > 0 &&
-                  children.routes.sort().map((child) => (
+                  children.routes.sort(sortChildren).map((child) => (
                     <li class="page">
                       <a
                         href={`/reference/${child.slug}`}

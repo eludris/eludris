@@ -1,6 +1,3 @@
-#[cfg(test)]
-mod tests;
-
 #[macro_use]
 extern crate rocket;
 #[macro_use]
@@ -11,24 +8,32 @@ mod rate_limit;
 mod routes;
 
 use std::env;
+#[cfg(test)]
+use std::sync::Once;
 
 use anyhow::Context;
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::Database;
+use rocket_db_pools::{deadpool_redis::Pool, Database};
 use routes::*;
 use todel::Conf;
 
+#[cfg(test)]
+static INIT: Once = Once::new();
+
 #[derive(Database)]
 #[database("cache")]
-pub struct Cache(deadpool_redis::Pool);
+pub struct Cache(Pool);
 
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        env::set_var("ELUDRIS_CONF", "../tests/Eludris.toml");
+        INIT.call_once(|| {
+            env::set_current_dir("..").expect("Could not set the current directory");
+            env::set_var("ELUDRIS_CONF", "tests/Eludris.toml");
+            dotenvy::dotenv().ok();
+            env_logger::init();
+        });
     }
-    dotenv::dotenv().ok();
-    env_logger::try_init().ok();
 
     let config = Config::figment()
         .merge((
@@ -70,6 +75,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
 
 #[rocket::main]
 async fn main() -> Result<(), anyhow::Error> {
+    dotenvy::dotenv().ok();
+    env_logger::init();
+
     let _ = rocket()?
         .launch()
         .await

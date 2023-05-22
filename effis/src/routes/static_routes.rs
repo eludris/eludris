@@ -23,6 +23,22 @@ struct StaticFile<'a> {
     content_type: Option<ContentType>,
 }
 
+/// Get a static file by its name.
+/// Static files are added by the instance owner and cannot be externally modified.
+///
+/// The `Content-Deposition` header is set to `inline`.
+/// Use the [`download_static_file`] endpoint to get `Content-Deposition` set to `attachment`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/static/pengin.mp4
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<name>", rank = 1)]
 pub async fn get_static_file<'a>(
     name: &'a str,
@@ -54,6 +70,22 @@ pub async fn get_static_file<'a>(
     })
 }
 
+/// Download a static file by its name.
+/// Static files are added by the instance owner and cannot be externally modified.
+///
+/// The `Content-Deposition` header is set to `attachment`.
+/// Use the [`get_static_file`] endpoint to get `Content-Deposition` set to `inline`.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl https://cdn.eludris.gay/static/pengin.mp4/download
+///
+/// <raw file data>
+/// ```
+#[autodoc(category = "Files")]
 #[get("/<name>/download", rank = 1)]
 pub async fn download_static_file<'a>(
     name: &'a str,
@@ -101,7 +133,7 @@ async fn get_file(name: &str) -> Result<StaticFile, ErrorResponse> {
         None => None,
     };
 
-    let file = File::open(Path::new("./files/static").join(path))
+    let file = File::open(Path::new("files/static").join(path))
         .await
         .map_err(|e| {
             if e.kind() == ErrorKind::NotFound {
@@ -118,4 +150,48 @@ async fn get_file(name: &str) -> Result<StaticFile, ErrorResponse> {
         path,
         content_type,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::rocket;
+    use rocket::{http::Status, local::asynchronous::Client};
+    use tokio::fs;
+
+    use super::*;
+
+    #[rocket::async_test]
+    async fn test_static() {
+        let client = Client::untracked(rocket().unwrap()).await.unwrap();
+        let file_data = fs::read("tests/test-video.mp4").await.unwrap();
+        fs::copy("tests/test-video.mp4", "files/static/test-video.mp4")
+            .await
+            .unwrap();
+
+        let response = client
+            .get(uri!("/static", get_static_file("test-video.mp4")))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_bytes().await.unwrap(), file_data);
+
+        let response = client
+            .get(uri!("/static", download_static_file("test-video.mp4")))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_bytes().await.unwrap(), file_data);
+
+        fs::remove_file("files/static/test-video.mp4")
+            .await
+            .unwrap();
+
+        let response = client
+            .get(uri!("/static", get_static_file("test-video.mp4")))
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::NotFound);
+    }
 }

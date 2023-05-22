@@ -6,6 +6,7 @@ members = [
   "todel",
   "cli",
   "codegen",
+  "integration-tests",
 ]
 
 [workspace.package]

@@ -30,6 +30,7 @@ pub struct RateLimiter {
     key: String,
     reset_after: Duration,
     request_limit: u32,
+    byte_limit: u64,
     file_size_limit: u64,
     request_count: u32,
     last_reset: u64,
@@ -42,29 +43,33 @@ impl RateLimiter {
     where
         I: Display,
     {
-        let (reset_after, request_limit, file_size_limit) = match bucket {
+        let (reset_after, request_limit, byte_limit, file_size_limit) = match bucket {
             "assets" => (
                 &conf.effis.rate_limits.assets.reset_after,
                 &conf.effis.rate_limits.assets.limit,
                 conf.effis.rate_limits.assets.file_size_limit,
+                conf.effis.file_size,
             ),
             "attachments" => (
                 &conf.effis.rate_limits.attachments.reset_after,
                 &conf.effis.rate_limits.attachments.limit,
                 conf.effis.rate_limits.attachments.file_size_limit,
+                conf.effis.attachment_file_size,
             ),
             "fetch_file" => (
                 &conf.effis.rate_limits.fetch_file.reset_after,
                 &conf.effis.rate_limits.fetch_file.limit,
+                0,
                 0,
             ),
 
             _ => unreachable!(),
         };
         Self {
-            key: format!("rate_limit:{}:{}-{}", identifier, bucket, attachment_bucket),
+            key: format!("rate_limit:{}:{}:{}", identifier, bucket, attachment_bucket),
             reset_after: Duration::from_secs(*reset_after as u64),
             request_limit: *request_limit,
+            byte_limit,
             file_size_limit,
             request_count: 0,
             last_reset: 0,
@@ -86,8 +91,12 @@ impl RateLimiter {
         if bytes > self.file_size_limit {
             return Err(self
                 .wrap_response::<_, ()>(error!(
-                    RATE_LIMITED,
-                    self.last_reset + self.reset_after.as_millis() as u64 - now
+                    VALIDATION,
+                    "file",
+                    format!(
+                        "File size too large, should be less than {} per upload to this bucket",
+                        self.file_size_limit
+                    )
                 ))
                 .unwrap());
         }
@@ -128,7 +137,7 @@ impl RateLimiter {
                         self.last_reset + self.reset_after.as_millis() as u64 - now
                     ))
                     .unwrap())
-            } else if self.sent_bytes + bytes > self.file_size_limit {
+            } else if self.sent_bytes + bytes > self.byte_limit {
                 Err(self
                     .wrap_response::<_, ()>(error!(
                         RATE_LIMITED,
@@ -173,10 +182,7 @@ impl RateLimiter {
                 self.reset_after.as_millis().to_string(),
             ),
             rate_limit_max: Header::new("X-RateLimit-Max", self.request_limit.to_string()),
-            rate_limit_byte_max: Header::new(
-                "X-RateLimit-Byte-Max",
-                self.file_size_limit.to_string(),
-            ),
+            rate_limit_byte_max: Header::new("X-RateLimit-Byte-Max", self.byte_limit.to_string()),
             rate_limit_last_reset: Header::new(
                 "X-RateLimit-Last-Reset",
                 self.last_reset.to_string(),

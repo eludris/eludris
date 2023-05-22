@@ -7,8 +7,9 @@ WORKDIR /effis
 COPY ./oprish/Cargo.toml /oprish/Cargo.toml
 COPY ./pandemonium/Cargo.toml /pandemonium/Cargo.toml
 COPY ./cli/Cargo.toml /cli/Cargo.toml
-RUN mkdir /oprish/src /pandemonium/src /cli/src
-RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs
+COPY ./integration-tests/Cargo.toml /integration-tests/Cargo.toml
+RUN mkdir /oprish/src /pandemonium/src /cli/src /integration-tests/src
+RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs /integration-tests/src/main.rs
 
 COPY ./migrations /migrations
 COPY ./Cargo.toml /Cargo.toml
