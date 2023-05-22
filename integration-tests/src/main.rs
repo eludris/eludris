@@ -12,7 +12,7 @@ use reqwest::Client;
 use todel::models::{ClientPayload, InstanceInfo, Message, ServerPayload};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
-use tokio::time;
+use tokio::time::{self, Instant};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::{
     connect_async, tungstenite::Message as WSMessage, MaybeTlsStream, WebSocketStream,
@@ -55,6 +55,7 @@ async fn main() -> Result<()> {
             if client_id == 0 {
                 log::info!("Sent message");
             }
+            let instant = Instant::now();
             let mut received = 0;
             loop {
                 if let Some(message) = rx.next().await {
@@ -72,7 +73,10 @@ async fn main() -> Result<()> {
                 }
             }
             if client_id == 0 {
-                log::info!("Received 256 messages");
+                log::info!(
+                    "Received 256 messages in {}ms",
+                    instant.elapsed().as_millis()
+                );
             }
             Ok::<(), Error>(())
         }
