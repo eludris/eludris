@@ -1,3 +1,7 @@
+//! # Todel Codegen
+//!
+//! Todel-related macros & codegen crate.
+
 mod autodoc;
 mod utils;
 

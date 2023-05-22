@@ -1,3 +1,3 @@
 # Todel Codegen
 
-Todel-related macros.
+Todel-related macros & codegen crate.
