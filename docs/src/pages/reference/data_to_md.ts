@@ -22,12 +22,11 @@ export default (info: ItemInfo): string => {
   if (info.item.type == ItemType.Route) {
     // Replace angle brackets with HTML character entities
     const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
-    content += `\n\n<span class="method">${
-      info.item.method
-    }</span><span class="route">${route.replace(
-      /&lt;*.+?&gt;/gm,
-      '<span class="special-segment">$&</span>'
-    )}</span>`;
+    content += `\n\n<span class="method">${info.item.method
+      }</span><span class="route">${route.replace(
+        /&lt;*.+?&gt;/gm,
+        '<span class="special-segment">$&</span>'
+      )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -104,9 +103,8 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
-    field.nullable ? '?' : ''
-  }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
+    }|${displayInlineDoc(field.doc)}|`;
 };
 
 const getTagDescription = (tag: string, model: string): string => {
@@ -228,6 +226,7 @@ const displayType = (type: string): string => {
     .replace(/Option<(.+)>/gm, '$1')
     .replace(/Json<(.+)>/gm, '$1')
     .replace(/Form<(.+)>/gm, '$1')
+    .replace(/Box<(.+)>/gm, '$1')
     .replace(/</gm, '\\<');
 
   if (type == 'u32' || type == 'u64' || type == 'usize') {
