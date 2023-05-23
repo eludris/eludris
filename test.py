@@ -28,6 +28,7 @@ if __name__ == "__main__":
     instance_url = os.getenv("INSTANCE_URL") or "http://0.0.0.0:7159"
 
     outbuff = None if "--logs" in sys.argv else subprocess.DEVNULL
+    workspace_tests = "--no-workspace" not in sys.argv
 
     env = os.environ
     if "RUST_LOG" in env and not outbuff:
@@ -62,19 +63,20 @@ if __name__ == "__main__":
         )
         pids[crate] = process.pid
 
-    log.info("\033[3;35mTesting workspace...\033[0m")
-    process = subprocess.run(
-        ["cargo", "test", "--workspace", "--exclude", "integration-tests"],
-        stdout=outbuff,
-        stderr=outbuff,
-    )
-    if process.returncode != 0:
-        log.error(
-            f"\033[1;31mWorkspace tests failed with code {process.returncode}"
-            "\033[0m. Consider running again with `--logs` for more info"
+    if workspace_tests:
+        log.info("\033[3;35mTesting workspace...\033[0m")
+        process = subprocess.run(
+            ["cargo", "test", "--workspace", "--exclude", "integration-tests"],
+            stdout=outbuff,
+            stderr=outbuff,
         )
-        kill_microservices(pids)
-        exit(1)
+        if process.returncode != 0:
+            log.error(
+                f"\033[1;31mWorkspace tests failed with code {process.returncode}"
+                "\033[0m. Consider running again with `--logs` for more info"
+            )
+            kill_microservices(pids)
+            exit(1)
 
     while True:
         try:
