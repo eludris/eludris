@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "$env:GITHUB_ENV"
           echo ("TAG=" + $env:GITHUB_REF.replace('refs/tags/', '')) >> $env:GITHUB_ENV
-          echo "PATH=eludris.exe" >> $env:GITHUB_ENV
+          echo "CLI_PATH=eludris.exe" >> $env:GITHUB_ENV
           echo "OS=Windows" >> $env:GITHUB_ENV
         if: matrix.os == 'windows-latest'
 
