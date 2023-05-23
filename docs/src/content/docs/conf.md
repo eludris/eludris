@@ -57,7 +57,7 @@ instance_name = "" # This is required, has to be over 0 characters long.
 url = "" # This instance's Oprish url
 
 #[oprish.rate limits]
-#info = { reset_after = 5, limit = 2}
+#get_instance_info = { reset_after = 5, limit = 2}
 #create_message = { reset_after = 5, limit = 10}
 
 [pandemonium]
