@@ -16,7 +16,10 @@ use url::Url;
 pub use effis_rate_limits::*;
 pub use oprish_rate_limits::*;
 
-/// Eludris config.
+/// Eludris config used for the `Eludris.toml` file.
+///
+/// For a full example of this check the
+/// `[Eludris.toml](https://github.com/eludris/eludris/blob/main/Eludris.toml)` file in the meta repository.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Conf {
     pub instance_name: String,
@@ -29,7 +32,7 @@ pub struct Conf {
     pub effis: EffisConf,
 }
 
-/// Oprish config.
+/// Oprish configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OprishConf {
     #[serde(default = "message_limit_default")]
@@ -53,7 +56,7 @@ fn message_limit_default() -> usize {
     2048
 }
 
-/// Pandemonium config.
+/// Pandemonium configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PandemoniumConf {
     pub url: String,
@@ -77,7 +80,7 @@ fn pandemonium_rate_limit_default() -> RateLimitConf {
     }
 }
 
-/// Effis config.
+/// Effis configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EffisConf {
     #[serde(deserialize_with = "deserialize_file_size")]
@@ -211,7 +214,7 @@ impl Conf {
         if self.oprish.message_limit < 1024 {
             bail!("Message limit can not be less than 1024 characters");
         }
-        validate_rate_limit_limits!(self.oprish.rate_limits, info, message_create, rate_limits);
+        validate_rate_limit_limits!(self.oprish.rate_limits, get_instance_info, create_message);
         validate_rate_limit_limits!(self.pandemonium, rate_limit);
         validate_rate_limit_limits!(self.effis.rate_limits, assets, attachments, fetch_file);
 
@@ -260,7 +263,7 @@ mod tests {
             url = "https://example.com"
 
             [oprish.rate_limits]
-            info = { reset_after = 10, limit = 2}
+            get_instance_info = { reset_after = 10, limit = 2}
 
             [pandemonium]
             url = "wss://foo.bar"
@@ -281,7 +284,7 @@ mod tests {
             description: Some("The poggest place to chat".to_string()),
             oprish: OprishConf {
                 rate_limits: OprishRateLimits {
-                    info: RateLimitConf {
+                    get_instance_info: RateLimitConf {
                         reset_after: 10,
                         limit: 2,
                     },
@@ -387,9 +390,8 @@ mod tests {
             conf.effis.rate_limits.assets,
             conf.effis.rate_limits.attachments,
             conf.effis.rate_limits.fetch_file,
-            conf.oprish.rate_limits.info,
-            conf.oprish.rate_limits.message_create,
-            conf.oprish.rate_limits.rate_limits
+            conf.oprish.rate_limits.get_instance_info,
+            conf.oprish.rate_limits.create_message
         );
 
         test_urls!(conf, oprish, pandemonium, effis);

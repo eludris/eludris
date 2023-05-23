@@ -39,10 +39,6 @@ use crate::{
 ///       "message_create": {
 ///         "reset_after": 5,
 ///         "limit": 10
-///       },
-///       "rate_limits": {
-///         "reset_after": 5,
-///         "limit": 2
 ///       }
 ///     },
 ///     "pandemonium": {
@@ -76,7 +72,7 @@ pub async fn get_instance_info(
     mut cache: Connection<Cache>,
     conf: &State<Conf>,
 ) -> RateLimitedRouteResponse<Json<InstanceInfo>> {
-    let mut rate_limiter = RateLimiter::new("info", address, conf.inner());
+    let mut rate_limiter = RateLimiter::new("get_instance_info", address, conf.inner());
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     rate_limiter.wrap_response(Json(InstanceInfo::from_conf(conf.inner(), rate_limits)))

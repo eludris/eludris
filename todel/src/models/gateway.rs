@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{InstanceInfo, Message};
-use crate::conf::PandemoniumConf;
+use crate::conf::RateLimitConf;
 
 /// Pandemonium websocket payloads sent by the server to the client.
 #[autodoc(category = "Gateway")]
@@ -64,12 +64,9 @@ pub enum ServerPayload {
     ///       "file_size": 20000000,
     ///       "attachment_file_size": 100000000
     ///     },
-    ///     "pandemonium_info": {
-    ///       "url": "https://example.com",
-    ///       "rate_limit": {
-    ///         "reset_after": 10,
-    ///         "limit": 5
-    ///       }
+    ///     "rate_limit": {
+    ///       "reset_after": 10,
+    ///       "limit": 5
     ///     }
     ///   }
     /// }
@@ -82,8 +79,8 @@ pub enum ServerPayload {
         /// This is the same payload you get from the [`get_instance_info`] payload without
         /// ratelimits
         instance_info: Box<InstanceInfo>,
-        /// The pandemonium-related configuration and ratelimit info
-        pandemonium_info: PandemoniumConf,
+        /// The pandemonium ratelimit info.
+        rate_limit: RateLimitConf,
     },
     /// The event sent when the client receives a [`Message`].
     ///

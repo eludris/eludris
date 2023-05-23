@@ -58,8 +58,7 @@ url = "" # This instance's Oprish url
 
 #[oprish.rate limits]
 #info = { reset_after = 5, limit = 2}
-#message_create = { reset_after = 5, limit = 10}
-#rate limits = { reset_after = 5, limit = 2 }
+#create_message = { reset_after = 5, limit = 10}
 
 [pandemonium]
 url = "" # This instance's Pandemonium url

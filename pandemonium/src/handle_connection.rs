@@ -105,7 +105,7 @@ pub async fn handle_connection(
         &ServerPayload::Hello {
             heartbeat_interval: TIMEOUT.as_millis() as u64,
             instance_info: Box::new(InstanceInfo::from_conf(&conf, false)),
-            pandemonium_info: conf.pandemonium.clone(),
+            rate_limit: conf.pandemonium.rate_limit.clone(),
         },
     )
     .await;

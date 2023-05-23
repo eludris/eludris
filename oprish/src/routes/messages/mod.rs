@@ -32,7 +32,7 @@ pub async fn create_message(
     mut cache: Connection<Cache>,
     conf: &State<Conf>,
 ) -> RateLimitedRouteResponse<Result<Json<Message>, ErrorResponse>> {
-    let mut rate_limiter = RateLimiter::new("message_create", address, conf.inner());
+    let mut rate_limiter = RateLimiter::new("create_message", address, conf.inner());
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     let mut message = message.into_inner();

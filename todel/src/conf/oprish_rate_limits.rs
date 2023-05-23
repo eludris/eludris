@@ -17,53 +17,39 @@ use super::RateLimitConf;
 ///   "message_create": {
 ///     "reset_after": 5,
 ///     "limit": 10
-///   },
-///   "rate_limits": {
-///     "reset_after": 5,
-///     "limit": 2
 ///   }
 /// }
 /// ```
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OprishRateLimits {
-    /// Rate limits for the `GET /` endpoint.
-    #[serde(default = "info_default")]
-    pub info: RateLimitConf,
-    /// Rate limits for the `POST /messages` endpoint.
-    #[serde(default = "message_create_default")]
-    pub message_create: RateLimitConf,
-    #[serde(default = "rate_limits_default")]
-    pub rate_limits: RateLimitConf,
+    /// Rate limits for the [`get_instance_info`] endpoint.
+    #[serde(default = "get_instance_info_default")]
+    pub get_instance_info: RateLimitConf,
+    /// Rate limits for the [`create_message`] endpoint.
+    #[serde(default = "create_message_default")]
+    pub create_message: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
     fn default() -> Self {
         Self {
-            info: info_default(),
-            message_create: message_create_default(),
-            rate_limits: rate_limits_default(),
+            get_instance_info: get_instance_info_default(),
+            create_message: create_message_default(),
         }
     }
 }
 
-fn info_default() -> RateLimitConf {
+fn get_instance_info_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 2,
     }
 }
 
-fn message_create_default() -> RateLimitConf {
+fn create_message_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,
-    }
-}
-
-fn rate_limits_default() -> RateLimitConf {
-    RateLimitConf {
-        reset_after: 5,
-        limit: 2,
     }
 }
