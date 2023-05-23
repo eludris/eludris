@@ -28,14 +28,14 @@ pub enum ErrorResponse {
     ///   "type": "RATE_LIMITED",
     ///   "status": 429,
     ///   "message": "You have been rate limited",
-    ///   "try_after": 1234
+    ///   "retry_after": 1234
     /// }
     /// ```
     RateLimited {
         #[serde(flatten)]
         shared: SharedErrorData,
         /// The amount of milliseconds you're still rate limited for.
-        try_after: u64,
+        retry_after: u64,
     },
     /// The error when a request a client sends is incorrect and fails validation.
     ///
@@ -111,13 +111,13 @@ macro_rules! error {
     ($rate_limiter:expr, $error:ident, $($val:expr),+) => {
         return $rate_limiter.wrap_response(Err(error!($error, $($val),+)));
     };
-    (RATE_LIMITED, $try_after:expr) => {
+    (RATE_LIMITED, $retry_after:expr) => {
         ErrorResponse::RateLimited {
             shared: $crate::models::SharedErrorData {
                 status: 429,
                 message: "You have been rate limited".to_string(),
             },
-            try_after: $try_after,
+            retry_after: $retry_after,
         }
     };
     (VALIDATION, $value_name:expr, $info:expr) => {
@@ -163,7 +163,7 @@ mod tests {
                     status: 429,
                     message: "You have been rate limited".to_string(),
                 },
-                try_after: 1234,
+                retry_after: 1234,
             }
         );
     }
