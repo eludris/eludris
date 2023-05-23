@@ -22,20 +22,11 @@ export default (info: ItemInfo): string => {
   if (info.item.type == ItemType.Route) {
     // Replace angle brackets with HTML character entities
     const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
-<<<<<<< HEAD
     content += `\n\n<span class="method">${info.item.method
       }</span><span class="route">${route.replace(
         /&lt;*.+?&gt;/gm,
         '<span class="special-segment">$&</span>'
       )}</span>`;
-=======
-    content += `\n\n<span class="method">${
-      info.item.method
-    }</span><span class="route">${route.replace(
-      /&lt;*.+?&gt;/gm,
-      '<span class="special-segment">$&</span>'
-    )}</span>`;
->>>>>>> 5573397fe5c0bfe2d946b1630f668eac2283fe5f
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -112,14 +103,8 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-<<<<<<< HEAD
   return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
     }|${displayInlineDoc(field.doc)}|`;
-=======
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
-    field.nullable ? '?' : ''
-  }|${displayInlineDoc(field.doc)}|`;
->>>>>>> 5573397fe5c0bfe2d946b1630f668eac2283fe5f
 };
 
 const getTagDescription = (tag: string, model: string): string => {
