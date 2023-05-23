@@ -3,7 +3,7 @@ use std::env;
 use std::sync::Arc;
 use std::time::Duration;
 
-use anyhow::{bail, Error, Result};
+use anyhow::{bail, Context, Error, Result};
 use futures::future::try_join_all;
 use futures::stream::{SplitSink, SplitStream, StreamExt};
 use futures::SinkExt;
@@ -38,62 +38,68 @@ async fn main() -> Result<()> {
         rng: Mutex::new(SeedableRng::from_entropy()),
     });
 
-    try_join_all((0..=u8::MAX).map(|client_id| {
+    let connections = try_join_all((0..=u8::MAX).map(|client_id| {
         let state = Arc::clone(&state);
         async move {
             let ip = format!("192.168.100.{}", client_id);
-            let (tx, mut rx, pinger) = connect_gateway(&state, &ip, client_id).await?;
-            let mut headers = header::HeaderMap::new();
-            headers.insert("X-Real-IP", HeaderValue::from_str(&ip)?);
-            let client = Client::builder().default_headers(headers).build()?;
-            client
-                .post(format!("{}/messages", state.instance_info.oprish_url))
-                .json(&Message {
-                    author: ip.clone(),
-                    content: format!("Message from client {}", client_id),
-                })
-                .send()
-                .await?;
-            if client_id == 0 {
-                log::info!("Sent message");
-            }
-            let instant = Instant::now();
-            let mut received = 0;
-            loop {
-                if let Some(message) = rx.next().await {
-                    if let Ok(WSMessage::Text(message)) = message {
-                        if let Ok(ServerPayload::MessageCreate(_)) = serde_json::from_str(&message)
-                        {
-                            received += 1;
-                            if received == u8::MAX {
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    bail!("Couldn't receive all of the messages");
-                }
-            }
-            if client_id == 0 {
-                log::info!(
-                    "Received 256 messages in {}ms",
-                    instant.elapsed().as_millis()
-                );
-            }
-            pinger.abort();
-            pinger.await.ok(); // make sure the tx is no longer referenced by the arc inside the
-                               // task
-            Arc::try_unwrap(tx)
-                .expect("Could not remove tx from Arc")
-                .into_inner()
-                .reunite(rx)
-                .expect("Could not reunite socket")
-                .close(None)
-                .await
-                .expect("Could not close websocket connection");
-            Ok::<(), Error>(())
+            let (tx, rx, pinger) = connect_gateway(&state, &ip, client_id).await?;
+            Ok::<_, Error>((client_id, ip, tx, rx, pinger))
         }
     }))
+    .await?;
+
+    log::info!("Connected all 256 clients");
+
+    try_join_all(
+        connections
+            .into_iter()
+            .map(|(client_id, ip, tx, mut rx, pinger)| {
+                let state = Arc::clone(&state);
+                async move {
+                    let mut headers = header::HeaderMap::new();
+                    headers.insert("X-Real-IP", HeaderValue::from_str(&ip)?);
+                    let client = Client::builder().default_headers(headers).build()?;
+                    client
+                        .post(format!("{}/messages", state.instance_info.oprish_url))
+                        .json(&Message {
+                            author: ip.clone(),
+                            content: format!("Message from client {}", client_id),
+                        })
+                        .send()
+                        .await?;
+                    if client_id == 0 {
+                        log::info!("Sent message");
+                    }
+                    let instant = Instant::now();
+                    let mut received = 0;
+                    loop {
+                        if let Some(message) = rx.next().await {
+                            if let Ok(WSMessage::Text(message)) = message {
+                                if let Ok(ServerPayload::MessageCreate(_)) =
+                                    serde_json::from_str(&message)
+                                {
+                                    received += 1;
+                                    if received == u8::MAX {
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            close_socket(tx, rx, pinger).await.unwrap();
+                            bail!("Couldn't receive all of the messages");
+                        }
+                    }
+                    if client_id == 0 {
+                        log::info!(
+                            "Received 256 messages in {}ms",
+                            instant.elapsed().as_millis()
+                        );
+                    }
+                    close_socket(tx, rx, pinger).await.unwrap();
+                    Ok::<(), Error>(())
+                }
+            }),
+    )
     .await?;
 
     Ok(())
@@ -153,6 +159,26 @@ async fn connect_gateway(
             bail!("Could not find `Hello` Payload");
         }
     }
+}
+
+async fn close_socket(
+    tx: Arc<Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, WSMessage>>>,
+    rx: SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>,
+    pinger: JoinHandle<Infallible>,
+) -> Result<()> {
+    pinger.abort();
+    pinger.await.ok(); // make sure the tx is no longer referenced by the arc inside the
+                       // task
+    Arc::try_unwrap(tx)
+        // .context("Could not remove tx from Arc")?
+        .expect("Could not remove tx from Arc")
+        .into_inner()
+        .reunite(rx)
+        .context("Could not reunite socket")?
+        .close(None)
+        .await
+        .context("Could not close websocket connection")?;
+    Ok(())
 }
 
 #[cfg(test)]
