@@ -1,3 +1,4 @@
+use std::convert::Infallible;
 use std::env;
 use std::sync::Arc;
 use std::time::Duration;
@@ -12,6 +13,7 @@ use reqwest::Client;
 use todel::models::{ClientPayload, InstanceInfo, Message, ServerPayload};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
 use tokio::time::{self, Instant};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::{
@@ -40,7 +42,7 @@ async fn main() -> Result<()> {
         let state = Arc::clone(&state);
         async move {
             let ip = format!("192.168.100.{}", client_id);
-            let (_, mut rx) = connect_gateway(&state, &ip, client_id).await?;
+            let (tx, mut rx, pinger) = connect_gateway(&state, &ip, client_id).await?;
             let mut headers = header::HeaderMap::new();
             headers.insert("X-Real-IP", HeaderValue::from_str(&ip)?);
             let client = Client::builder().default_headers(headers).build()?;
@@ -78,6 +80,17 @@ async fn main() -> Result<()> {
                     instant.elapsed().as_millis()
                 );
             }
+            pinger.abort();
+            pinger.await.ok(); // make sure the tx is no longer referenced by the arc inside the
+                               // task
+            Arc::try_unwrap(tx)
+                .expect("Could not remove tx from Arc")
+                .into_inner()
+                .reunite(rx)
+                .expect("Could not reunite socket")
+                .close(None)
+                .await
+                .expect("Could not close websocket connection");
             Ok::<(), Error>(())
         }
     }))
@@ -93,6 +106,7 @@ async fn connect_gateway(
 ) -> Result<(
     Arc<Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, WSMessage>>>,
     SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>,
+    JoinHandle<Infallible>,
 )> {
     let mut request = state
         .instance_info
@@ -117,7 +131,7 @@ async fn connect_gateway(
                 {
                     let inner_tx = Arc::clone(&tx);
                     let starting_beat = state.rng.lock().await.gen_range(0..heartbeat_interval);
-                    tokio::spawn(async move {
+                    let task = tokio::spawn(async move {
                         time::sleep(Duration::from_millis(starting_beat)).await;
                         loop {
                             inner_tx
@@ -132,7 +146,7 @@ async fn connect_gateway(
                             time::sleep(Duration::from_millis(heartbeat_interval)).await;
                         }
                     });
-                    break Ok((tx, rx));
+                    break Ok((tx, rx, task));
                 }
             }
         } else {
