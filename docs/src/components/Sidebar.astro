@@ -1,0 +1,269 @@
+---
+import { readFileSync } from 'fs';
+import { getCollection } from 'astro:content';
+import AUTODOC_ENTRIES from '../../public/autodoc/index.json';
+import { ItemInfo, ItemType } from '../lib/types';
+
+interface Child {
+  slug: string;
+  name: string;
+}
+
+const sortChildren = (a: Child, b: Child) => a.name.localeCompare(b.name);
+
+let entries: { [key: string]: { models: Child[]; routes: Child[] } } = {};
+
+AUTODOC_ENTRIES.forEach((slug) => {
+  const item: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${slug}`).toString());
+  if (!item.hidden) {
+    slug = slug.split('.')[0];
+    const file = slug.split('/')[1];
+    if (!entries[item.category]) {
+      entries[item.category] = { models: [], routes: [] };
+    }
+    const name = file
+      .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+      .replace(/[A-Z]/gm, ' $&');
+    entries[item.category][item.item.type === ItemType.Route ? 'routes' : 'models'].push({
+      slug,
+      name
+    });
+  }
+});
+
+const docPages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+const extraPages = (await getCollection('extra')).sort((a, b) => a.data.order - b.data.order);
+const changelogPages = (await getCollection('changelogs')).sort(
+  (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf()
+);
+
+export interface Props {
+  slug?: string;
+}
+
+let { slug } = Astro.props;
+
+const stars = fetch('https://api.github.com/repos/eludris/eludris')
+  .then((res) => res.json())
+  .then((res) => res.stargazers_count);
+---
+
+<div id="sidebar">
+  <h3>The Eludris Developer Portal</h3>
+  <ul id="index">
+    <li>
+      <ul id="top-level-pages">
+        {
+          docPages.map((entry) => (
+            <li class="page">
+              <a
+                href={entry.data.order === 0 ? '/' : `/docs/${entry.slug}`}
+                class={slug === entry.slug ? 'active' : ''}
+              >
+                {entry.data.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </li>
+    <h4>API reference</h4>
+    {
+      Object.entries(entries)
+        .sort()
+        .filter(([_, children]) => children.models.length + children.routes.length)
+        .map(([crate, children]) => (
+          <li>
+            <details open class="category">
+              <summary>{crate[0].toUpperCase() + crate.substring(1)}</summary>
+              <ul>
+                {children.models.length > 0 &&
+                  children.models.sort(sortChildren).map((child) => (
+                    <li class="page">
+                      <a
+                        href={`/reference/${child.slug}`}
+                        class={slug == child.slug ? 'active' : ''}
+                      >
+                        {child.name}
+                      </a>
+                    </li>
+                  ))}
+                {children.routes.length > 0 &&
+                  children.routes.sort(sortChildren).map((child) => (
+                    <li class="page">
+                      <a
+                        href={`/reference/${child.slug}`}
+                        class={slug == child.slug ? 'active' : ''}
+                      >
+                        {child.name}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </details>
+          </li>
+        ))
+    }
+    <h4>Other</h4>
+    <li>
+      <details open class="category">
+        <summary>Extras</summary>
+        <ul>
+          {
+            extraPages.map((entry) => (
+              <li class="page">
+                <a href={`/extra/${entry.slug}`} class={slug == entry.slug ? 'active' : ''}>
+                  {entry.data.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+    </li>
+    <li>
+      <details open class="category">
+        <summary>Changelogs</summary>
+        <ul>
+          {
+            changelogPages.map((entry) => (
+              <li class="page">
+                <a
+                  href={`/changelogs/${entry.data.version.replace(/\./g, '-')}`}
+                  class={slug == entry.data.version ? 'active' : ''}
+                >
+                  Version {entry.data.version}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+    </li>
+  </ul>
+  <span id="star">
+    <span
+      >Eludris has <span id="star-text">{stars} stars</span>. consider starring the <a
+        href="https://github.com/eludris">repository</a
+      >!</span
+    >
+  </span>
+</div>
+
+<script>
+  fetch('https://api.github.com/repos/eludris/eludris') // update star count after page load
+    .then((res) => res.json())
+    .then((res) => res.stargazers_count)
+    .then((stars) => {
+      if (stars) {
+        document.getElementById('star-text')!.innerText = `${stars} stars`;
+      }
+    });
+</script>
+
+<style>
+  #sidebar {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--sidebar-width);
+    padding: 10px;
+    background-color: var(--gray-200);
+    box-sizing: border-box;
+    transition: transform ease-in-out 250ms;
+    overflow-y: auto;
+  }
+
+  #index {
+    padding: 0;
+    list-style: none;
+  }
+
+  .category {
+    list-style: none;
+  }
+
+  .category > summary {
+    font-size: 18px;
+    font-weight: normal;
+    margin: 10px 0;
+    list-style: none;
+    cursor: pointer;
+    color: var(--color-text-100);
+  }
+
+  .category > ul {
+    padding: 0 5px;
+  }
+
+  .page {
+    list-style: none;
+    padding: 2px 0;
+    margin: 0px 5px;
+  }
+
+  #sidebar a {
+    color: var(--color-text-200);
+    border: unset;
+  }
+
+  #sidebar a:hover {
+    color: var(--gray-500);
+  }
+
+  #sidebar.sidebar-hide {
+    transform: translate(-100%, 0);
+  }
+
+  #sidebar a.active {
+    border-bottom: 1px solid var(--color-text-200);
+  }
+
+  #sidebar a.active:hover {
+    border-bottom: 1px solid var(--gray-500);
+  }
+
+  h3 {
+    text-align: center;
+    font-size: 20px;
+  }
+
+  h4 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    margin: 30px auto 20px auto;
+    text-align: center;
+    font-size: 20px;
+    gap: 5px;
+  }
+
+  h4:before,
+  h4:after {
+    background: var(--color-text-200);
+    height: 1px;
+    flex: 1;
+    content: '';
+  }
+
+  #top-level-pages {
+    padding-left: 5px;
+  }
+
+  #star {
+    margin-top: auto;
+    position: relative;
+  }
+
+  #star-text {
+    color: var(--pink-500);
+  }
+
+  #star a {
+    border-bottom: 1px solid var(--color-text-200);
+  }
+</style>

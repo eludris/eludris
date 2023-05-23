@@ -4,7 +4,7 @@
   <a href="https://discord.gg/vV6v2DhWQB"><img src="https://shields.io/discord/980412957060137001?style=for-the-badge&logo=discord&labelColor=363934&label=Discord%20Server&color=363934" /></a>
   <a href="https://reddit.com/r/eludris"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Reddit&logo=reddit&logoColor=ff5700&color=121212&labelColor=121212" /></a>
   <a href="https://twitter.com/eludris"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Twitter&logo=twitter&color=15202b&labelColor=15202b" /></a>
-  <a href="https://eludris.github.io/docs"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Docs&logo=mdbook&color=211233&labelColor=211233" /></a>
+  <a href="https://eludevs.pages.dev"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Docs&logo=mdbook&color=211233&labelColor=211233" /></a>
   <a href="https://github.com/eludris/eludris/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/eludris/eludris/ci.yml?label=checks&labelColor=333&logo=github&style=for-the-badge" /></a>
   <a href="https://github.com/eludris/eludris/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/eludris/eludris/build.yml?label=Builds&labelColor=003f8c&logo=docker&style=for-the-badge" /></a>
 </p>
@@ -17,7 +17,7 @@ in rust that's easy to deploy and configure while striving to be *truly **yours*
 Eludris tries to combine the best parts of other popular social media platforms
 such as Discord, Reddit, Twitter and so on while not being one or the other.
 
-### We're currently at version 0.3.2, click [here](https://eludris.github.io/docs/changelog0.3.2.html) to check the changelog
+### We're currently at version 0.3.3, click [here](https://eludevs.pages.dev/changelogs/0-3-3) to check the changelog
 
 ## Deployment
 
@@ -30,4 +30,4 @@ docker-compose up
 
 Congratulations, you've now successfully deployed your Eludris instance! <img width="30em" src="https://github.com/eludris/.github/blob/main/assets/thang-big.png" />
 
-For more detailed info please visit our [docs](https://eludris.github.io/docs)
+For more detailed info please visit our [docs](https://eludevs.pages.dev)

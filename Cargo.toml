@@ -1,12 +1,14 @@
 [workspace]
 members = [
-    "oprish",
-    "pandemonium",
-    "effis",
-    "todel",
-	"cli"
+  "oprish",
+  "pandemonium",
+  "effis",
+  "todel",
+  "cli",
+  "codegen",
+  "integration-tests",
 ]
 
 [workspace.package]
-version = "0.3.2"
-documentation = "https://eludris.github.io/docs"
+version = "0.3.3"
+documentation = "https://eludevs.pages.dev"

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Looo"
+   viewBox="0 0 100 100"
+   version="1.1"
+   sodipodi:docname="favicon.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview12"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="4.28"
+     inkscape:cx="92.172897"
+     inkscape:cy="61.214953"
+     inkscape:window-width="1920"
+     inkscape:window-height="1014"
+     inkscape:window-x="0"
+     inkscape:window-y="66"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Looo" />
+  <defs
+     id="defs4">
+    <style
+       id="style2">
+      .carpet {
+        fill: #120e1c;
+      }
+
+      .ding {
+        fill: #e566ff;
+      }
+    </style>
+  </defs>
+  <title
+     id="title6">2Dingding</title>
+  <g
+     id="Dassen_Dinget"
+     data-name="Dassen Dinget">
+    <rect
+       id="the_magic_carpet"
+       data-name="the magic carpet"
+       class="carpet"
+       width="100"
+       height="100"
+       d="m 10,0 h 80 a 10,10 45 0 1 10,10 V 90 A 10,10 135 0 1 90,100 H 10 A 10,10 45 0 1 0,90 V 10 A 10,10 135 0 1 10,0 Z"
+       ry="9.0851755"
+       x="0"
+       y="0" />
+    <path
+       id="Ding"
+       class="ding"
+       d="M57.9961,73.5654C69.7364,87.73,100.8945,74.61,90.5427,80.304,68.6937,96.5731,15.0861,33.1709,16.12,85.1277c-8.1735-4.9411,2.7661-22.51,9.97-30.31-5.789-1.1021-13.2107,1.2767-18.75,7.188,18.75-25.4,9.4062,18.5658,46.5151-47.1334-9.18,34.9726-36.6608,33.3245-10.9634,43.6567C57.3131,75.73,76.1553,75.8715,92.6594,59.988,91.2877,70.0388,68.9632,74.8162,57.9961,73.5654Zm-38.59-7.102c8.7863-7.4861,20.3476-1.9341,30.8714,2.6758C41.4289,61.8389,29.608,44.9938,19.4058,66.4634Z" />
+  </g>
+</svg>

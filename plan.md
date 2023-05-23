@@ -1,6 +1,6 @@
 # You should not be reading this file
 
-## Instead, check out the [docs](https://eludris.github.io/docs/).
+## Instead, check out the [docs](https://eludevs.pages.dev/extra/detailed).
 
 # Eludris
 

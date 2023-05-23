@@ -4,13 +4,9 @@ use std::{
 };
 
 use crate::Cache;
-use deadpool_redis::redis::AsyncCommands;
 use rocket::http::Header;
-use rocket_db_pools::Connection;
-use todel::{
-    models::{ErrorResponse, ErrorResponseData, RateLimitError},
-    Conf,
-};
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
+use todel::{models::ErrorResponse, Conf};
 
 pub type RateLimitedRouteResponse<T> =
     Result<RateLimitHeaderWrapper<T>, RateLimitHeaderWrapper<ErrorResponse>>;
@@ -97,23 +93,19 @@ impl RateLimiter {
             }
             if self.request_count >= self.request_limit {
                 log::info!("Rate limited bucket {}", self.key);
-                Err(self
-                    .wrap_response::<_, ()>(
-                        RateLimitError {
-                            retry_after: self.last_reset + self.reset_after.as_millis() as u64
-                                - now,
-                        }
-                        .to_error_response(),
-                    )
-                    .unwrap())
-            } else {
-                cache
-                    .hincr::<&str, &str, u8, ()>(&self.key, "request_count", 1)
-                    .await
-                    .expect("Couldn't query cache");
-                self.request_count += 1;
-                Ok(())
+                return Err(self
+                    .wrap_response::<ErrorResponse, ()>(error!(
+                        RATE_LIMITED,
+                        self.last_reset + self.reset_after.as_millis() as u64 - now
+                    ))
+                    .unwrap());
             }
+            cache
+                .hincr::<&str, &str, u8, ()>(&self.key, "request_count", 1)
+                .await
+                .expect("Couldn't query cache");
+            self.request_count += 1;
+            Ok(())
         } else {
             log::debug!("New bucket for {}", self.key);
             cache
@@ -128,8 +120,8 @@ impl RateLimiter {
     }
 
     /// Wraps a response in a RateLimitHeaderWrapper which adds headers relevant to rate limiting
-    pub fn wrap_response<T, E>(&self, data: T) -> Result<RateLimitHeaderWrapper<T>, E> {
-        Ok(RateLimitHeaderWrapper {
+    pub fn add_headers<T>(&self, data: T) -> RateLimitHeaderWrapper<T> {
+        RateLimitHeaderWrapper {
             inner: data,
             rate_limit_reset: Header::new(
                 "X-RateLimit-Reset",
@@ -144,6 +136,10 @@ impl RateLimiter {
                 "X-RateLimit-Request-Count",
                 self.request_count.to_string(),
             ),
-        })
+        }
+    }
+
+    pub fn wrap_response<T, E>(&self, data: T) -> Result<RateLimitHeaderWrapper<T>, E> {
+        Ok(self.add_headers(data))
     }
 }

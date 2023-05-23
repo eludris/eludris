@@ -19,7 +19,7 @@ The Eludris CLI is also available on the [AUR](https://aur.archlinux.org/package
 
 ## Usage
 
-You can find out more by reading the [CLI docs](https://eludris.github.io/docs/cli.html)
+You can find out more by reading the [CLI docs](https://eludevs.pages.dev/docs/cli)
 or by running the help command:
 
 ```sh

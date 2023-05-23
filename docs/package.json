@@ -1,0 +1,29 @@
+{
+  "name": "docs",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "echo '[]' > public/search.json && astro dev",
+    "start": "echo '[]' > public/search.json && astro dev",
+    "build": "echo '[]' > public/search.json && astro build",
+    "preview": "echo '[]' > public/search.json && astro preview",
+    "astro": "echo '[]' > public/search.json && astro"
+  },
+  "dependencies": {
+    "@astrojs/markdown-component": "^1.0.3",
+    "@astrojs/mdx": "^0.18.2",
+    "@astrojs/sitemap": "^1.2.1",
+    "astro": "^2.1.5",
+    "astro-icon": "^0.8.0",
+    "hastscript": "^7.2.0",
+    "mdast-util-from-markdown": "^1.3.0",
+    "mdast-util-gfm-table": "^1.0.7",
+    "mdast-util-to-markdown": "^1.5.0",
+    "mdast-util-to-string": "^3.2.0",
+    "micromark-extension-gfm-table": "^1.0.5",
+    "rehype-accessible-emojis": "^0.3.2",
+    "rehype-autolink-headings": "^6.1.1",
+    "rehype-slug": "^5.1.0",
+    "unist-util-visit": "^4.1.2"
+  }
+}

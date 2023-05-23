@@ -1,11 +1,15 @@
 #[macro_use]
 extern crate rocket;
+#[macro_use]
+extern crate todel;
 
 mod cors;
 mod rate_limit;
 mod routes;
 
-use std::{env, path::Path};
+#[cfg(test)]
+use std::sync::Once;
+use std::{env, fs, path::Path};
 
 use anyhow::Context;
 
@@ -15,13 +19,12 @@ use rocket::{
     Build, Config, Rocket,
 };
 use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
-use todel::{
-    ids::{generate_instance_id, IDGenerator},
-    Conf,
-};
-use tokio::fs;
+use todel::{ids::IDGenerator, Conf};
 
 pub const BUCKETS: [&str; 1] = ["attachments"];
+
+#[cfg(test)]
+static INIT: Once = Once::new();
 
 #[derive(Database)]
 #[database("db")]
@@ -34,9 +37,13 @@ pub struct Cache(Pool);
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
     {
-        env::set_var("ELUDRIS_CONF", "../tests/Eludris.toml");
-        dotenvy::dotenv().ok();
-        env_logger::try_init().ok();
+        INIT.call_once(|| {
+            env::set_current_dir("..").expect("Could not set the current directory");
+            env::set_var("ELUDRIS_CONF", "tests/Eludris.toml");
+            create_file_dirs().expect("Could not create necessary file directories");
+            dotenvy::dotenv().ok();
+            env_logger::init();
+        });
     }
 
     let conf = Conf::new_from_env()?;
@@ -82,7 +89,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         ));
 
     Ok(rocket::custom(config)
-        .manage(Mutex::new(IDGenerator::new(generate_instance_id())))
+        .manage(Mutex::new(IDGenerator::new()))
         .manage(conf)
         .attach(DB::init())
         .attach(Cache::init())
@@ -107,7 +114,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .await
         .context("Failed to run migrations")?;
 
-    create_file_dirs().await?;
+    create_file_dirs()?;
 
     let _ = rocket()?
         .launch()
@@ -117,19 +124,18 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn create_file_dirs() -> Result<(), anyhow::Error> {
-    try_create_dir("files").await?;
-    try_create_dir("files/static").await?;
+fn create_file_dirs() -> Result<(), anyhow::Error> {
+    try_create_dir("files")?;
+    try_create_dir("files/static")?;
     for dir in BUCKETS.iter() {
-        try_create_dir(format!("files/{dir}")).await?;
+        try_create_dir(format!("files/{dir}"))?;
     }
     Ok(())
 }
 
-async fn try_create_dir(path: impl AsRef<Path>) -> Result<(), anyhow::Error> {
+fn try_create_dir(path: impl AsRef<Path>) -> Result<(), anyhow::Error> {
     if !path.as_ref().exists() {
         fs::create_dir(&path)
-            .await
             .with_context(|| format!("Failed to create {} directory", path.as_ref().display()))
     } else {
         Ok(())

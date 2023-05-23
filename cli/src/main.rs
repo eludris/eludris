@@ -4,10 +4,19 @@ mod deploy;
 mod logs;
 mod static_attachments;
 mod stop;
+mod update;
 
-use std::{env, path::PathBuf};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
+use anyhow::Context;
 use clap::{Parser, Subcommand};
+use console::Style;
+use dialoguer::{theme, Input};
+use eludris::{get_user_config, update_config_file, Config};
+use tokio::fs;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -25,9 +34,19 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Deploys your Eludris instance
-    Deploy,
+    Deploy {
+        /// Use a development Eludris instance
+        #[arg(long)]
+        next: bool,
+    },
     /// Stops your Eludris instance
     Stop,
+    /// Updates your Eludris instance
+    Update {
+        /// Update to the latest development version of Eludris
+        #[arg(long)]
+        next: bool,
+    },
     /// Shows you your instance's logs
     Logs,
     /// Static attachment related commands
@@ -63,7 +82,7 @@ enum AttachmentSubcommand {
     /// Removes an attachment
     Remove {
         /// The id of the attchment to be removed
-        id: u128,
+        id: u64,
     },
 }
 
@@ -80,9 +99,32 @@ async fn main() -> anyhow::Result<()> {
     };
     env_logger::init();
 
+    if get_user_config().await?.is_none() {
+        let path_input = Input::with_theme(&theme::ColorfulTheme {
+            prompt_prefix: Style::new().yellow().bold().apply_to("~>".to_string()),
+            success_prefix: Style::new().green().bold().apply_to("~>".to_string()),
+            error_prefix: Style::new().red().bold().apply_to("~>".to_string()),
+            ..Default::default()
+        })
+        .with_prompt(
+            "Enter where you want your Eludris instance's files to be (note: leaving it as /usr/eludris will require root previlages in the future)",
+        )
+        .default("/usr/eludris".to_string())
+        .interact_text()
+        .context("Could not prompt user")?.replace('~', &env::var("HOME").context("Could not find home path")?);
+        if !fs::try_exists(&path_input).await? {
+            fs::create_dir_all(&path_input).await?;
+        }
+        let config = Config {
+            eludris_dir: Path::new(&path_input).canonicalize()?.display().to_string(),
+        };
+        update_config_file(&config).await?;
+    }
+
     match cli.command {
-        Commands::Deploy => deploy::deploy().await?,
+        Commands::Deploy { next } => deploy::deploy(next).await?,
         Commands::Stop => stop::stop().await?,
+        Commands::Update { next } => update::update(next).await?,
         Commands::Logs => logs::logs().await?,
         Commands::Static { command } => match command {
             StaticSubcommand::Add { path } => static_attachments::add(path).await?,

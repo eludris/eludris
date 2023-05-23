@@ -1,13 +1,15 @@
 use std::{
     fmt::Display,
+    sync::Arc,
     time::{Duration, SystemTime},
 };
 
-use deadpool_redis::{redis::AsyncCommands, Connection};
+use redis::{aio::Connection, AsyncCommands};
+use tokio::sync::Mutex;
 
 /// A simple RateLimiter than can keep track of rate limit data from KeyDB
 pub struct RateLimiter {
-    cache: Connection,
+    cache: Arc<Mutex<Connection>>,
     key: String,
     reset_after: Duration,
     request_limit: u32,
@@ -18,7 +20,7 @@ pub struct RateLimiter {
 impl RateLimiter {
     /// Creates a new RateLimiter
     pub fn new<I>(
-        cache: Connection,
+        cache: Arc<Mutex<Connection>>,
         identifier: I,
         reset_after: Duration,
         request_limit: u32,
@@ -36,15 +38,15 @@ impl RateLimiter {
         }
     }
 
-    /// Checks if a bucket is rate limited
-    pub async fn process_rate_limit(&mut self) -> Result<(), ()> {
+    /// Checks if a bucket is rate limited and returns the time until reset if so
+    pub async fn process_rate_limit(&mut self) -> Result<(), u64> {
         let now = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap_or(Duration::ZERO)
             .as_millis() as u64;
+        let mut cache = self.cache.lock().await;
 
-        if let (Some(last_reset), Some(request_count)) = self
-            .cache
+        if let (Some(last_reset), Some(request_count)) = cache
             .hget::<&str, (&str, &str), (Option<u64>, Option<u32>)>(
                 &self.key,
                 ("last_reset", "request_count"),
@@ -55,8 +57,8 @@ impl RateLimiter {
             self.last_reset = last_reset;
             self.request_count = request_count;
             if now - self.last_reset >= self.reset_after.as_millis() as u64 {
-                self.cache.del::<&str, ()>(&self.key).await.unwrap();
-                self.cache
+                cache.del::<&str, ()>(&self.key).await.unwrap();
+                cache
                     .hset_multiple::<&str, &str, u64, ()>(
                         &self.key,
                         &[("last_reset", now), ("request_count", 0)],
@@ -68,10 +70,10 @@ impl RateLimiter {
                 log::debug!("Reset bucket for {}", self.key);
             }
             if self.request_count >= self.request_limit {
-                log::info!("Rate limited bucket {}", self.key);
-                Err(())
+                log::debug!("Rate limited bucket {}", self.key);
+                Err(self.last_reset + self.reset_after.as_millis() as u64 - now)
             } else {
-                self.cache
+                cache
                     .hincr::<&str, &str, u8, ()>(&self.key, "request_count", 1)
                     .await
                     .unwrap();
@@ -80,7 +82,7 @@ impl RateLimiter {
             }
         } else {
             log::debug!("New bucket for {}", self.key);
-            self.cache
+            cache
                 .hset_multiple::<&str, &str, u64, ()>(
                     &self.key,
                     &[("last_reset", now), ("request_count", 1)],

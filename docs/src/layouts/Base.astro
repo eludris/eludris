@@ -1,0 +1,333 @@
+---
+import Sidebar from '../components/Sidebar.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, EMBED_COLOUR } from '../config.js';
+
+export interface Props {
+  title?: string;
+  slug?: string;
+  description?: string;
+  embed_colour?: string;
+}
+
+const {
+  title = SITE_TITLE,
+  slug,
+  description = SITE_DESCRIPTION,
+  embed_colour = EMBED_COLOUR
+} = Astro.props as Props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/das_ding.svg" />
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/das_ding.png" />
+    <meta property="og:image:width" content="300" />
+    <meta property="og:image:height" content="300" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content="." />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content="/das_ding.png" />
+    <meta name="theme-color" content={embed_colour} />
+    <link rel="stylesheet" href="/prism-theme.css" />
+  </head>
+  <body>
+    <div id="main" class="notransition">
+      <Sidebar slug={slug} />
+      <div id="content">
+        <Header />
+        <div id="slot-wrapper">
+          <div id="slot">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+      :root {
+        --color-bg: var(--gray-100);
+        --color-border: var(--purple-300);
+
+        --sidebar-width: 300px;
+      }
+
+      :root.dark {
+        --purple-100: hsl(257, 33%, 8%);
+        --purple-200: hsl(257, 35%, 13%);
+        --purple-300: hsl(257, 44%, 18%);
+        --purple-400: hsl(262, 58%, 22%);
+        --purple-500: hsl(262, 73%, 29%);
+        --purple-600: hsl(262, 79%, 42%);
+
+        --pink-100: hsl(290, 13%, 20%);
+        --pink-200: hsl(290, 19%, 25%);
+        --pink-300: hsl(290, 32%, 35%);
+        --pink-400: hsl(290, 43%, 49%);
+        --pink-500: hsl(290, 63%, 63%);
+        --pink-600: hsl(290, 100%, 70%);
+        --pink-700: hsl(290, 100%, 60%);
+
+        --gray-100: hsl(249, 17%, 12%);
+        --gray-200: hsl(249, 29%, 16%);
+        --gray-300: hsl(249, 33%, 39%);
+        --gray-400: hsl(249, 46%, 49%);
+        --gray-500: hsl(249, 48%, 64%);
+        --gray-600: hsl(249, 81%, 85%);
+
+        --color-text-100: hsl(0, 0%, 93%); /* actually #eeeeee in disguise */
+        --color-text-200: hsl(0, 0%, 73%);
+        --color-code-bg: hsl(260, 32%, 18%);
+      }
+
+      :root:not(.dark) {
+        --purple-100: hsl(320, 89%, 92%);
+        --purple-200: hsl(320, 83%, 86%);
+        --purple-300: hsl(320, 78%, 80%);
+        --purple-400: hsl(320, 64%, 73%);
+        --purple-500: hsl(320, 55%, 64%);
+        --purple-600: hsl(320, 63%, 58%);
+
+        --pink-100: hsl(300, 100%, 80%);
+        --pink-200: hsl(300, 100%, 75%);
+        --pink-300: hsl(300, 63%, 68%);
+        --pink-400: hsl(300, 43%, 61%);
+        --pink-500: hsl(300, 32%, 54%);
+        --pink-600: hsl(300, 19%, 47%);
+        --pink-700: hsl(300, 13%, 40%);
+
+        --gray-100: hsl(340, 78%, 93%);
+        --gray-200: hsl(340, 60%, 84%);
+        --gray-300: hsl(340, 58%, 69%);
+        --gray-400: hsl(340, 50%, 60%);
+        --gray-500: hsl(340, 40%, 45%);
+        --gray-600: hsl(340, 39%, 40%);
+
+        --color-text-100: hsl(0, 0%, 3%);
+        --color-text-200: hsl(0, 0%, 20%);
+      }
+
+      body {
+        font-family: 'Ubuntu', sans-serif;
+        color: var(--color-text-200);
+        background-color: var(--color-bg);
+        font-size: var(--font-size-base);
+        margin: 0;
+      }
+
+      #main {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        overflow-x: hidden;
+      }
+
+      #content {
+        display: flex;
+        width: 100%;
+        margin-left: var(--sidebar-width);
+        flex-direction: column;
+        overflow: hidden;
+        transition: margin-left ease-in-out 250ms, transform ease-in-out 250ms;
+      }
+
+      #slot-wrapper {
+        overflow-y: auto;
+      }
+
+      #slot {
+        flex-grow: 1;
+        margin-top: 60px;
+        padding: 20px;
+        width: calc(70% - 20px);
+        margin: 0 auto;
+        box-sizing: border-box;
+        background-color: var(--color-bg);
+        overflow-x: hidden;
+      }
+
+      :global(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a) {
+        color: inherit;
+        border: inherit;
+      }
+
+      :global(h1, h2, h3, h4, h5, h6) {
+        color: var(--color-text-100);
+      }
+
+      :global(p) {
+        line-height: 28px;
+      }
+
+      :global(a) {
+        text-decoration: none;
+        transition: border-bottom ease-in-out 200ms, color ease-in-out 200ms;
+      }
+
+      :global(:where(:root:not(.dark) a)) {
+        color: var(--gray-400);
+        border-bottom: 2px solid var(--gray-300);
+      }
+
+      :global(:where(:root:not(.dark) a:hover)) {
+        color: var(--gray-500);
+        border-bottom: 2px solid var(--gray-600);
+      }
+
+      :global(:where(:root.dark a)) {
+        color: var(--gray-500);
+        border-bottom: 2px solid var(--gray-300);
+      }
+
+      :global(:where(:root.dark a:hover)) {
+        color: var(--gray-400);
+        border-bottom: 2px solid var(--purple-400);
+      }
+
+      :global(code, code[class*='language-'][class*='language-']) {
+        width: 100%;
+        background-color: var(--gray-200);
+        font-size: 18px;
+      }
+
+      :global(pre code, pre code[class*='language-'][class*='language-']) {
+        background-color: transparent;
+      }
+
+      :global(img) {
+        max-width: calc(100% - 10px);
+        border-radius: 5px;
+      }
+
+      :global(table) {
+        border-spacing: 0;
+        width: 100%;
+        overflow-x: auto;
+        display: inline-block;
+      }
+
+      :global(td, th) {
+        border: 1px solid var(--gray-300);
+        padding: 10px 20px;
+      }
+
+      :global(th) {
+        border-top-width: 2px;
+        background-color: var(--gray-200);
+      }
+
+      :global(th:first-of-type) {
+        border-top-left-radius: 5px;
+        border-left-width: 2px;
+      }
+
+      :global(th:last-of-type) {
+        border-top-right-radius: 5px;
+        border-right-width: 2px;
+      }
+
+      :global(tr:last-of-type td) {
+        border-bottom-width: 2px;
+      }
+
+      :global(tr td:first-of-type) {
+        border-left-width: 2px;
+      }
+
+      :global(tr td:last-of-type) {
+        border-right-width: 2px;
+      }
+
+      :global(tr:last-of-type td:first-of-type) {
+        border-bottom-left-radius: 5px;
+      }
+
+      :global(tr:last-of-type td:last-of-type) {
+        border-bottom-right-radius: 5px;
+      }
+
+      :global(tr th:nth-child(-n + 2)) {
+        width: 200px;
+      }
+
+      :global(tr td:nth-child(-n + 2)) {
+        font-family: monospace, 'Ubuntu', sans-serif;
+      }
+
+      :global(blockquote) {
+        border-left: 5px solid var(--gray-300);
+        margin: 0;
+        padding: 0 20px; /* switcheroo */
+      }
+
+      :global(.header) {
+        display: flex;
+        position: relative;
+      }
+
+      :global(.header > a) {
+        display: inline;
+        position: absolute;
+        left: -22px;
+        align-self: center;
+        opacity: 0;
+        border: unset;
+        transition: opacity ease-in-out 75ms;
+      }
+
+      :global(.link-icon) {
+        color: inherit;
+      }
+
+      :global(.link-icon:hover) {
+        color: var(--gray-300);
+      }
+
+      :global(.header:hover > a) {
+        opacity: 1;
+      }
+
+      :global(.notransition) {
+        transition: unset !important;
+      }
+
+      :global(.notransition *) {
+        transition: unset !important;
+      }
+
+      @media only screen and (max-width: 1000px) {
+        :root {
+          --sidebar-width: 70%;
+        }
+
+        #content {
+          transform: translateX(var(--sidebar-width));
+          margin-left: 0;
+        }
+
+        #slot {
+          width: 95%;
+        }
+
+        :global(tr th:nth-child(-n + 2)) {
+          width: 60px;
+        }
+      }
+    </style>
+  </body>
+</html>

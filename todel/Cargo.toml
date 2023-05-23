@@ -13,7 +13,7 @@ keywords = ["eludris"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = { version = "1.0.66", optional = true }
+anyhow = { version = "1.0.71", optional = true }
 ffprobe = { version = "0.3.3", optional = true }
 image = { version = "0.24.5", optional = true }
 imagesize = { version = "0.10.1", optional = true }
@@ -21,30 +21,15 @@ lazy_static = { version = "1.4.0", optional = true }
 log = { version = "0.4.17", optional = true }
 rocket = { version = "0.5.0-rc.2", optional = true, features = ["json"] }
 serde = { version = "1.0.144", features = ["derive"] }
-serde_with = "2.1.0"
 sha256 = { version = "1.1.1", optional = true }
-sqlx = { version = "^0.5.0", features = ["runtime-tokio-rustls", "macros", "mysql", "offline"], optional = true }
+sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "macros", "mysql", "offline"], optional = true }
+todel_codegen = { version = "0.3.2", path = "../codegen" }
 tokio = { version = "1.22.0", optional = true }
 toml = { version = "0.5.9", optional = true }
-tree_magic = { version = "0.2.3", optional = true }
+tree_magic_mini = { version = "3.0.3", optional = true }
 ubyte = { version = "0.10.3", features = ["serde"] }
 url = "2.2.2"
 
 [features]
-logic = [
-  "dep:toml",
-  "dep:lazy_static",
-  "dep:anyhow",
-  "dep:sqlx",
-  "dep:log",
-  "dep:tokio",
-]
-http = [
-  "logic",
-  "dep:rocket",
-  "dep:tree_magic",
-  "dep:sha256",
-  "dep:imagesize",
-  "dep:ffprobe",
-  "dep:image",
-]
+logic = ["dep:toml", "dep:lazy_static", "dep:anyhow", "dep:sqlx", "dep:log", "dep:tokio"]
+http = ["logic", "dep:rocket", "dep:tree_magic_mini", "dep:sha256", "dep:imagesize", "dep:ffprobe", "dep:image"]
