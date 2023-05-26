@@ -11,6 +11,7 @@ COPY ./integration-tests/Cargo.toml /integration-tests/Cargo.toml
 RUN mkdir /pandemonium/src /effis/src /cli/src /integration-tests/src
 RUN touch /pandemonium/src/main.rs /effis/src/main.rs /cli/src/main.rs /integration-tests/src/main.rs
 
+COPY ./migrations /migrations
 COPY ./Cargo.toml /Cargo.toml
 COPY ./Cargo.lock /Cargo.lock
 COPY ./todel /todel
