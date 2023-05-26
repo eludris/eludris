@@ -24,12 +24,14 @@ services:
   pandemonium:
     extends:
       service: oprish
+    depends_on: [ "mariadb", "keydb", "oprish" ]
     build:
       dockerfile: pandemonium/Dockerfile
 
   effis:
     extends:
       service: oprish
+    depends_on: [ "mariadb", "keydb", "oprish" ]
     volumes:
       - type: bind
         source: ./files
