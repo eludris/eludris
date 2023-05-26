@@ -103,17 +103,6 @@ async fn main() -> Result<(), anyhow::Error> {
     dotenvy::dotenv().ok();
     env_logger::init();
 
-    let db_url = env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string());
-
-    let pool = MySqlPool::connect(&db_url)
-        .await
-        .with_context(|| format!("Failed to connect to database on {}", db_url))?;
-    sqlx::migrate!("../migrations")
-        .run(&pool)
-        .await
-        .context("Failed to run migrations")?;
-
     create_file_dirs()?;
 
     let _ = rocket()?

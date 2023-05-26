@@ -583,7 +583,6 @@ dependencies = [
  "rocket_db_pools",
  "serde",
  "serde_json",
- "sqlx",
  "todel",
  "tokio",
 ]
@@ -1610,6 +1609,7 @@ dependencies = [
  "rocket_db_pools",
  "serde",
  "serde_json",
+ "sqlx",
  "todel",
  "tokio",
 ]

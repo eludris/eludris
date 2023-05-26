@@ -11,7 +11,6 @@ COPY ./integration-tests/Cargo.toml /integration-tests/Cargo.toml
 RUN mkdir /oprish/src /pandemonium/src /cli/src /integration-tests/src
 RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs /integration-tests/src/main.rs
 
-COPY ./migrations /migrations
 COPY ./Cargo.toml /Cargo.toml
 COPY ./Cargo.lock /Cargo.lock
 COPY ./todel /todel
