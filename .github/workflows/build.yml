@@ -36,6 +36,8 @@ jobs:
           # list of Docker images to use as base name for tags
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}
           # generate Docker tags based on the following events/attributes
+          flavor: |
+            latest=auto
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -44,7 +46,6 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,prefix=
             type=sha,format=long,prefix=
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'next') }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
