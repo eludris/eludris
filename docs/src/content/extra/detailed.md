@@ -123,6 +123,7 @@ All of the microservices' source code can be found in the [Eludris meta-reposito
 Eludris uses JWT tokens to authenticate users.
 These tokens are required for nearly every interaction.
 Trying to connect to the Gateway or interact with the API? You'll need a token!
+The JWT tokens used within our services use a cryptographically secure pseudo-random string with a randomly generated HC128 string as a secret.
 
 If you wish to get a new token, send an HTTP request to `/auth` with your email and password.
 
