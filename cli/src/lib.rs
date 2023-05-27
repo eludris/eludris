@@ -18,7 +18,7 @@ pub struct Config {
     pub eludris_dir: String,
 }
 
-pub fn get_conf_directory() -> Result<PathBuf> {
+pub fn get_config_directory() -> Result<PathBuf> {
     // `ELUDRIS_CLI_CONF` here tries to follow `ELUDRIS_CONF` from `/todel/src/conf/mod.rs`
     match env::var("ELUDRIS_CLI_CONF") {
         Ok(dir) => Ok(PathBuf::try_from(dir).context(
@@ -37,7 +37,7 @@ pub fn get_conf_directory() -> Result<PathBuf> {
 }
 
 pub async fn get_user_config() -> Result<Option<Config>> {
-    let config_dir = get_conf_directory()?;
+    let config_dir = get_config_directory()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)
@@ -60,7 +60,7 @@ pub async fn get_user_config() -> Result<Option<Config>> {
 }
 
 pub async fn update_config_file(config: &Config) -> Result<()> {
-    let config_dir = get_conf_directory()?;
+    let config_dir = get_config_directory()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)
