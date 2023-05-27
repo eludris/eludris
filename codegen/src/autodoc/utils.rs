@@ -84,7 +84,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
     fields: T,
 ) -> Result<Vec<FieldInfo>, Error> {
     let mut field_infos = vec![];
-    for field in fields {
+    'outer: for field in fields {
         let name = field
             .ident
             .as_ref()
@@ -110,7 +110,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                             if path.is_ident("flatten") {
                                 flattened = true;
                             } else if path.is_ident("skip") {
-                                continue;
+                                continue 'outer;
                             }
                         }
                         NestedMeta::Meta(Meta::NameValue(meta)) => {
