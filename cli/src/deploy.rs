@@ -70,13 +70,13 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
             };
             break;
         }
+
         let mut base_conf = fs::read_to_string(format!("{}/Eludris.toml", config.eludris_dir))
             .await
             .context("Could not read Eludris.toml file")?;
         loop {
             let conf = Editor::new()
-                .executable(&editor) // we can't use the default since most people don't have a
-                // default editor set on their root user
+                .executable(&editor)
                 .extension("toml")
                 .require_save(true)
                 .trim_newlines(false)
