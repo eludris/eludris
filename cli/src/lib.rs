@@ -31,7 +31,7 @@ pub fn get_conf_directory() -> Result<PathBuf> {
             .config_dir()
             .to_path_buf()),
         Err(env::VarError::NotUnicode(_)) => {
-            bail!("The value of the `ELUDRIS_CLI_CONF` environment variable must be valid unicode")
+            bail!("The value of the `ELUDRIS_CLI_CONF` environment variable must be a valid unicode string")
         }
     }
 }
