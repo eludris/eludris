@@ -31,7 +31,13 @@ you want to know.
 
 Upon using the CLI for the first time you will get prompted for some config questions
 namely about where to put the Eludris instance.
-This can be changed at any time by editing the config file found in `~/.config/eludris/Cli.toml`
+
+You can find the CLI's current configuration directory using the `eludris conf-dir`
+command. You can also overwrite the default directory using the `ELUDRIS_CLI_CONF`
+environment variable.
+
+The Eludris CLI automatically reads your `.env` files in your current directory
+to facilitate managing multiple instances.
 
 ## Commands
 
@@ -131,3 +137,16 @@ This command will remove your Eludris instance along with all the database files
 > **Note**
 >
 > This will not clean up the docker images, you can remove those using `docker image rm <image names>*`
+
+### Conf-Dir
+
+```sh
+eludris conf-dir
+```
+
+This command returns the config directory currently used by the CLI.
+
+Depending on whether you have an `.env` file this can change based on your current directory.
+
+You can also supply the `ELUDRIS_CLI_CONF` environment variable to override the default
+configuration directory for your platform.

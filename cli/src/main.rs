@@ -15,7 +15,7 @@ use anyhow::Context;
 use clap::{Parser, Subcommand};
 use console::Style;
 use dialoguer::{theme, Input};
-use eludris::{get_user_config, update_config_file, Config};
+use eludris::{get_config_directory, get_user_config, update_config_file, Config};
 use tokio::fs;
 
 #[derive(Parser)]
@@ -62,6 +62,8 @@ enum Commands {
     /// Removes all info related to your Eludris instance
     #[command(alias = "clear")]
     Clean,
+    /// Returns the CLI's current config directory
+    ConfDir,
 }
 
 #[derive(Subcommand)]
@@ -89,6 +91,7 @@ enum AttachmentSubcommand {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
+    dotenvy::dotenv().ok();
 
     match cli.debug {
         0 => {}
@@ -134,6 +137,7 @@ async fn main() -> anyhow::Result<()> {
             AttachmentSubcommand::Remove { id } => attachments::remove(id).await?,
         },
         Commands::Clean => clean::clean().await?,
+        Commands::ConfDir => println!("{}", get_config_directory()?.display()),
     }
 
     Ok(())
