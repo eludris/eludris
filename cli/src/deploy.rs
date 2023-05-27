@@ -31,7 +31,7 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
         )
         .await?;
         download_file(&config, &client, "docker-compose.override.yml", next, None).await?;
-        download_file(&config, &client, ".example.env", next, Some(".env")).await?;
+        download_file(&config, &client, ".env.example", next, Some(".env")).await?;
         download_file(
             &config,
             &client,
@@ -70,13 +70,13 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
             };
             break;
         }
+
         let mut base_conf = fs::read_to_string(format!("{}/Eludris.toml", config.eludris_dir))
             .await
             .context("Could not read Eludris.toml file")?;
         loop {
             let conf = Editor::new()
-                .executable(&editor) // we can't use the default since most people don't have a
-                // default editor set on their root user
+                .executable(&editor)
                 .extension("toml")
                 .require_save(true)
                 .trim_newlines(false)
@@ -119,6 +119,28 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
                 }
             }
         }
+
+        if Confirm::with_theme(&theme::ColorfulTheme::default())
+            .with_prompt("Do you want to configure your instance's `.env` file?")
+            .interact()
+            .context("Could not spawn confirm prompt")?
+        {
+            let base_env = fs::read_to_string(format!("{}/.env", config.eludris_dir))
+                .await
+                .context("Could not read .env file")?;
+            if let Some(env) = Editor::new()
+                .executable(&editor)
+                .require_save(true)
+                .trim_newlines(false)
+                .edit(&base_env)
+                .context("Could not setup editor")?
+            {
+                fs::write(format!("{}/.env", config.eludris_dir), env)
+                    .await
+                    .context("Could not write new config to .env")?;
+            }
+        };
+
         println!(
             "{}",
             Style::new()
