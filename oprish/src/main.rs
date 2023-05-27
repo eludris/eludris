@@ -4,6 +4,7 @@ extern crate rocket;
 extern crate todel;
 
 mod cors;
+mod database;
 mod rate_limit;
 mod routes;
 
@@ -12,13 +13,18 @@ use std::env;
 use std::sync::Once;
 
 use anyhow::Context;
+use database::DatabaseFairing;
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::{deadpool_redis::Pool, Database};
+use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
 use routes::*;
 use todel::Conf;
 
 #[cfg(test)]
 static INIT: Once = Once::new();
+
+#[derive(Database)]
+#[database("db")]
+pub struct DB(MySqlPool);
 
 #[derive(Database)]
 #[database("cache")]
@@ -66,11 +72,13 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         ));
 
     Ok(rocket::custom(config)
-        .mount("/", get_routes())
-        .mount("/messages", messages::get_routes())
         .manage(Conf::new_from_env()?)
+        .attach(DB::init())
         .attach(Cache::init())
-        .attach(cors::Cors))
+        .attach(cors::Cors)
+        .attach(DatabaseFairing)
+        .mount("/", get_routes())
+        .mount("/messages", messages::get_routes()))
 }
 
 #[rocket::main]

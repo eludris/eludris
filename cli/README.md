@@ -25,3 +25,8 @@ or by running the help command:
 ```sh
 eludris --help
 ```
+
+The default CLI config directory can be returned using the `eludris conf-dir` command.
+You can also change the config directory using the `ELUDRIS_CLI_CONF` environment variable.
+
+The CLI automatically reads any `.env` files in the current directory.
