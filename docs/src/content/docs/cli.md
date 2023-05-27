@@ -36,7 +36,8 @@ You can find the CLI's current configuration directory using the `eludris conf-d
 command. You can also overwrite the default directory using the `ELUDRIS_CLI_CONF`
 environment variable.
 
-The Eludris CLI automatically reads your `.env` files to facilitate managing multiple instances.
+The Eludris CLI automatically reads your `.env` files in your current directory
+to facilitate managing multiple instances.
 
 ## Commands
 
@@ -143,7 +144,7 @@ This command will remove your Eludris instance along with all the database files
 eludris conf-dir
 ```
 
-This command returns the config directory used by the CLI.
+This command returns the config directory currently used by the CLI.
 
 Depending on whether you have an `.env` file this can change based on your current directory.
 
