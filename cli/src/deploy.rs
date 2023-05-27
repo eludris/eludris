@@ -31,7 +31,7 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
         )
         .await?;
         download_file(&config, &client, "docker-compose.override.yml", next, None).await?;
-        download_file(&config, &client, ".example.env", next, Some(".env")).await?;
+        download_file(&config, &client, ".env.example", next, Some(".env")).await?;
         download_file(
             &config,
             &client,
