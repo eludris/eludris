@@ -21,7 +21,7 @@ const remarkAutolinkReferenceEntries = () => {
     const text = toMarkdown(tree, { extensions: [gfmTableToMarkdown()] });
     return fromMarkdown(
       text.replace(/\\\[`(.+?)`\]/gm, (_, p1) => {
-        const item = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${p1}.json`));
+        const item = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${p1}.json`));
         if (!item) {
           return p1;
         }
@@ -53,7 +53,7 @@ const remarkGenerateSearchIndex = () => {
       }
     } else {
       // probably an autodoc entry
-      const entry = AUTODOC_ENTRIES.find(
+      const entry = AUTODOC_ENTRIES.items.find(
         (e) =>
           sections[sections.length - 2].text ==
           e

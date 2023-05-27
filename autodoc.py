@@ -40,7 +40,15 @@ if __name__ == "__main__":
         for item in crate_path.iterdir():
             items.append(f"{crate}/{item.name}")
 
-    autodoc_path.joinpath("index.json").write_text(json.dumps(items))
+    metadata = json.loads(
+        subprocess.run(
+            ["cargo", "metadata", "--no-deps"], capture_output=True
+        ).stdout.strip(b"\n")
+    )
+
+    autodoc_path.joinpath("index.json").write_text(
+        json.dumps({"version": metadata["packages"][0]["version"], "items": items})
+    )
 
     shutil.copytree(
         autodoc_path, repo_dir.joinpath("docs/public/autodoc"), dirs_exist_ok=True
