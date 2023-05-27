@@ -10,11 +10,11 @@ use super::RateLimitConf;
 ///
 /// ```json
 /// {
-///   "info": {
+///   "get_instance_info": {
 ///     "reset_after": 5,
 ///     "limit": 2
 ///   },
-///   "message_create": {
+///   "create_message": {
 ///     "reset_after": 5,
 ///     "limit": 10
 ///   }
