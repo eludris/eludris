@@ -9,7 +9,7 @@ import data_to_md from './data_to_md';
 export const getStaticPaths = () => {
   let paths: { params: { slug: string }; props: Props }[] = [];
 
-  AUTODOC_ENTRIES.forEach((slug) => {
+  AUTODOC_ENTRIES.items.forEach((slug) => {
     slug = slug.split('.')[0];
     const name = slug
       .split('/')[1]

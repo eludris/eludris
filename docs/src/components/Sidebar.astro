@@ -14,7 +14,7 @@ const sortChildren = (a: Child, b: Child) => a.name.localeCompare(b.name);
 
 let entries: { [key: string]: { models: Child[]; routes: Child[] } } = {};
 
-AUTODOC_ENTRIES.forEach((slug) => {
+AUTODOC_ENTRIES.items.forEach((slug) => {
   const item: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${slug}`).toString());
   if (!item.hidden) {
     slug = slug.split('.')[0];

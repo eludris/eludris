@@ -92,7 +92,7 @@ const displayFields = (fields: FieldInfo[]): string => {
 
 const displayField = (field: FieldInfo): string => {
   const innerType =
-    field.flattened && AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${field.field_type}.json`));
+    field.flattened && AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.field_type}.json`));
   if (innerType) {
     let innerData: StructInfo = JSON.parse(
       readFileSync(`public/autodoc/${innerType}`).toString()
@@ -129,7 +129,7 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
       }
     } else {
       content += `This variant contains a ${displayType(variant.field_type)}`;
-      const innerType = AUTODOC_ENTRIES.find((entry) =>
+      const innerType = AUTODOC_ENTRIES.items.find((entry) =>
         entry.endsWith(`/${variant.field_type}.json`)
       );
       if (innerType) {
@@ -182,7 +182,7 @@ const displayRoute = (item: RouteInfo): string => {
       content += `\n\n${displayType(body_type)}`;
     }
 
-    const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${body_type}.json`));
+    const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
       content += `\n\n${briefItem(data.item, data.name)}`;
@@ -195,7 +195,7 @@ const displayRoute = (item: RouteInfo): string => {
       .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
       .replace(/Json<(.+?)>/gm, '$1');
     content += `\n\n${displayType(return_type)}`;
-    const innerType = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${return_type}.json`));
+    const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${return_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
       content += `\n\n${briefItem(data.item, data.name)}`;
@@ -241,7 +241,7 @@ const displayType = (type: string): string => {
     return TYPE_OVERRIDES[type];
   }
 
-  let entry = AUTODOC_ENTRIES.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
+  let entry = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
   return entry ? `[${type}](/reference/${entry})` : type;
 };
 
