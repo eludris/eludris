@@ -32,7 +32,7 @@ pub struct User {
     pub display_name: Option<String>,
     /// The user's social credit score.
     pub social_credit: i32,
-    /// The user's status. This field has to be between 1 and 128 characters long.
+    /// The user's status. This field cannot be more than 128 characters long.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
     /// The user's bio. The upper limit is the instance's [`InstanceInfo`] `bio_limit`.
