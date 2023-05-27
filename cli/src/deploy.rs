@@ -119,6 +119,28 @@ pub async fn deploy(next: bool) -> anyhow::Result<()> {
                 }
             }
         }
+
+        if Confirm::with_theme(&theme::ColorfulTheme::default())
+            .with_prompt("Do you want to configure your instance's `.env` file?")
+            .interact()
+            .context("Could not spawn confirm prompt")?
+        {
+            let base_env = fs::read_to_string(format!("{}/.env", config.eludris_dir))
+                .await
+                .context("Could not read .env file")?;
+            if let Some(env) = Editor::new()
+                .executable(&editor)
+                .require_save(true)
+                .trim_newlines(false)
+                .edit(&base_env)
+                .context("Could not setup editor")?
+            {
+                fs::write(format!("{}/.env", config.eludris_dir), env)
+                    .await
+                    .context("Could not write new config to .env")?;
+            }
+        };
+
         println!(
             "{}",
             Style::new()
