@@ -1,6 +1,12 @@
-use std::{env, path::Path, process::Stdio, time::Duration};
+use std::{
+    env,
+    path::{Path, PathBuf},
+    process::Stdio,
+    time::Duration,
+};
 
 use anyhow::{bail, Context, Result};
+use directories::ProjectDirs;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -12,13 +18,23 @@ pub struct Config {
     pub eludris_dir: String,
 }
 
+pub fn get_conf_directry() -> Result<PathBuf> {
+    // `ELUDRIS_CLI_CONF` here tries to follow `ELUDRIS_CONF` from `/todel/src/conf/mod.rs`
+    match env::var("ELUDRIS_CLI_CONF") {
+        Ok(dir) => Ok(PathBuf::try_from(dir)
+            .context("Could not convert the provided directory into a valid path")?),
+        Err(env::VarError::NotPresent) => Ok(ProjectDirs::from("", "eludris", "eludris")
+            .context("Could not find a valid home directory")?
+            .config_dir()
+            .to_path_buf()),
+        Err(env::VarError::NotUnicode(_)) => {
+            bail!("The value of the `ELUDRIS_CLI_CONFIG` environment variable mut be valid unicode")
+        }
+    }
+}
+
 pub async fn get_user_config() -> Result<Option<Config>> {
-    let config_dir = Path::new(
-        &env::var("XDG_CONFIG_HOME")
-            .or_else(|_| env::var("HOME").map(|home| format!("{}/.config", home)))
-            .context("Could not determine config path")?,
-    )
-    .join("eludris");
+    let config_dir = get_conf_directry()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)
@@ -41,12 +57,7 @@ pub async fn get_user_config() -> Result<Option<Config>> {
 }
 
 pub async fn update_config_file(config: &Config) -> Result<()> {
-    let config_dir = Path::new(
-        &env::var("XDG_CONFIG_HOME")
-            .or_else(|_| env::var("HOME").map(|home| format!("{}/.config", home)))
-            .context("Could not determine config path")?,
-    )
-    .join("eludris");
+    let config_dir = get_conf_directry()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)
