@@ -18,23 +18,26 @@ pub struct Config {
     pub eludris_dir: String,
 }
 
-pub fn get_conf_directry() -> Result<PathBuf> {
+pub fn get_conf_directory() -> Result<PathBuf> {
     // `ELUDRIS_CLI_CONF` here tries to follow `ELUDRIS_CONF` from `/todel/src/conf/mod.rs`
     match env::var("ELUDRIS_CLI_CONF") {
-        Ok(dir) => Ok(PathBuf::try_from(dir)
-            .context("Could not convert the provided directory into a valid path")?),
+        Ok(dir) => Ok(PathBuf::try_from(dir).context(
+            "Could not convert the `ELUDRIS_CLI_CONF` environment variable into a valid path",
+        )?),
         Err(env::VarError::NotPresent) => Ok(ProjectDirs::from("", "eludris", "eludris")
-            .context("Could not find a valid home directory")?
+            // According to the `directories` docs the error is raised when a home path isn't found
+            // but that wouldn't make much sense for windows so we use `base` here.
+            .context("Could not find a valid base directory")?
             .config_dir()
             .to_path_buf()),
         Err(env::VarError::NotUnicode(_)) => {
-            bail!("The value of the `ELUDRIS_CLI_CONFIG` environment variable mut be valid unicode")
+            bail!("The value of the `ELUDRIS_CLI_CONF` environment variable must be valid unicode")
         }
     }
 }
 
 pub async fn get_user_config() -> Result<Option<Config>> {
-    let config_dir = get_conf_directry()?;
+    let config_dir = get_conf_directory()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)
@@ -57,7 +60,7 @@ pub async fn get_user_config() -> Result<Option<Config>> {
 }
 
 pub async fn update_config_file(config: &Config) -> Result<()> {
-    let config_dir = get_conf_directry()?;
+    let config_dir = get_conf_directory()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)
