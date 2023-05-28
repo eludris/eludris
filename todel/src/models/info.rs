@@ -64,13 +64,13 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceInfo {
-    /// The name of the instance.
+    /// The instance's name.
     pub instance_name: String,
-    /// The description of the instance.
+    /// The instance's description.
     ///
     /// This is between 1 and 2048 characters long.
     pub description: Option<String>,
-    /// The Eludris version the instance is running.
+    /// The instance's Eludris version.
     pub version: String,
     /// The maximum length of a message's content.
     pub message_limit: usize,
@@ -138,11 +138,11 @@ pub struct InstanceInfo {
 #[autodoc(category = "Instance")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstanceRateLimits {
-    /// Rate limits for Oprish (The REST API).
+    /// The instance's Oprish rate limit information (The REST API).
     pub oprish: OprishRateLimits,
-    /// Rate limits for Pandemonium (The WebSocket API).
+    /// The instance's Pandemonium rate limit information (The WebSocket API).
     pub pandemonium: RateLimitConf,
-    /// Rate limits for Effis (The CDN).
+    /// The instance's Effis rate limit information (The CDN).
     pub effis: EffisRateLimits,
 }
 
