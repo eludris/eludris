@@ -15,20 +15,20 @@ lazy_static! {
 /// ## Example
 ///
 /// ```rust
-/// use todel::ids::IDGenerator;
+/// use todel::ids::IdGenerator;
 ///
-/// let mut generator = IDGenerator::new(); // Create a new ID generator.
+/// let mut generator = IdGenerator::new(); // Create a new ID generator.
 ///
 /// generator.generate_id(); // Generate an ID which also increments the sequence.
 /// ```
 #[derive(Debug, Clone, Default)]
-pub struct IDGenerator {
+pub struct IdGenerator {
     sequence: u8,
     worker_id: u8,
 }
 
-impl IDGenerator {
-    /// Create a new IDGenerator from an instance ID.
+impl IdGenerator {
+    /// Create a new IdGenerator from an instance ID.
     pub fn new() -> Self {
         Self {
             sequence: 0,
@@ -60,11 +60,11 @@ impl IDGenerator {
 
 #[cfg(test)]
 mod tests {
-    use super::IDGenerator;
+    use super::IdGenerator;
 
     #[test]
     fn id_generator() {
-        let mut generator = IDGenerator::new();
+        let mut generator = IdGenerator::new();
 
         let id = generator.generate_id();
         assert_eq!(id & 0xFF, 1);
@@ -77,7 +77,7 @@ mod tests {
 
     #[test]
     fn id_generator_overflow() {
-        let mut generator = IDGenerator {
+        let mut generator = IdGenerator {
             sequence: u8::MAX - 1,
             worker_id: 3,
         };
