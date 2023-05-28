@@ -19,7 +19,7 @@ pub struct Message {
     ///
     /// The author will be trimmed from leading and trailing whitespace.
     pub author: String,
-    /// The message's content the message. This field has to be at-least 2 characters long. The upper limit
+    /// The message's content. This field has to be at-least 2 characters long. The upper limit
     /// is the instance's [`InstanceInfo`] `message_limit`.
     ///
     /// The content will be trimmed from leading and trailing whitespace.
