@@ -1,7 +1,15 @@
+use argon2::{
+    password_hash::{rand_core::CryptoRngCore, SaltString},
+    PasswordHasher,
+};
 use lazy_static::lazy_static;
 use regex::Regex;
+use sqlx::{pool::PoolConnection, Postgres};
 
-use crate::models::{ErrorResponse, UserCreate};
+use crate::{
+    ids::IdGenerator,
+    models::{ErrorResponse, User, UserCreate},
+};
 
 impl UserCreate {
     pub fn validate(&self) -> Result<(), ErrorResponse> {
@@ -36,6 +44,55 @@ impl UserCreate {
         } else {
             Ok(())
         }
+    }
+}
+
+impl User {
+    pub async fn create<H: PasswordHasher, R: CryptoRngCore>(
+        user: UserCreate,
+        hasher: &H,
+        rng: &mut R,
+        id_generator: &mut IdGenerator,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<User, ErrorResponse> {
+        user.validate()?;
+        let id = id_generator.generate();
+        let salt = SaltString::generate(rng);
+        let hash = hasher
+            .hash_password(user.password.as_bytes(), &salt)
+            .map_err(|err| {
+                log::error!("Failed to hash password: {}", err);
+                error!(SERVER, "Could not hash password")
+            })?
+            .to_string();
+        sqlx::query!(
+            "
+INSERT INTO users(id, username, email, password)
+VALUES($1, $2, $3, $4)
+            ",
+            id as i64,
+            user.username,
+            user.email,
+            hash
+        )
+        .execute(db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to store user in database: {}", err);
+            error!(SERVER, "Could not save user data")
+        })?;
+        Ok(User {
+            id,
+            username: user.username,
+            display_name: None,
+            social_credit: 0,
+            status: None,
+            bio: None,
+            avatar: None,
+            banner: None,
+            badges: 0,
+            permissions: 0,
+        })
     }
 }
 
