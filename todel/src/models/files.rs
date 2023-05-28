@@ -21,13 +21,13 @@ use serde::{Deserialize, Serialize};
 #[autodoc(category = "Files")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FileData {
-    /// The ID of the file.
+    /// The file's ID.
     pub id: u64,
-    /// The name of the file.
+    /// The file's name.
     pub name: String,
     /// The bucket the file is stored in.
     pub bucket: String,
-    /// If the file is spoilered.
+    /// If the file is marked as a spoiler.
     #[serde(default = "spoiler_default")]
     #[serde(skip_serializing_if = "is_false")]
     pub spoiler: bool,
