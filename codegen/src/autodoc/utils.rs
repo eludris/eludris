@@ -109,7 +109,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                         NestedMeta::Meta(Meta::Path(path)) => {
                             if path.is_ident("flatten") {
                                 flattened = true;
-                            } else if path.is_ident("skip") {
+                            } else if path.is_ident("skip") || path.is_ident("skip_serializing") {
                                 continue 'outer;
                             }
                         }
