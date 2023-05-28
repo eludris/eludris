@@ -8,10 +8,10 @@ use rocket::{
     FromForm, Responder,
 };
 use sqlx::{pool::PoolConnection, MySql};
-use tokio::{fs, sync::Mutex};
+use tokio::fs;
 
 use crate::error;
-use crate::ids::IDGenerator;
+use crate::ids::IdGenerator;
 use crate::models::{ErrorResponse, File, FileData, FileMetadata};
 
 #[derive(Debug, Responder)]
@@ -46,7 +46,7 @@ impl File {
     pub async fn create<'a>(
         mut file: TempFile<'a>,
         bucket: String,
-        gen: &Mutex<IDGenerator>,
+        id_generator: &mut IdGenerator,
         db: &mut PoolConnection<MySql>,
         spoiler: bool,
     ) -> Result<FileData, ErrorResponse> {
@@ -57,7 +57,7 @@ impl File {
             ));
         }
 
-        let id = gen.lock().await.generate_id();
+        let id = id_generator.generate();
         let path = PathBuf::from(format!("files/{}/{}", bucket, id));
         let name = match file.raw_name() {
             Some(name) => PathBuf::from(name.dangerous_unsafe_unsanitized_raw().as_str())

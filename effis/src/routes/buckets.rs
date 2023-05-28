@@ -2,7 +2,7 @@ use rocket::{form::Form, serde::json::Json, State};
 use rocket_db_pools::Connection;
 use todel::{
     http::ClientIP,
-    ids::IDGenerator,
+    ids::IdGenerator,
     models::{ErrorResponse, FetchResponse, File, FileData, FileUpload},
     Conf,
 };
@@ -47,7 +47,7 @@ pub async fn upload_file<'a>(
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
     conf: &State<Conf>,
-    gen: &State<Mutex<IDGenerator>>,
+    gen: &State<Mutex<IdGenerator>>,
 ) -> RateLimitedRouteResponse<Json<FileData>> {
     let mut rate_limiter = RateLimiter::new("attachments", bucket, ip, conf.inner());
     rate_limiter
@@ -58,7 +58,7 @@ pub async fn upload_file<'a>(
     let file = File::create(
         upload.file,
         bucket.to_string(),
-        gen.inner(),
+        &mut *gen.inner().lock().await,
         &mut db,
         upload.spoiler,
     )

@@ -19,7 +19,7 @@ use rocket::{
     Build, Config, Rocket,
 };
 use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
-use todel::{ids::IDGenerator, Conf};
+use todel::{ids::IdGenerator, Conf};
 
 pub const BUCKETS: [&str; 1] = ["attachments"];
 
@@ -89,7 +89,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         ));
 
     Ok(rocket::custom(config)
-        .manage(Mutex::new(IDGenerator::new()))
+        .manage(Mutex::new(IdGenerator::new()))
         .manage(conf)
         .attach(DB::init())
         .attach(Cache::init())
