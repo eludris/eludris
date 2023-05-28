@@ -48,16 +48,4 @@ pub struct User {
     pub badges: u64,
     /// The user's instance-wide permissions as a bitfield.
     pub permissions: u64,
-    /// The user's email address.
-    #[cfg(feature = "logic")]
-    #[serde(skip)]
-    pub email: String,
-    /// The user's password hash.
-    #[cfg(feature = "logic")]
-    #[serde(skip)]
-    pub password: Vec<u8>,
-    /// The user's two-factor authentication secret.
-    #[cfg(feature = "logic")]
-    #[serde(skip)]
-    pub two_factor_auth: Option<String>,
 }
