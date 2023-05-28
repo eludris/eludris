@@ -1,3 +1,6 @@
+#[cfg(feature = "logic")]
+use std::net::IpAddr;
+
 use serde::{Deserialize, Serialize};
 
 /// The user payload.
@@ -48,4 +51,37 @@ pub struct User {
     pub badges: u64,
     /// The user's instance-wide permissions as a bitfield.
     pub permissions: u64,
+}
+
+/// The session payload.
+///
+/// The user should ideally have one session for every client they have on every device.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "id": 2312155037697,
+///   "user_id": 2312155693057,
+///   "platform": "linux",
+///   "client": "pilfer"
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Session {
+    /// The ID of the session.
+    pub id: u64,
+    /// The ID of the session's author.
+    pub user_id: u64,
+    /// The platform the session is on.
+    pub platform: String,
+    /// The client the session was made by.
+    pub client: String,
+    /// The IP address of where the session was made.
+    #[cfg(feature = "logic")]
+    #[serde(skip_serializing)]
+    pub ip: IpAddr,
 }
