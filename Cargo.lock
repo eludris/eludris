@@ -2716,6 +2716,7 @@ dependencies = [
  "imagesize",
  "lazy_static",
  "log",
+ "regex",
  "rocket",
  "serde",
  "sha256",
