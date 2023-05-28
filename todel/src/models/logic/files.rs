@@ -57,7 +57,7 @@ impl File {
             ));
         }
 
-        let id = gen.lock().await.generate_id();
+        let id = id_generator.generate();
         let path = PathBuf::from(format!("files/{}/{}", bucket, id));
         let name = match file.raw_name() {
             Some(name) => PathBuf::from(name.dangerous_unsafe_unsanitized_raw().as_str())

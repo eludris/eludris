@@ -19,7 +19,7 @@ lazy_static! {
 ///
 /// let mut generator = IdGenerator::new(); // Create a new ID generator.
 ///
-/// generator.generate_id(); // Generate an ID which also increments the sequence.
+/// generator.generate(); // Generate an ID which also increments the sequence.
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct IdGenerator {
@@ -42,7 +42,7 @@ impl IdGenerator {
     }
 
     /// Generate a new ID and handle incrementing the sequence
-    pub fn generate_id(&mut self) -> u64 {
+    pub fn generate(&mut self) -> u64 {
         if self.sequence == u8::MAX {
             self.sequence = 0
         } else {
@@ -66,11 +66,11 @@ mod tests {
     fn id_generator() {
         let mut generator = IdGenerator::new();
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 1);
         assert_eq!(id >> 8 & 0xFF, 0);
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 2);
         assert_eq!(id >> 8 & 0xFF, 0);
     }
@@ -82,15 +82,15 @@ mod tests {
             worker_id: 3,
         };
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, u8::MAX as u64);
         assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 0);
         assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 1);
         assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
     }
