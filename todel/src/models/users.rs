@@ -88,7 +88,7 @@ pub struct Session {
 
 /// The UserCreate payload.
 ///
-/// This is used when a user is initially first created, for authentication payloads check
+/// This is used when a user is initially first created. For authentication payloads check
 /// [`SessionCreate`].
 ///
 /// -----
