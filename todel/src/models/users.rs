@@ -72,15 +72,15 @@ pub struct User {
 #[autodoc(category = "Users")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Session {
-    /// The ID of the session.
+    /// The session's ID.
     pub id: u64,
-    /// The ID of the session's author.
+    /// The session user's ID.
     pub user_id: u64,
-    /// The platform the session is on.
+    /// The session's platform (linux, windows, mac, etc.)
     pub platform: String,
-    /// The client the session was made by.
+    /// The client the session was created by.
     pub client: String,
-    /// The IP address of where the session was made.
+    /// The session's creation IP address.
     #[cfg(feature = "logic")]
     #[serde(skip_serializing)]
     pub ip: IpAddr,
