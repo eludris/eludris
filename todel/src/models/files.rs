@@ -27,7 +27,7 @@ pub struct FileData {
     pub name: String,
     /// The bucket the file is stored in.
     pub bucket: String,
-    /// If the file is marked as a spoiler.
+    /// Whether the file is marked as a spoiler.
     #[serde(default = "spoiler_default")]
     #[serde(skip_serializing_if = "is_false")]
     pub spoiler: bool,
