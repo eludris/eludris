@@ -52,8 +52,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .merge((
             "databases.db",
             rocket_db_pools::Config {
-                url: env::var("DATABASE_URL")
-                    .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string()),
+                url: env::var("DATABASE_URL").unwrap_or_else(|_| {
+                    "postgresql://root:root@localhost:5432/eludris".to_string()
+                }),
                 min_connections: None,
                 max_connections: 1024,
                 connect_timeout: 3,

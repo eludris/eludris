@@ -129,7 +129,7 @@ pub async fn new_database_connection() -> Result<MySqlConnection> {
         .stdout;
     let address = String::from_utf8(stdout).context("Could not convert address to a string")?;
 
-    MySqlConnection::connect(&format!("mysql://root:root@{}:3306/eludris", address))
+    MySqlConnection::connect(&format!("postgresql://root:root@{}:5432/eludris", address))
         .await
         .context("Could not connect to database")
 }
