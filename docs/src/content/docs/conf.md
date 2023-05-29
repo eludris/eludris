@@ -21,7 +21,7 @@ Here's the example `.env` file found in the repository.
 ```sh
 ELUDRIS_CONF = Eludris.toml # the path to your configuration file
 REDIS_URL = redis://127.0.0.1:6379
-DATABASE_URL = mysql://root:root@localhost:3306/eludris
+DATABASE_URL = postgresql://root:root@localhost:5432/eludris
 
 # Don't forget to also change the ports in the docker-compose.yml
 

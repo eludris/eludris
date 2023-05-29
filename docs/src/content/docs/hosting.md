@@ -36,7 +36,7 @@ Now this is just a little bit more complicated, here's a quick rundown of what y
 have to do:
 
 1. Get the required dependencies
-   You will need [KeyDB](https://docs.keydb.dev/docs/download) and [MariaDB](https://mariadb.com/downloads/),
+   You will need [KeyDB](https://docs.keydb.dev/docs/download) and [PostgreSql](https://postgresql.org/downloads/),
    the latest version of both should work.
 
 2. Get the latest version of `eludris/eludris`.
@@ -55,7 +55,7 @@ git clone https://github.com/eludris/eludris --branch=next && cd eludris
 3. Configure the `Eludris.toml` file & `.env`.
 
 `.env` is mostly optional thanks to somewhat sane defaults, however you'll need to
-have an `eludris` database for MariaDB and a root user with the password as root,
+have an `eludris` database for PostgreSql and a root user with the password as root,
 you can also just change the database URI using the `DATABASE_URL` environment variable
 and your own `.env`.
 
