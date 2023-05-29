@@ -15,7 +15,7 @@ use std::sync::Once;
 use anyhow::Context;
 use database::DatabaseFairing;
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
+use rocket_db_pools::{deadpool_redis::Pool, sqlx::PgPool, Database};
 use routes::*;
 use todel::Conf;
 
@@ -24,7 +24,7 @@ static INIT: Once = Once::new();
 
 #[derive(Database)]
 #[database("db")]
-pub struct DB(MySqlPool);
+pub struct DB(PgPool);
 
 #[derive(Database)]
 #[database("cache")]

@@ -18,7 +18,7 @@ use rocket::{
     tokio::sync::Mutex,
     Build, Config, Rocket,
 };
-use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
+use rocket_db_pools::{deadpool_redis::Pool, sqlx::PgPool, Database};
 use todel::{ids::IdGenerator, Conf};
 
 pub const BUCKETS: [&str; 1] = ["attachments"];
@@ -28,7 +28,7 @@ static INIT: Once = Once::new();
 
 #[derive(Database)]
 #[database("db")]
-pub struct DB(MySqlPool);
+pub struct DB(PgPool);
 
 #[derive(Database)]
 #[database("cache")]
