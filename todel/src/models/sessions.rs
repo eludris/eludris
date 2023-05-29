@@ -68,7 +68,7 @@ pub struct SessionCreate {
 ///
 /// ### Example
 ///
-/// ```
+/// ```json
 /// {
 ///   "token": "",
 ///   "session": {
