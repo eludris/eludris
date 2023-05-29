@@ -10,7 +10,7 @@ use directories::ProjectDirs;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use sqlx::{Connection, MySqlConnection};
+use sqlx::{Connection, PgConnection};
 use tokio::{fs, process::Command};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -116,20 +116,20 @@ pub fn new_docker_command(config: &Config) -> Command {
     command
 }
 
-pub async fn new_database_connection() -> Result<MySqlConnection> {
+pub async fn new_database_connection() -> Result<PgConnection> {
     let stdout = Command::new("docker")
         .arg("inspect")
         .arg("-f")
         .arg("{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}")
-        .arg("eludris-mariadb-1")
+        .arg("eludris-postgresql-1")
         .stdout(Stdio::piped())
         .output()
         .await
-        .context("Could not fetch mariadb address, is the docker daemon running?")?
+        .context("Could not fetch postgresql address, is the docker daemon running?")?
         .stdout;
     let address = String::from_utf8(stdout).context("Could not convert address to a string")?;
 
-    MySqlConnection::connect(&format!("postgresql://root:root@{}:5432/eludris", address))
+    PgConnection::connect(&format!("postgresql://root:root@{}:5432/eludris", address))
         .await
         .context("Could not connect to database")
 }

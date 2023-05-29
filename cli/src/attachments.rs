@@ -16,10 +16,10 @@ pub async fn remove(id: u64) -> anyhow::Result<()> {
     sqlx::query!(
         "
 DELETE FROM files
-WHERE id = ?
+WHERE id = $1
 AND bucket = 'attachments'
         ",
-        id.to_string(),
+        id as i64
     )
     .execute(&mut database)
     .await
