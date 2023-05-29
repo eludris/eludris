@@ -17,25 +17,58 @@ pub struct SharedErrorData {
 #[serde(tag = "type")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ErrorResponse {
-    /// The error when a client is rate limited.
+    /// The error when the client is missing authorization. This error often occurs when the user
+    /// doesn't pass in the required authentication or passes in invalid credentials.
     ///
-    /// ------
+    /// -----
     ///
     /// ### Example
     ///
     /// ```json
     /// {
-    ///   "type": "RATE_LIMITED",
-    ///   "status": 429,
-    ///   "message": "You have been rate limited",
-    ///   "retry_after": 1234
+    ///   "type": "UNAUTHORIZED",
+    ///   "status": 401,
+    ///   "message": "The user is missing authentication or the passed credentials are invalid"
     /// }
     /// ```
-    RateLimited {
+    Unauthorized {
         #[serde(flatten)]
         shared: SharedErrorData,
-        /// The amount of milliseconds you're still rate limited for.
-        retry_after: u64,
+    },
+    /// The error when a client *has* been succesfully authorized but does not have the required
+    /// permissions to execute an action.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "type": "FORBIDDEN",
+    ///   "status": 403,
+    ///   "message": "The user is missing the requried permissions to execute this action",
+    /// }
+    /// ```
+    Forbidden {
+        #[serde(flatten)]
+        shared: SharedErrorData,
+    },
+    /// The error when a client requests a resource that does not exist.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "type": "NOT_FOUND",
+    ///   "status": 404,
+    ///   "message": "The requested resource could not be found"
+    /// }
+    /// ```
+    NotFound {
+        #[serde(flatten)]
+        shared: SharedErrorData,
     },
     /// The error when a request a client sends is incorrect and fails validation.
     ///
@@ -60,22 +93,25 @@ pub enum ErrorResponse {
         /// Extra information about what went wrong.
         info: String,
     },
-    /// The error when a client requests a resource that does not exist.
+    /// The error when a client is rate limited.
     ///
-    /// -----
+    /// ------
     ///
     /// ### Example
     ///
     /// ```json
     /// {
-    ///   "type": "NOT_FOUND",
-    ///   "status": 404,
-    ///   "message": "The requested resource could not be found"
+    ///   "type": "RATE_LIMITED",
+    ///   "status": 429,
+    ///   "message": "You have been rate limited",
+    ///   "retry_after": 1234
     /// }
     /// ```
-    NotFound {
+    RateLimited {
         #[serde(flatten)]
         shared: SharedErrorData,
+        /// The amount of milliseconds you're still rate limited for.
+        retry_after: u64,
     },
     /// The error when the server fails to process a request.
     ///
@@ -111,13 +147,28 @@ macro_rules! error {
     ($rate_limiter:expr, $error:ident, $($val:expr),+) => {
         return $rate_limiter.wrap_response(Err(error!($error, $($val),+)));
     };
-    (RATE_LIMITED, $retry_after:expr) => {
-        ErrorResponse::RateLimited {
+    (UNAUTHORIZED) => {
+        ErrorResponse::Unauthorized {
             shared: $crate::models::SharedErrorData {
-                status: 429,
-                message: "You have been rate limited".to_string(),
+                status: 401,
+                message: "The user is missing authentication or the passed credentials are invalid".to_string(),
+            }
+        }
+    };
+    (FORBIDDEN) => {
+        ErrorResponse::Forbidden {
+            shared: $crate::models::SharedErrorData {
+                status: 403,
+                message: "The user is missing the requried permissions to execute this action".to_string(),
+            }
+        }
+    };
+    (NOT_FOUND) => {
+        ErrorResponse::NotFound {
+            shared: $crate::models::SharedErrorData {
+                status: 404,
+                message: "The requested resource could not be found".to_string(),
             },
-            retry_after: $retry_after,
         }
     };
     (VALIDATION, $value_name:expr, $info:expr) => {
@@ -130,12 +181,13 @@ macro_rules! error {
             info: $info.to_string(),
         }
     };
-    (NOT_FOUND) => {
-        ErrorResponse::NotFound {
+    (RATE_LIMITED, $retry_after:expr) => {
+        ErrorResponse::RateLimited {
             shared: $crate::models::SharedErrorData {
-                status: 404,
-                message: "The requested resource could not be found".to_string(),
+                status: 429,
+                message: "You have been rate limited".to_string(),
             },
+            retry_after: $retry_after,
         }
     };
     (SERVER, $info:expr) => {
@@ -155,15 +207,43 @@ mod tests {
     use crate::models::{ErrorResponse, SharedErrorData};
 
     #[test]
-    fn rate_limited_error() {
+    fn unauthorized_error() {
         assert_eq!(
-            error!(RATE_LIMITED, 1234),
-            ErrorResponse::RateLimited {
+            error!(UNAUTHORIZED),
+            ErrorResponse::Unauthorized {
                 shared: SharedErrorData {
-                    status: 429,
-                    message: "You have been rate limited".to_string(),
+                    status: 401,
+                    message:
+                        "The user is missing authentication or the passed credentials are invalid"
+                            .to_string(),
                 },
-                retry_after: 1234,
+            }
+        );
+    }
+
+    #[test]
+    fn forbidden_error() {
+        assert_eq!(
+            error!(FORBIDDEN),
+            ErrorResponse::Forbidden {
+                shared: SharedErrorData {
+                    status: 403,
+                    message: "The user is missing the requried permissions to execute this action"
+                        .to_string(),
+                },
+            }
+        );
+    }
+
+    #[test]
+    fn not_found_error() {
+        assert_eq!(
+            error!(NOT_FOUND),
+            ErrorResponse::NotFound {
+                shared: SharedErrorData {
+                    status: 404,
+                    message: "The requested resource could not be found".to_string(),
+                },
             }
         );
     }
@@ -187,14 +267,15 @@ mod tests {
     }
 
     #[test]
-    fn not_found_error() {
+    fn rate_limited_error() {
         assert_eq!(
-            error!(NOT_FOUND),
-            ErrorResponse::NotFound {
+            error!(RATE_LIMITED, 1234),
+            ErrorResponse::RateLimited {
                 shared: SharedErrorData {
-                    status: 404,
-                    message: "The requested resource could not be found".to_string(),
+                    status: 429,
+                    message: "You have been rate limited".to_string(),
                 },
+                retry_after: 1234,
             }
         );
     }
