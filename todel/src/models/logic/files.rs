@@ -7,7 +7,7 @@ use rocket::{
     http::{ContentType, Header},
     FromForm, Responder,
 };
-use sqlx::{pool::PoolConnection, MySql};
+use sqlx::{pool::PoolConnection, Postgres};
 use tokio::fs;
 
 use crate::error;
@@ -47,7 +47,7 @@ impl File {
         mut file: TempFile<'a>,
         bucket: String,
         id_generator: &mut IdGenerator,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
         spoiler: bool,
     ) -> Result<FileData, ErrorResponse> {
         if file.len() == 0 {
@@ -81,8 +81,8 @@ impl File {
             "
 SELECT file_id, content_type, width, height
 FROM files
-WHERE hash = ?
-AND bucket = ?
+WHERE hash = $1
+AND bucket = $2
                 ",
             hash,
             bucket,
@@ -95,17 +95,17 @@ AND bucket = ?
             sqlx::query!(
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     ",
-                id,
-                file_id,
+                id as i64,
+                file_id as i64,
                 name,
                 content_type,
                 hash,
                 bucket,
                 spoiler,
-                width,
-                height,
+                width as Option<i32>,
+                height as Option<i32>,
             )
             .execute(&mut *db)
             .await
@@ -113,7 +113,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
 
             Self {
                 id,
-                file_id,
+                file_id: file_id as u64,
                 name,
                 content_type,
                 hash,
@@ -225,17 +225,17 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             sqlx::query!(
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ",
-                file.id.to_string(),
-                file.id.to_string(),
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ",
+                file.id as i64,
+                file.id as i64,
                 file.name,
                 file.content_type,
                 file.hash,
                 file.bucket,
                 file.spoiler,
-                file.width.map(|s| s as u32),
-                file.height.map(|s| s as u32),
+                file.width.map(|s| s as i32),
+                file.height.map(|s| s as i32),
             )
             .execute(&mut *db)
             .await
@@ -247,27 +247,27 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
         Ok(file.get_file_data())
     }
 
-    async fn get<'a>(id: u64, bucket: &'a str, db: &mut PoolConnection<MySql>) -> Option<Self> {
+    async fn get<'a>(id: u64, bucket: &'a str, db: &mut PoolConnection<Postgres>) -> Option<Self> {
         sqlx::query!(
             "
 SELECT *
 FROM files
-WHERE id = ?
-AND bucket = ?
+WHERE id = $1
+AND bucket = $2
                 ",
-            id.to_string(),
+            id as i64,
             bucket,
         )
         .fetch_one(&mut *db)
         .await
         .map(|r| Self {
-            id: r.id,
-            file_id: r.file_id,
+            id: r.id as u64,
+            file_id: r.file_id as u64,
             name: r.name,
             content_type: r.content_type,
             hash: r.hash,
             bucket: r.bucket,
-            spoiler: r.spoiler == 1,
+            spoiler: r.spoiler,
             width: r.width.map(|s| s as usize),
             height: r.height.map(|s| s as usize),
         })
@@ -277,7 +277,7 @@ AND bucket = ?
     pub async fn fetch_file<'a>(
         id: u64,
         bucket: &'a str,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
         let file_data = Self::get(id, bucket, db)
             .await
@@ -306,7 +306,7 @@ AND bucket = ?
     pub async fn fetch_file_download<'a>(
         id: u64,
         bucket: &'a str,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
         let file_data = Self::get(id, bucket, db)
             .await
@@ -335,7 +335,7 @@ AND bucket = ?
     pub async fn fetch_file_data<'a>(
         id: u64,
         bucket: &'a str,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<FileData, ErrorResponse> {
         Self::get(id, bucket, db)
             .await
