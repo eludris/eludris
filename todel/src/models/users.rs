@@ -69,7 +69,7 @@ pub struct User {
 ///   "client": "pilfer"
 /// }
 /// ```
-#[autodoc(category = "Users")]
+#[autodoc(category = "Sessions")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Session {
     /// The session's ID.
