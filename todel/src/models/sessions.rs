@@ -61,3 +61,29 @@ pub struct SessionCreate {
     /// The client the session was created by.
     pub client: String,
 }
+
+/// The response to a [`SessionCreate`].
+///
+/// -----
+///
+/// ### Example
+///
+/// ```
+/// {
+///   "token": "",
+///   "session": {
+///     "indentifier": "yendri",
+///     "password": "authentícame por favor",
+///     "platform": "linux",
+///     "client": "pilfer"
+///   }
+/// }
+/// ```
+#[autodoc(category = "Sessions")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SessionCreated {
+    /// The session's token. This can be used by the user to properly interface with the API.
+    pub token: String,
+    /// The session object that was created.
+    pub session: Session,
+}
