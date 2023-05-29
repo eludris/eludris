@@ -95,7 +95,7 @@ pub enum ErrorResponse {
     },
     /// The error when a client is rate limited.
     ///
-    /// ------
+    /// -----
     ///
     /// ### Example
     ///
