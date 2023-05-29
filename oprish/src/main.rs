@@ -14,10 +14,12 @@ use std::sync::Once;
 
 use anyhow::Context;
 use database::DatabaseFairing;
+use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::{deadpool_redis::Pool, sqlx::PgPool, Database};
 use routes::*;
 use todel::Conf;
+use tokio::sync::Mutex;
 
 #[cfg(test)]
 static INIT: Once = Once::new();
@@ -74,6 +76,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
 
     Ok(rocket::custom(config)
         .manage(Conf::new_from_env()?)
+        .manage(Mutex::new(StdRng::from_entropy()))
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)
