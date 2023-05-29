@@ -115,3 +115,32 @@ pub struct UserCreate {
     /// The user's password.
     pub password: String,
 }
+
+/// The SessionCreate payload.
+///
+/// This is used to authenticate a user and obtain a token to interface with the API.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "indentifier": "yendri",
+///   "password": "authentícame por favor",
+///   "platform": "linux",
+///   "client": "pilfer"
+/// }
+/// ```
+#[autodoc(category = "Sessions")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SessionCreate {
+    /// The session user's identifier. This can be either their email or username.
+    pub identifier: String,
+    /// The session user's password.
+    pub password: String,
+    /// The session's platform (linux, windows, mac, etc.)
+    pub platform: String,
+    /// The client the session was created by.
+    pub client: String,
+}
