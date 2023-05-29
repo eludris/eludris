@@ -81,8 +81,6 @@ pub struct Session {
     /// The client the session was created by.
     pub client: String,
     /// The session's creation IP address.
-    #[cfg(feature = "logic")]
-    #[serde(skip_serializing)]
     pub ip: IpAddr,
 }
 
