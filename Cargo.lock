@@ -1617,6 +1617,7 @@ dependencies = [
  "dotenvy",
  "env_logger",
  "log",
+ "rand",
  "rocket",
  "rocket_db_pools",
  "serde",
