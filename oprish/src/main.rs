@@ -16,21 +16,16 @@ use anyhow::Context;
 use database::DatabaseFairing;
 use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::{deadpool_redis::Pool, sqlx::PgPool, Database};
+use rocket_db_pools::Database;
 use routes::*;
-use todel::Conf;
+use todel::{
+    http::{Cache, DB},
+    Conf,
+};
 use tokio::sync::Mutex;
 
 #[cfg(test)]
 static INIT: Once = Once::new();
-
-#[derive(Database)]
-#[database("db")]
-pub struct DB(PgPool);
-
-#[derive(Database)]
-#[database("cache")]
-pub struct Cache(Pool);
 
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
