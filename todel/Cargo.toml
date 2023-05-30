@@ -25,6 +25,7 @@ log = { version = "0.4.17", optional = true }
 rand = { version = "0.8.5", optional = true }
 regex = { version = "1.8.3", optional = true}
 rocket = { version = "0.5.0-rc.2", optional = true, features = ["json"] }
+rocket_db_pools = { version = "0.1.0-rc.3", features = ["sqlx_postgres", "deadpool_redis", "sqlx"], optional = true }
 serde = { version = "1.0.144", features = ["derive"] }
 sha2 = { version = "0.10.6", optional = true }
 sha256 = { version = "1.1.1", optional = true }
@@ -38,4 +39,4 @@ url = { version = "2.2.2", optional = true }
 
 [features]
 logic = ["dep:anyhow", "dep:argon2", "dep:hmac", "dep:jwt", "dep:lazy_static", "dep:log", "dep:rand", "dep:regex", "dep:sha2", "dep:sha256", "dep:sqlx", "dep:tokio", "dep:toml", "dep:url"]
-http = ["logic", "dep:ffprobe", "dep:image", "dep:imagesize", "dep:rocket", "dep:tree_magic_mini"]
+http = ["logic", "dep:ffprobe", "dep:image", "dep:imagesize", "dep:rocket", "dep:rocket_db_pools", "dep:tree_magic_mini"]

@@ -2782,6 +2782,7 @@ dependencies = [
  "rand",
  "regex",
  "rocket",
+ "rocket_db_pools",
  "serde",
  "sha2",
  "sha256",
