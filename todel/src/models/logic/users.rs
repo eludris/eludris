@@ -56,6 +56,29 @@ impl User {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<User, ErrorResponse> {
         user.validate()?;
+        if sqlx::query!(
+            "
+SELECT id
+FROM users
+WHERE username = $1
+OR email = $2
+            ",
+            user.username,
+            user.email,
+        )
+        .fetch_optional(&mut *db)
+        .await
+        .map_err(|err| {
+            log::error!(
+                "Failed to check if other users with the same identifiers exist: {}",
+                err
+            );
+            error!(SERVER, "Could not create user")
+        })?
+        .is_none()
+        {
+            return Err(error!(NOT_FOUND));
+        }
         let id = id_generator.generate();
         let salt = SaltString::generate(rng);
         let hash = hasher
