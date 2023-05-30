@@ -70,6 +70,27 @@ pub enum ErrorResponse {
         #[serde(flatten)]
         shared: SharedErrorData,
     },
+    /// The error when a client's request causes a conflict, usually when they're trying to create
+    /// something that already exists.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "type": "CONFLICT",
+    ///   "status": 409,
+    ///   "message": "The request couldn't be completed due to conflicting with other data on the server",
+    ///   "item": "username",
+    /// }
+    /// ```
+    Conflict {
+        #[serde(flatten)]
+        shared: SharedErrorData,
+        /// The conflicting item.
+        item: String,
+    },
     /// The error when a request a client sends is incorrect and fails validation.
     ///
     /// -----
@@ -171,6 +192,15 @@ macro_rules! error {
             },
         }
     };
+    (CONFLICT, $item:expr) => {
+        ErrorResponse::Conflict {
+            shared: $crate::models::SharedErrorData {
+                status: 409,
+                message: "The request couldn't be completed due to conflicting with other data on the server".to_string(),
+            },
+            item: $item.to_string(),
+        }
+    };
     (VALIDATION, $value_name:expr, $info:expr) => {
         ErrorResponse::Validation {
             shared: $crate::models::SharedErrorData {
@@ -244,6 +274,20 @@ mod tests {
                     status: 404,
                     message: "The requested resource could not be found".to_string(),
                 },
+            }
+        );
+    }
+
+    #[test]
+    fn conflict_error() {
+        assert_eq!(
+            error!(CONFLICT, "username"),
+            ErrorResponse::Conflict {
+                shared: SharedErrorData {
+                    status: 409,
+                    message: "The request couldn't be completed due to conflicting with other data on the server".to_string(),
+                },
+                item: "username".to_string(),
             }
         );
     }

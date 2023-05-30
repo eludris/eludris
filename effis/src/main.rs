@@ -18,21 +18,17 @@ use rocket::{
     tokio::sync::Mutex,
     Build, Config, Rocket,
 };
-use rocket_db_pools::{deadpool_redis::Pool, sqlx::PgPool, Database};
-use todel::{ids::IdGenerator, Conf};
+use rocket_db_pools::Database;
+use todel::{
+    http::{Cache, DB},
+    ids::IdGenerator,
+    Conf,
+};
 
 pub const BUCKETS: [&str; 1] = ["attachments"];
 
 #[cfg(test)]
 static INIT: Once = Once::new();
-
-#[derive(Database)]
-#[database("db")]
-pub struct DB(PgPool);
-
-#[derive(Database)]
-#[database("cache")]
-pub struct Cache(Pool);
 
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]

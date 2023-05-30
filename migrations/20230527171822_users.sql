@@ -12,6 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
     badges BIT VARYING(64) NOT NULL DEFAULT b'0',
     permissions BIT VARYING(64) NOT NULL DEFAULT b'0',
     email VARCHAR(256) UNIQUE NOT NULL,
-    password CHAR(97) NOT NULL,
+    password CHAR(97) NOT NULL, -- The length of the argon2 encoded strings with our configuration
     two_factor_auth VARCHAR(16)
 );

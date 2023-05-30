@@ -49,3 +49,33 @@ pub struct User {
     /// The user's instance-wide permissions as a bitfield.
     pub permissions: u64,
 }
+
+/// The UserCreate payload.
+///
+/// This is used when a user is initially first created. For authentication payloads check
+/// [`SessionCreate`].
+///
+/// -----
+///
+/// ### Examples
+///
+/// ```json
+/// {
+///   "username": "yendri",
+///   "email": "yendri@llamoyendri.io",
+///   "password": "autentícame por favor" // don't actually use this as a password
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UserCreate {
+    /// The user's name.
+    ///
+    /// This is different to their `display_name` as it denotes how they're more formally
+    /// referenced by the API.
+    pub username: String,
+    /// The user's email.
+    pub email: String,
+    /// The user's password.
+    pub password: String,
+}
