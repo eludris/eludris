@@ -13,6 +13,7 @@ impl<'r> Responder<'r, 'static> for ErrorResponse {
             ErrorResponse::Unauthorized { shared, .. } => shared.status,
             ErrorResponse::Forbidden { shared, .. } => shared.status,
             ErrorResponse::NotFound { shared, .. } => shared.status,
+            ErrorResponse::Conflict { shared, .. } => shared.status,
             ErrorResponse::Validation { shared, .. } => shared.status,
             ErrorResponse::RateLimited { shared, .. } => shared.status,
             ErrorResponse::Server { shared, .. } => shared.status,
