@@ -1,0 +1,310 @@
+{
+  "db": "PostgreSQL",
+  "3c2a41ee5fd6e994d02db53c05538cbe83df3f017a89c1db20a5b0663f60ac8f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Inet"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO sessions(id, user_id, platform, client, ip)\nVALUES($1, $2, $3, $4, $5)\n            "
+  },
+  "479e644b08ab3e00ef3537b11d0f245472718ddc062079ae7dcb8b04ca41cb1b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Bool",
+          "Int4",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)\n                    "
+  },
+  "510ade8d7a8cd3334c965eafe46b9f9a4dffa0a36363edc9e83b9465aeb57722": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "platform",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "client",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "ip",
+          "ordinal": 4,
+          "type_info": "Inet"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT *\nFROM sessions\nWHERE id = $1\nAND user_id = $2\n            "
+  },
+  "72d1098107fc80bee8cbe8293f18dd96a61471e0c48e8d0c9dea709d959c378f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Bytea"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO meta(secret)\nVALUES($1)\n                    "
+  },
+  "8dcf278e4ddfe0b8a68c0eb302ea0a39bf5704143cec0315e8c64d50d0851ed2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Bpchar"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO users(id, username, email, password)\nVALUES($1, $2, $3, $4)\n            "
+  },
+  "a511cbeb10ffa0127589db87a0c0860d91eab5da47c3d571766b82e71c0d0712": {
+    "describe": {
+      "columns": [
+        {
+          "name": "secret",
+          "ordinal": 0,
+          "type_info": "Bytea"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT * FROM meta"
+  },
+  "af56cab8b325c60ec1b17cc65533cffa5878106c305e63db53d91c99cb4784d2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "password",
+          "ordinal": 1,
+          "type_info": "Bpchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT id, password\nFROM users\nWHERE username = $1\nOR email = $1\n            "
+  },
+  "c2b36794cf3b5e2c48d0d198c4034f6a76da00d44185769ba83f631bed486794": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "file_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "content_type",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "hash",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "bucket",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "spoiler",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "width",
+          "ordinal": 7,
+          "type_info": "Int4"
+        },
+        {
+          "name": "height",
+          "ordinal": 8,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT *\nFROM files\nWHERE id = $1\nAND bucket = $2\n                "
+  },
+  "f2c1e7c3eeeca9c248eef366073bdf551a3de8ed4941ade9bfdc13461316e899": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT username, email\nFROM users\nWHERE username = $1\nOR email = $2\n            "
+  },
+  "fc376f6cac9fdfffb7b79fa2598a98c99732272999c69c12f618e974eeb8b74b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Bool",
+          "Int4",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)\n                "
+  },
+  "fd4020070e572bfaede9e48088ece1f98bdf2be28d3acdefec579d782fa81eab": {
+    "describe": {
+      "columns": [
+        {
+          "name": "file_id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "content_type",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "width",
+          "ordinal": 2,
+          "type_info": "Int4"
+        },
+        {
+          "name": "height",
+          "ordinal": 3,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT file_id, content_type, width, height\nFROM files\nWHERE hash = $1\nAND bucket = $2\n                "
+  }
+}
