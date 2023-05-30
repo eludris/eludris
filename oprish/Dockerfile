@@ -40,4 +40,4 @@ ENV RUST_LOG debug
 
 COPY --from=builder /usr/local/bin/oprish /bin/oprish
 
-CMD ["wait-for-it", "mariadb:3306", "-t", "0", "--", "/bin/oprish"]
+CMD ["wait-for-it", "postgresql:5432", "-t", "0", "--", "/bin/oprish"]
