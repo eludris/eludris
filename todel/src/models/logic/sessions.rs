@@ -1,7 +1,7 @@
 use std::net::IpAddr;
 
 use argon2::{PasswordHash, PasswordVerifier};
-use jwt::SignWithKey;
+use jwt::{SignWithKey, VerifyWithKey};
 use serde::{Deserialize, Serialize};
 use sqlx::{pool::PoolConnection, types::ipnetwork::IpNetwork, Postgres};
 
@@ -96,5 +96,40 @@ VALUES($1, $2, $3, $4, $5)
                 ip,
             },
         })
+    }
+
+    pub async fn validate_token(
+        token: &str,
+        secret: &Secret,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<Session, ErrorResponse> {
+        let claims: SessionTokenClaims = token
+            .verify_with_key(&secret.0)
+            .map_err(|_| error!(UNAUTHORIZED))?;
+        let session = sqlx::query!(
+            "
+SELECT *
+FROM sessions
+WHERE id = $1
+AND user_id = $2
+            ",
+            claims.session_id as i64,
+            claims.user_id as i64
+        )
+        .fetch_optional(db)
+        .await
+        .map_err(|err| {
+            log::error!("Could not fetch the user's session: {}", err);
+            error!(SERVER, "Failed to fetch the user's session")
+        })?
+        .map(|s| Session {
+            id: s.id as u64,
+            user_id: s.user_id as u64,
+            platform: s.platform,
+            client: s.client,
+            ip: s.ip.ip(),
+        })
+        .ok_or_else(|| error!(UNAUTHORIZED))?; // no such session exists
+        Ok(session)
     }
 }
