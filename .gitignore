@@ -14,7 +14,7 @@
 files
 
 keydb
-mariadb
+pgdata
 /Eludris.toml
 
 /autodoc
