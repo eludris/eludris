@@ -1,13 +1,15 @@
 {
-  "db": "MySQL",
-  "832c69ced818d8ae841f2b545d979253c7eafe299f4f09d14272453639f89453": {
+  "db": "PostgreSQL",
+  "605a3bd493ca8d3d45fae548b84f977077e7769807a8611911d10bf0d425cb44": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 1
+        "Left": [
+          "Int8"
+        ]
       }
     },
-    "query": "\nDELETE FROM files\nWHERE id = ?\nAND bucket = 'attachments'\n        "
+    "query": "\nDELETE FROM files\nWHERE id = $1\nAND bucket = 'attachments'\n        "
   }
 }

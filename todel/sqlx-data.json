@@ -1,189 +1,72 @@
 {
-  "db": "MySQL",
-  "181a437acee855c45974baa4dc5f3e1c46f0f70794b3a13563991dcb1560a571": {
+  "db": "PostgreSQL",
+  "479e644b08ab3e00ef3537b11d0f245472718ddc062079ae7dcb8b04ca41cb1b": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 9
+        "Left": [
+          "Int8",
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Bool",
+          "Int4",
+          "Int4"
+        ]
       }
     },
-    "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)\n                    "
+    "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)\n                    "
   },
-  "2f5990bbfccfc6bb55914ba1eb628e7bc26fa1c0794a174382c6c28fc003cea8": {
-    "describe": {
-      "columns": [
-        {
-          "name": "file_id",
-          "ordinal": 0,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 4129
-            },
-            "max_size": 20,
-            "type": "LongLong"
-          }
-        },
-        {
-          "name": "content_type",
-          "ordinal": 1,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 4097
-            },
-            "max_size": 128,
-            "type": "VarString"
-          }
-        },
-        {
-          "name": "width",
-          "ordinal": 2,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 32
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
-        },
-        {
-          "name": "height",
-          "ordinal": 3,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 32
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "\nSELECT file_id, content_type, width, height\nFROM files\nWHERE hash = ?\nAND bucket = ?\n                "
-  },
-  "89ef1c697c3a304f608321a0819717e94513315e0e6a443cefdc4b18aeed2279": {
+  "c2b36794cf3b5e2c48d0d198c4034f6a76da00d44185769ba83f631bed486794": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 4131
-            },
-            "max_size": 20,
-            "type": "LongLong"
-          }
+          "type_info": "Int8"
         },
         {
           "name": "file_id",
           "ordinal": 1,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 4129
-            },
-            "max_size": 20,
-            "type": "LongLong"
-          }
+          "type_info": "Int8"
         },
         {
           "name": "name",
           "ordinal": 2,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 4097
-            },
-            "max_size": 1024,
-            "type": "VarString"
-          }
+          "type_info": "Varchar"
         },
         {
           "name": "content_type",
           "ordinal": 3,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 4097
-            },
-            "max_size": 128,
-            "type": "VarString"
-          }
+          "type_info": "Varchar"
         },
         {
           "name": "hash",
           "ordinal": 4,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 4097
-            },
-            "max_size": 256,
-            "type": "VarString"
-          }
+          "type_info": "Varchar"
         },
         {
           "name": "bucket",
           "ordinal": 5,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 4097
-            },
-            "max_size": 128,
-            "type": "VarString"
-          }
+          "type_info": "Varchar"
         },
         {
           "name": "spoiler",
           "ordinal": 6,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 1
-            },
-            "max_size": 1,
-            "type": "Tiny"
-          }
+          "type_info": "Bool"
         },
         {
           "name": "width",
           "ordinal": 7,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 32
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
+          "type_info": "Int4"
         },
         {
           "name": "height",
           "ordinal": 8,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 32
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
+          "type_info": "Int4"
         }
       ],
       "nullable": [
@@ -198,9 +81,71 @@
         true
       ],
       "parameters": {
-        "Right": 2
+        "Left": [
+          "Int8",
+          "Text"
+        ]
       }
     },
-    "query": "\nSELECT *\nFROM files\nWHERE id = ?\nAND bucket = ?\n                "
+    "query": "\nSELECT *\nFROM files\nWHERE id = $1\nAND bucket = $2\n                "
+  },
+  "fc376f6cac9fdfffb7b79fa2598a98c99732272999c69c12f618e974eeb8b74b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Bool",
+          "Int4",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)\n                "
+  },
+  "fd4020070e572bfaede9e48088ece1f98bdf2be28d3acdefec579d782fa81eab": {
+    "describe": {
+      "columns": [
+        {
+          "name": "file_id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "content_type",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "width",
+          "ordinal": 2,
+          "type_info": "Int4"
+        },
+        {
+          "name": "height",
+          "ordinal": 3,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT file_id, content_type, width, height\nFROM files\nWHERE hash = $1\nAND bucket = $2\n                "
   }
 }

@@ -39,4 +39,4 @@ ENV RUST_LOG debug
 
 COPY --from=builder /usr/local/bin/effis /bin/effis
 
-CMD ["wait-for-it", "mariadb:3306", "-t", "0", "--", "/bin/effis"]
+CMD ["wait-for-it", "postgresql:5432", "-t", "0", "--", "/bin/effis"]

@@ -15,7 +15,7 @@ use std::sync::Once;
 use anyhow::Context;
 use database::DatabaseFairing;
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
+use rocket_db_pools::{deadpool_redis::Pool, sqlx::PgPool, Database};
 use routes::*;
 use todel::Conf;
 
@@ -24,7 +24,7 @@ static INIT: Once = Once::new();
 
 #[derive(Database)]
 #[database("db")]
-pub struct DB(MySqlPool);
+pub struct DB(PgPool);
 
 #[derive(Database)]
 #[database("cache")]
@@ -52,8 +52,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .merge((
             "databases.db",
             rocket_db_pools::Config {
-                url: env::var("DATABASE_URL")
-                    .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string()),
+                url: env::var("DATABASE_URL").unwrap_or_else(|_| {
+                    "postgresql://root:root@localhost:5432/eludris".to_string()
+                }),
                 min_connections: None,
                 max_connections: 1024,
                 connect_timeout: 3,
