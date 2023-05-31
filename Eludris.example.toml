@@ -46,5 +46,10 @@ url = "" # This instance's Effis url
 # ensure that every user has a valid email **that they own, and not just some other
 # person's** - it also makes stuff like password resets possible.
 [email]
+# The URL of your SMTP relay
 relay = ""
+# The name of your instance's sender
+name = ""
+# The address of your instance's sender
+address = ""
 # credentials = { username = "", password = "" }
