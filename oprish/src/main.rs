@@ -14,6 +14,7 @@ use std::env;
 use std::sync::Once;
 
 use anyhow::Context;
+use argon2::Argon2;
 use database::DatabaseFairing;
 use email::EmailFairing;
 use rand::{rngs::StdRng, SeedableRng};
@@ -22,6 +23,7 @@ use rocket_db_pools::Database;
 use routes::*;
 use todel::{
     http::{Cache, DB},
+    ids::IdGenerator,
     Conf,
 };
 use tokio::sync::Mutex;
@@ -74,6 +76,8 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     Ok(rocket::custom(config)
         .manage(Conf::new_from_env()?)
         .manage(Mutex::new(StdRng::from_entropy()))
+        .manage(Mutex::new(IdGenerator::new()))
+        .manage(Argon2::default())
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)
