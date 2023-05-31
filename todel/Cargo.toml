@@ -21,8 +21,10 @@ image = { version = "0.24.5", optional = true }
 imagesize = { version = "0.10.1", optional = true }
 jwt = { version = "0.16.0", optional = true }
 lazy_static = { version = "1.4.0", optional = true }
+lettre = { version = "0.10.4", features = ["smtp-transport", "builder", "hostname", "tokio1", "tokio1-rustls-tls"], default-features = false, optional = true }
 log = { version = "0.4.17", optional = true }
 rand = { version = "0.8.5", optional = true }
+redis = { version = "0.22.3", features = ["tokio-comp"], optional = true }
 regex = { version = "1.8.3", optional = true}
 rocket = { version = "0.5.0-rc.2", optional = true, features = ["json"] }
 rocket_db_pools = { version = "0.1.0-rc.3", features = ["sqlx_postgres", "deadpool_redis", "sqlx"], optional = true }
@@ -38,5 +40,5 @@ ubyte = { version = "0.10.3", features = ["serde"] }
 url = { version = "2.2.2", optional = true }
 
 [features]
-logic = ["dep:anyhow", "dep:argon2", "dep:hmac", "dep:jwt", "dep:lazy_static", "dep:log", "dep:rand", "dep:regex", "dep:sha2", "dep:sha256", "dep:sqlx", "dep:tokio", "dep:toml", "dep:url"]
+logic = ["dep:anyhow", "dep:argon2", "dep:hmac", "dep:jwt", "dep:lazy_static", "dep:lettre", "dep:log", "dep:rand", "dep:redis", "dep:regex", "dep:sha2", "dep:sha256", "dep:sqlx", "dep:tokio", "dep:toml", "dep:url"]
 http = ["logic", "dep:ffprobe", "dep:image", "dep:imagesize", "dep:rocket", "dep:rocket_db_pools", "dep:tree_magic_mini"]

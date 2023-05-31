@@ -1702,6 +1702,7 @@ name = "oprish"
 version = "0.3.3"
 dependencies = [
  "anyhow",
+ "argon2",
  "dotenvy",
  "env_logger",
  "lettre",
@@ -2846,8 +2847,10 @@ dependencies = [
  "imagesize",
  "jwt",
  "lazy_static",
+ "lettre",
  "log",
  "rand",
+ "redis",
  "regex",
  "rocket",
  "rocket_db_pools",
