@@ -2,6 +2,30 @@ use serde::{Deserialize, Serialize};
 
 use super::RateLimitConf;
 
+/// Oprish configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OprishConf {
+    #[serde(default = "message_limit_default")]
+    pub message_limit: usize,
+    pub url: String,
+    #[serde(default)]
+    pub rate_limits: OprishRateLimits,
+}
+
+impl Default for OprishConf {
+    fn default() -> Self {
+        Self {
+            url: "https://example.com".to_string(),
+            message_limit: message_limit_default(),
+            rate_limits: OprishRateLimits::default(),
+        }
+    }
+}
+
+fn message_limit_default() -> usize {
+    2048
+}
+
 /// Rate limits that apply to Oprish (The REST API).
 ///
 /// -----

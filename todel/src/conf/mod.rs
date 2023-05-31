@@ -1,6 +1,7 @@
 //! Simple abstraction for a TOML based Eludris configuration file
-mod effis_rate_limits;
-mod oprish_rate_limits;
+mod effis;
+mod oprish;
+mod pandemonium;
 
 use serde::{Deserialize, Serialize};
 
@@ -13,105 +14,9 @@ use std::{env, fs, path};
 #[cfg(feature = "logic")]
 use url::Url;
 
-pub use effis_rate_limits::*;
-pub use oprish_rate_limits::*;
-
-/// Eludris config used for the `Eludris.toml` file.
-///
-/// For a full example of this check the
-/// `[Eludris.toml](https://github.com/eludris/eludris/blob/main/Eludris.toml)` file in the meta repository.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Conf {
-    pub instance_name: String,
-    pub description: Option<String>,
-    #[serde(default)]
-    pub oprish: OprishConf,
-    #[serde(default)]
-    pub pandemonium: PandemoniumConf,
-    #[serde(default)]
-    pub effis: EffisConf,
-}
-
-/// Oprish configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OprishConf {
-    #[serde(default = "message_limit_default")]
-    pub message_limit: usize,
-    pub url: String,
-    #[serde(default)]
-    pub rate_limits: OprishRateLimits,
-}
-
-impl Default for OprishConf {
-    fn default() -> Self {
-        Self {
-            url: "https://example.com".to_string(),
-            message_limit: message_limit_default(),
-            rate_limits: OprishRateLimits::default(),
-        }
-    }
-}
-
-fn message_limit_default() -> usize {
-    2048
-}
-
-/// Pandemonium configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PandemoniumConf {
-    pub url: String,
-    #[serde(default = "pandemonium_rate_limit_default")]
-    pub rate_limit: RateLimitConf,
-}
-
-impl Default for PandemoniumConf {
-    fn default() -> Self {
-        Self {
-            url: "https://example.com".to_string(),
-            rate_limit: pandemonium_rate_limit_default(),
-        }
-    }
-}
-
-fn pandemonium_rate_limit_default() -> RateLimitConf {
-    RateLimitConf {
-        reset_after: 10,
-        limit: 5,
-    }
-}
-
-/// Effis configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EffisConf {
-    #[serde(deserialize_with = "deserialize_file_size")]
-    #[serde(default = "file_size_default")]
-    pub file_size: u64,
-    #[serde(deserialize_with = "deserialize_file_size")]
-    #[serde(default = "attachment_file_size_default")]
-    pub attachment_file_size: u64,
-    pub url: String,
-    #[serde(default)]
-    pub rate_limits: EffisRateLimits,
-}
-
-fn file_size_default() -> u64 {
-    20_000_000 // 20MB
-}
-
-fn attachment_file_size_default() -> u64 {
-    100_000_000 // 100MB
-}
-
-impl Default for EffisConf {
-    fn default() -> Self {
-        Self {
-            file_size: file_size_default(),
-            url: "https://example.com".to_string(),
-            attachment_file_size: attachment_file_size_default(),
-            rate_limits: EffisRateLimits::default(),
-        }
-    }
-}
+pub use effis::*;
+pub use oprish::*;
+pub use pandemonium::*;
 
 /// Represents a single rate limit.
 ///
@@ -154,6 +59,22 @@ macro_rules! validate_file_sizes {
             bail!("File size can't be 0");
         }
     };
+}
+
+/// Eludris config used for the `Eludris.toml` file.
+///
+/// For a full example of this check the
+/// `[Eludris.toml](https://github.com/eludris/eludris/blob/main/Eludris.toml)` file in the meta repository.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Conf {
+    pub instance_name: String,
+    pub description: Option<String>,
+    #[serde(default)]
+    pub oprish: OprishConf,
+    #[serde(default)]
+    pub pandemonium: PandemoniumConf,
+    #[serde(default)]
+    pub effis: EffisConf,
 }
 
 #[cfg(feature = "logic")]
