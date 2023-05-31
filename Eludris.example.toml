@@ -40,3 +40,11 @@ url = "" # This instance's Effis url
 #attachments = { reset_after = 180, limit = 20 file_size_limit = "500MB" }
 # This is a normal rate limit
 #fetch_file = { reset_after = 60, limit = 30 }
+
+# This entire section *is* optional and Eludris *will* function without it. However,
+# using an SMTP relay for your instance is really beneficial as - not only does it
+# ensure that every user has a valid email **that they own, and not just some other
+# person's** - it also makes stuff like password resets possible.
+[email]
+relay = ""
+# credentials = { username = "", password = "" }

@@ -1,5 +1,6 @@
 //! Simple abstraction for a TOML based Eludris configuration file
 mod effis;
+mod email;
 mod oprish;
 mod pandemonium;
 
@@ -15,6 +16,7 @@ use std::{env, fs, path};
 use url::Url;
 
 pub use effis::*;
+pub use email::*;
 pub use oprish::*;
 pub use pandemonium::*;
 
@@ -31,7 +33,7 @@ pub use pandemonium::*;
 /// }
 /// ```
 #[autodoc(category = "Instance")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RateLimitConf {
     /// The amount of seconds after which the rate limit resets.
     pub reset_after: u32,
@@ -65,7 +67,7 @@ macro_rules! validate_file_sizes {
 ///
 /// For a full example of this check the
 /// `[Eludris.toml](https://github.com/eludris/eludris/blob/main/Eludris.toml)` file in the meta repository.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Conf {
     pub instance_name: String,
     pub description: Option<String>,
@@ -75,6 +77,8 @@ pub struct Conf {
     pub pandemonium: PandemoniumConf,
     #[serde(default)]
     pub effis: EffisConf,
+    #[serde(default)]
+    pub email: Option<Email>,
 }
 
 #[cfg(feature = "logic")]
@@ -117,6 +121,7 @@ impl Conf {
             oprish: OprishConf::default(),
             pandemonium: PandemoniumConf::default(),
             effis: EffisConf::default(),
+            email: None,
         };
         conf.validate()?;
         Ok(conf)
@@ -145,6 +150,12 @@ impl Conf {
             .with_context(|| format!("Invalid pandemonium url {}", self.pandemonium.url))?;
         Url::parse(&self.effis.url)
             .with_context(|| format!("Invalid effis url {}", self.effis.url))?;
+
+        if let Some(email) = &self.email {
+            if email.relay.is_empty() {
+                bail!("Invalid description SMTP relay");
+            }
+        }
 
         validate_file_sizes!(
             self.effis.file_size,
@@ -196,6 +207,9 @@ mod tests {
 
             [effis.rate_limits]
             attachments = { reset_after = 600, limit = 20, file_size_limit = "500MB"}
+
+            [email]
+            relay = "smtp.foo.com"
             "#;
 
         let conf_str: Conf = toml::from_str(conf_str).unwrap();
@@ -232,6 +246,10 @@ mod tests {
                 },
                 ..Default::default()
             },
+            email: Some(Email {
+                relay: "smtp.foo.com".to_string(),
+                credentials: None,
+            }),
         };
 
         assert_eq!(format!("{:?}", conf_str), format!("{:?}", conf));
@@ -324,5 +342,17 @@ mod tests {
             conf.effis.rate_limits.assets.file_size_limit,
             conf.effis.rate_limits.attachments.file_size_limit
         );
+
+        conf.email = Some(Email {
+            relay: "https://smtp.foo.bar".to_string(),
+            credentials: None,
+        });
+        assert!(conf.validate().is_ok());
+
+        conf.email = Some(Email {
+            relay: "not-a@valid.url==lol".to_string(),
+            credentials: None,
+        });
+        assert!(conf.validate().is_err());
     }
 }

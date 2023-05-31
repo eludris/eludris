@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::RateLimitConf;
 
 /// Pandemonium configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PandemoniumConf {
     pub url: String,
     #[serde(default = "pandemonium_rate_limit_default")]

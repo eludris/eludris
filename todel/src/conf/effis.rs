@@ -4,15 +4,15 @@ use ubyte::ByteUnit;
 use super::RateLimitConf;
 
 /// Effis configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EffisConf {
+    pub url: String,
     #[serde(deserialize_with = "deserialize_file_size")]
     #[serde(default = "file_size_default")]
     pub file_size: u64,
     #[serde(deserialize_with = "deserialize_file_size")]
     #[serde(default = "attachment_file_size_default")]
     pub attachment_file_size: u64,
-    pub url: String,
     #[serde(default)]
     pub rate_limits: EffisRateLimits,
 }
@@ -61,7 +61,7 @@ fn attachment_file_size_default() -> u64 {
 /// }
 /// ```
 #[autodoc(category = "Instance")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EffisRateLimits {
     /// Rate limits for the asset buckets.
     #[serde(default = "assets_default")]
@@ -98,7 +98,7 @@ impl Default for EffisRateLimits {
 /// }
 /// ```
 #[autodoc(category = "Instance")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EffisRateLimitConf {
     /// The amount of seconds after which the rate limit resets.
     pub reset_after: u32,
