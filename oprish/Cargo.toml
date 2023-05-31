@@ -19,3 +19,4 @@ tokio = { version = "1.22.0", features = ["rt-multi-thread", "macros"] }
 dotenvy = "0.15.7"
 sqlx = { version = "0.6.3", features = ["postgres", "macros"] }
 rand = "0.8.5"
+lettre = { version = "0.10.4", default-features = false, features = ["smtp-transport", "builder", "hostname", "tokio1", "tokio1-rustls-tls"] }
