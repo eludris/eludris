@@ -5,6 +5,7 @@ extern crate todel;
 
 mod cors;
 mod database;
+mod email;
 mod rate_limit;
 mod routes;
 
@@ -14,6 +15,7 @@ use std::sync::Once;
 
 use anyhow::Context;
 use database::DatabaseFairing;
+use email::EmailFairing;
 use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::Database;
@@ -76,6 +78,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .attach(Cache::init())
         .attach(cors::Cors)
         .attach(DatabaseFairing)
+        .attach(EmailFairing)
         .mount("/", get_routes())
         .mount("/messages", messages::get_routes()))
 }
