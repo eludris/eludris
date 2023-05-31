@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS sessions (
   user_id BIGINT NOT NULL,
   platform VARCHAR(32) NOT NULL,
   client VARCHAR(32) NOT NULL,
-  ip INET NOT NULL
+  ip INET NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
