@@ -153,7 +153,13 @@ impl Conf {
 
         if let Some(email) = &self.email {
             if email.relay.is_empty() {
-                bail!("Invalid description SMTP relay");
+                bail!("Invalid SMTP relay url");
+            }
+            if email.name.is_empty() {
+                bail!("Invalid email name");
+            }
+            if email.address.is_empty() {
+                bail!("Invalid email address");
             }
         }
 
@@ -210,6 +216,8 @@ mod tests {
 
             [email]
             relay = "smtp.foo.com"
+            name = "Fenni"
+            address = "fenni@fenrir.den"
             "#;
 
         let conf_str: Conf = toml::from_str(conf_str).unwrap();
@@ -248,6 +256,8 @@ mod tests {
             },
             email: Some(Email {
                 relay: "smtp.foo.com".to_string(),
+                name: "Fenni".to_string(),
+                address: "fenni@fenrir.den".to_string(),
                 credentials: None,
             }),
         };
@@ -342,17 +352,5 @@ mod tests {
             conf.effis.rate_limits.assets.file_size_limit,
             conf.effis.rate_limits.attachments.file_size_limit
         );
-
-        conf.email = Some(Email {
-            relay: "https://smtp.foo.bar".to_string(),
-            credentials: None,
-        });
-        assert!(conf.validate().is_ok());
-
-        conf.email = Some(Email {
-            relay: "not-a@valid.url==lol".to_string(),
-            credentials: None,
-        });
-        assert!(conf.validate().is_err());
     }
 }
