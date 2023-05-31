@@ -3,6 +3,39 @@ use ubyte::ByteUnit;
 
 use super::RateLimitConf;
 
+/// Effis configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EffisConf {
+    #[serde(deserialize_with = "deserialize_file_size")]
+    #[serde(default = "file_size_default")]
+    pub file_size: u64,
+    #[serde(deserialize_with = "deserialize_file_size")]
+    #[serde(default = "attachment_file_size_default")]
+    pub attachment_file_size: u64,
+    pub url: String,
+    #[serde(default)]
+    pub rate_limits: EffisRateLimits,
+}
+
+impl Default for EffisConf {
+    fn default() -> Self {
+        Self {
+            file_size: file_size_default(),
+            url: "https://example.com".to_string(),
+            attachment_file_size: attachment_file_size_default(),
+            rate_limits: EffisRateLimits::default(),
+        }
+    }
+}
+
+fn file_size_default() -> u64 {
+    20_000_000 // 20MB
+}
+
+fn attachment_file_size_default() -> u64 {
+    100_000_000 // 100MB
+}
+
 /// Rate limits that apply to Effis (The CDN).
 ///
 /// -----
@@ -39,6 +72,16 @@ pub struct EffisRateLimits {
     /// Rate limits for the file fetching endpoints.
     #[serde(default = "fetch_file_default")]
     pub fetch_file: RateLimitConf,
+}
+
+impl Default for EffisRateLimits {
+    fn default() -> Self {
+        Self {
+            assets: assets_default(),
+            attachments: attachments_default(),
+            fetch_file: fetch_file_default(),
+        }
+    }
 }
 
 /// Represents a single rate limit for Effis.
@@ -86,16 +129,6 @@ fn fetch_file_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 60,
         limit: 30,
-    }
-}
-
-impl Default for EffisRateLimits {
-    fn default() -> Self {
-        Self {
-            assets: assets_default(),
-            attachments: attachments_default(),
-            fetch_file: fetch_file_default(),
-        }
     }
 }
 
