@@ -4,8 +4,15 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Your Eludris Email</title>
+  <title>Your Eludris Verification Code Is ${CODE}</title>
   <style>
+    #wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 50px;
+    }
+
     #content {
       background-color: hsl(257, 33%, 8%);
       border-radius: 10px;
@@ -15,11 +22,26 @@
       margin: 0 auto;
     }
 
-    #wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 50px;
+    h2 {
+      font-size: 42px;
+      margin: 2px 5px;
+    }
+
+    #code-wrapper {
+      display: block;
+      margin: 5px;
+    }
+
+    #code {
+      font-size: 36px;
+      background-color: hsl(257, 35%, 13%);
+      margin: 0 auto;
+      padding: 10px 15px;
+      border-radius: 10px;
+    }
+
+    #note-text {
+      font-weight: 300;
     }
   </style>
 </head>
@@ -27,7 +49,10 @@
   <div id="wrapper">
     <div id="content">
       <h2>Eludris account verification code</h2>
-      Your Eludris verification code is ${CODE}, use it inside your Eludris client.
+      <div id="code-wrapper">
+        <span id="code">${CODE}</span>
+      </div>
+      <span id="note-text">You have 7 days to verify your account before it is automatically deleted</span>
     </div>
   </div>
 </body>
