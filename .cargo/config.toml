@@ -1,4 +1,5 @@
 [build]
 rustflags = [
-  "-A", "clippy::uninlined_format_args" # Consistency since you cannot inline "complex" args such as `self.foo`
+  "-A", "clippy::uninlined_format_args", # Consistency since you cannot inline "complex" args such as `self.foo`
+  "-A", "clippy::too_many_arguments"
 ]
