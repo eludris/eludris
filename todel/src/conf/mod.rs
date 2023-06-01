@@ -259,6 +259,7 @@ mod tests {
                 name: "Fenni".to_string(),
                 address: "fenni@fenrir.den".to_string(),
                 credentials: None,
+                subjects: EmailSubjects::default(),
             }),
         };
 

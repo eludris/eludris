@@ -53,3 +53,8 @@ name = ""
 # The address of your instance's sender
 address = ""
 # credentials = { username = "", password = "" }
+
+# The subjects of the emails your instance sends out if you have an SMTP relay setup.
+# Leaving a subject as an empty string makes the email have no subject.
+#[email.subjects]
+#verify = "Verify your Eludris account"
