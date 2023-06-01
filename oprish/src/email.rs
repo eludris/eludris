@@ -12,7 +12,7 @@ pub type SmtpMailer = Option<AsyncSmtpTransport<Tokio1Executor>>;
 impl Fairing for EmailFairing {
     fn info(&self) -> Info {
         Info {
-            name: "Handle database migrations & setup",
+            name: "Handle managing an SmtpTransport for mailing purposes",
             kind: Kind::Ignite,
         }
     }
