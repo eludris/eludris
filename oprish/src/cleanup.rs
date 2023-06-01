@@ -44,7 +44,7 @@ impl Fairing for ScheduledCleanup {
                 sleep(
                     Duration::days(1)
                         .to_std()
-                        .expect("Couldn't convery chrono Duration to std Duration"),
+                        .expect("Couldn't convert chrono Duration to std Duration"),
                 )
                 .await;
             }
