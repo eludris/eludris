@@ -1,14 +1,20 @@
+use std::time::{Duration, SystemTime};
+
 use argon2::{
     password_hash::{rand_core::CryptoRngCore, SaltString},
     PasswordHasher,
 };
 use lazy_static::lazy_static;
+use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
+use rand::Rng;
+use redis::AsyncCommands;
 use regex::Regex;
 use sqlx::{pool::PoolConnection, Postgres};
 
 use crate::{
-    ids::IdGenerator,
-    models::{ErrorResponse, User, UserCreate},
+    ids::{IdGenerator, ELUDRIS_EPOCH},
+    models::{ErrorResponse, Session, User, UserCreate},
+    Conf,
 };
 
 impl UserCreate {
@@ -48,12 +54,15 @@ impl UserCreate {
 }
 
 impl User {
-    pub async fn create<H: PasswordHasher, R: CryptoRngCore>(
+    pub async fn create<H: PasswordHasher, R: CryptoRngCore, C: AsyncCommands>(
         user: UserCreate,
         hasher: &H,
         rng: &mut R,
         id_generator: &mut IdGenerator,
+        conf: &Conf,
+        mailer: &Option<AsyncSmtpTransport<Tokio1Executor>>,
         db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
     ) -> Result<User, ErrorResponse> {
         user.validate()?;
         if let Some(existing_user) = sqlx::query!(
@@ -81,8 +90,49 @@ OR email = $2
                 return Err(error!(CONFLICT, "password"));
             }
         }
-
         let id = id_generator.generate();
+
+        if let Some(email) = &conf.email {
+            let code = rng.gen_range(0..999999);
+            cache
+                .set::<_, _, ()>(format!("verification:{}", id), code)
+                .await
+                .map_err(|err| {
+                    log::error!("Failed to set verification code in cache: {}", err);
+                    error!(SERVER, "Could not send verification email")
+                })?;
+            let message = Message::builder()
+                .from(
+                    format!("{} <{}>", email.name, email.address)
+                        .parse()
+                        .map_err(|err| {
+                            log::error!("Failed to build email message: {}", err);
+                            error!(SERVER, "Could not send verification email")
+                        })?,
+                )
+                .to(format!("{} <{}>", user.username, user.email)
+                    .parse()
+                    .map_err(|err| {
+                        log::error!("Failed to build email message: {}", err);
+                        error!(SERVER, "Could not send verification email")
+                    })?)
+                .subject("Verify your Eludris account")
+                .body(format!("Your verification code is {}", code))
+                .map_err(|err| {
+                    log::error!("Failed to build email message: {}", err);
+                    error!(SERVER, "Could not send verification email")
+                })?;
+            mailer
+                .as_ref()
+                .unwrap()
+                .send(message)
+                .await
+                .map_err(|err| {
+                    log::error!("Failed to send email: {}", err);
+                    error!(SERVER, "Could not send verification email")
+                })?;
+        }
+
         let salt = SaltString::generate(rng);
         let hash = hasher
             .hash_password(user.password.as_bytes(), &salt)
@@ -93,11 +143,12 @@ OR email = $2
             .to_string();
         sqlx::query!(
             "
-INSERT INTO users(id, username, email, password)
-VALUES($1, $2, $3, $4)
+INSERT INTO users(id, username, verified, email, password)
+VALUES($1, $2, $3, $4, $5)
             ",
             id as i64,
             user.username,
+            conf.email.is_none(),
             user.email,
             hash
         )
@@ -119,6 +170,81 @@ VALUES($1, $2, $3, $4)
             badges: 0,
             permissions: 0,
         })
+    }
+
+    pub async fn verify<C: AsyncCommands>(
+        code: u32,
+        session: Session,
+        db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
+    ) -> Result<(), ErrorResponse> {
+        let verified = sqlx::query!(
+            "
+SELECT verified
+FROM users
+WHERE id = $1
+            ",
+            session.user_id as i64
+        )
+        .fetch_one(&mut *db)
+        .await
+        .map_err(|err| {
+            log::error!("Could not fetch user data for verification: {}", err);
+            error!(SERVER, "Couldn't verify user")
+        })?
+        .verified;
+        if verified {
+            return Err(error!(VALIDATION, "code", "User is already verified"));
+        }
+        let cache_code: u32 = cache
+            .get(format!("verification:{}", session.user_id))
+            .await
+            .map_err(|err| {
+                log::error!("Failed to get code from cache: {}", err);
+                error!(SERVER, "Couldn't verify user")
+            })?;
+        if code != cache_code {
+            return Err(error!(VALIDATION, "code", "Incorrect verification code"));
+        }
+        sqlx::query!(
+            "
+UPDATE users
+SET verified = TRUE
+WHERE id = $1
+            ",
+            session.user_id as i64
+        )
+        .execute(db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to set user verification in database: {}", err);
+            error!(SERVER, "Couldn't verify user")
+        })?;
+        cache
+            .del::<_, ()>(format!("verification:{}", session.user_id))
+            .await
+            .map_err(|err| {
+                log::error!("Failed to remove user code from cache: {}", err);
+                error!(SERVER, "Couldn't verify user")
+            })?;
+        Ok(())
+    }
+
+    pub async fn clean_up_unverified(db: &mut PoolConnection<Postgres>) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE verified = FALSE
+AND $1 - (id >> 16) > 604800000 -- seven days
+            ",
+            SystemTime::now()
+                .duration_since(*ELUDRIS_EPOCH)
+                .unwrap_or_else(|_| Duration::ZERO)
+                .as_millis() as i64
+        )
+        .execute(db)
+        .await?;
+        Ok(())
     }
 }
 
