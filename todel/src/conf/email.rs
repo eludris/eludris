@@ -32,5 +32,5 @@ impl Default for EmailSubjects {
 }
 
 pub fn subject_verify() -> String {
-    "Verify your Eludris account".to_string()
+    "Your Eludris Verification Code is ${CODE}".to_string()
 }
