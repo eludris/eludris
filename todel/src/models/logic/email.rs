@@ -53,7 +53,6 @@ impl Emailer {
         if !subject.is_empty() {
             message = message.subject(subject);
         }
-        // .body(format!("Your verification code is {}", code))
         let message = message
             .singlepart(SinglePart::html(content))
             .map_err(|err| {
