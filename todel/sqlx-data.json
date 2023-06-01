@@ -1,5 +1,25 @@
 {
   "db": "PostgreSQL",
+  "1953fa614b990ec237601af7bed777a612f4354cd9a34b75b3e6b507108bc35f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "verified",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT verified\nFROM users\nWHERE id = $1\n            "
+  },
   "3c2a41ee5fd6e994d02db53c05538cbe83df3f017a89c1db20a5b0663f60ac8f": {
     "describe": {
       "columns": [],
@@ -92,21 +112,6 @@
       }
     },
     "query": "\nINSERT INTO meta(secret)\nVALUES($1)\n                    "
-  },
-  "8dcf278e4ddfe0b8a68c0eb302ea0a39bf5704143cec0315e8c64d50d0851ed2": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Varchar",
-          "Varchar",
-          "Bpchar"
-        ]
-      }
-    },
-    "query": "\nINSERT INTO users(id, username, email, password)\nVALUES($1, $2, $3, $4)\n            "
   },
   "a511cbeb10ffa0127589db87a0c0860d91eab5da47c3d571766b82e71c0d0712": {
     "describe": {
@@ -221,6 +226,34 @@
     },
     "query": "\nSELECT *\nFROM files\nWHERE id = $1\nAND bucket = $2\n                "
   },
+  "d4131cfc2246292039d30fdae1849cb13420f140a898353f2abbbc93028f6c55": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nDELETE FROM users\nWHERE verified = FALSE\nAND $1 - (id >> 16) > 604800000 -- seven days\n            "
+  },
+  "d61851b597e97612806b2530c2f751e0e8fc4009e34b17532e2460b1ee9d9c38": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Varchar",
+          "Bool",
+          "Varchar",
+          "Bpchar"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO users(id, username, verified, email, password)\nVALUES($1, $2, $3, $4, $5)\n            "
+  },
   "f2c1e7c3eeeca9c248eef366073bdf551a3de8ed4941ade9bfdc13461316e899": {
     "describe": {
       "columns": [
@@ -247,6 +280,18 @@
       }
     },
     "query": "\nSELECT username, email\nFROM users\nWHERE username = $1\nOR email = $2\n            "
+  },
+  "fc04fcf2b80dc6ca7cef09a8e149e57845a1fde1f40333d404f720fbe5fd03b3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nUPDATE users\nSET verified = TRUE\nWHERE id = $1\n            "
   },
   "fc376f6cac9fdfffb7b79fa2598a98c99732272999c69c12f618e974eeb8b74b": {
     "describe": {
