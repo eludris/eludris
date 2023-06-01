@@ -3,6 +3,7 @@ extern crate rocket;
 #[macro_use]
 extern crate todel;
 
+mod cleanup;
 mod cors;
 mod database;
 mod email;
@@ -15,6 +16,7 @@ use std::sync::Once;
 
 use anyhow::Context;
 use argon2::Argon2;
+use cleanup::ScheduledCleanup;
 use database::DatabaseFairing;
 use email::EmailFairing;
 use rand::{rngs::StdRng, SeedableRng};
@@ -83,6 +85,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .attach(cors::Cors)
         .attach(DatabaseFairing)
         .attach(EmailFairing)
+        .attach(ScheduledCleanup)
         .mount("/", get_routes())
         .mount("/messages", messages::get_routes()))
 }
