@@ -5,7 +5,6 @@ use argon2::{
     PasswordHasher,
 };
 use lazy_static::lazy_static;
-use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use rand::Rng;
 use redis::AsyncCommands;
 use regex::Regex;
@@ -89,7 +88,7 @@ OR email = $2
             if existing_user.username == user.username {
                 return Err(error!(CONFLICT, "username"));
             } else {
-                return Err(error!(CONFLICT, "password"));
+                return Err(error!(CONFLICT, "email"));
             }
         }
         let id = id_generator.generate();
