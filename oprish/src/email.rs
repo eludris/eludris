@@ -3,10 +3,9 @@ use rocket::{
     fairing::{Fairing, Info, Kind, Result},
     Build, Rocket,
 };
-use todel::Conf;
+use todel::{models::Emailer, Conf};
 
 pub struct EmailFairing;
-pub type SmtpMailer = Option<AsyncSmtpTransport<Tokio1Executor>>;
 
 #[rocket::async_trait]
 impl Fairing for EmailFairing {
@@ -32,9 +31,9 @@ impl Fairing for EmailFairing {
             }
             let mailer = transport_builder.build::<Tokio1Executor>();
 
-            Ok(rocket.manage(Some(mailer)))
+            Ok(rocket.manage(Emailer(Some(mailer))))
         } else {
-            Ok(rocket.manage::<SmtpMailer>(None))
+            Ok(rocket.manage(Emailer(None)))
         }
     }
 }

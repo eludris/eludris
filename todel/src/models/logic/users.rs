@@ -17,6 +17,8 @@ use crate::{
     Conf,
 };
 
+use super::{EmailPreset, Emailer};
+
 impl UserCreate {
     pub fn validate(&self) -> Result<(), ErrorResponse> {
         lazy_static! {
@@ -60,7 +62,7 @@ impl User {
         rng: &mut R,
         id_generator: &mut IdGenerator,
         conf: &Conf,
-        mailer: &Option<AsyncSmtpTransport<Tokio1Executor>>,
+        mailer: &Emailer,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
     ) -> Result<User, ErrorResponse> {
@@ -93,7 +95,7 @@ OR email = $2
         let id = id_generator.generate();
 
         if let Some(email) = &conf.email {
-            let code = rng.gen_range(0..999999);
+            let code = rng.gen_range(100000..999999);
             cache
                 .set::<_, _, ()>(format!("verification:{}", id), code)
                 .await
@@ -101,36 +103,13 @@ OR email = $2
                     log::error!("Failed to set verification code in cache: {}", err);
                     error!(SERVER, "Could not send verification email")
                 })?;
-            let message = Message::builder()
-                .from(
-                    format!("{} <{}>", email.name, email.address)
-                        .parse()
-                        .map_err(|err| {
-                            log::error!("Failed to build email message: {}", err);
-                            error!(SERVER, "Could not send verification email")
-                        })?,
-                )
-                .to(format!("{} <{}>", user.username, user.email)
-                    .parse()
-                    .map_err(|err| {
-                        log::error!("Failed to build email message: {}", err);
-                        error!(SERVER, "Could not send verification email")
-                    })?)
-                .subject("Verify your Eludris account")
-                .body(format!("Your verification code is {}", code))
-                .map_err(|err| {
-                    log::error!("Failed to build email message: {}", err);
-                    error!(SERVER, "Could not send verification email")
-                })?;
             mailer
-                .as_ref()
-                .unwrap()
-                .send(message)
-                .await
-                .map_err(|err| {
-                    log::error!("Failed to send email: {}", err);
-                    error!(SERVER, "Could not send verification email")
-                })?;
+                .send_email(
+                    &format!("{} <{}>", user.username, user.email),
+                    EmailPreset::Verify { code },
+                    email,
+                )
+                .await?;
         }
 
         let salt = SaltString::generate(rng);
