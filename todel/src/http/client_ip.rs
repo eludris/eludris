@@ -1,8 +1,9 @@
+use std::{convert::Infallible, fmt::Display, net::IpAddr, ops::Deref, str::FromStr};
+
 use rocket::{
     async_trait,
     request::{FromRequest, Outcome, Request},
 };
-use std::{convert::Infallible, fmt::Display, net::IpAddr, str::FromStr};
 
 /// The *real* IP of a client.
 #[derive(Debug, Clone)]
@@ -11,6 +12,14 @@ pub struct ClientIP(IpAddr);
 impl Display for ClientIP {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Deref for ClientIP {
+    type Target = IpAddr;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
