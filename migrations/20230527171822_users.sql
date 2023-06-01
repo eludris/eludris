@@ -15,6 +15,6 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(256) UNIQUE NOT NULL,
   password CHAR(97) NOT NULL, -- The length of the argon2 encoded strings with our configuration
   two_factor_auth VARCHAR(16),
-  FOREIGN KEY (avatar) REFERENCES files(id),
-  FOREIGN KEY (banner) REFERENCES files(id)
+  FOREIGN KEY (avatar) REFERENCES files(id) ON DELETE SET NULL,
+  FOREIGN KEY (banner) REFERENCES files(id) ON DELETE SET NULL
 );
