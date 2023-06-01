@@ -19,14 +19,22 @@ impl Emailer {
     ) -> Result<(), ErrorResponse> {
         let (subject, content) = match preset {
             EmailPreset::Verify { code } => {
+                let code = code
+                    .to_string()
+                    .chars()
+                    .collect::<Vec<char>>()
+                    .chunks(3)
+                    .map(|c| c.iter().collect::<String>())
+                    .collect::<Vec<String>>()
+                    .join(" ");
                 let content = fs::read_to_string("static/verify.html")
                     .await
                     .map_err(|err| {
                         log::error!("Couldn't read verify preset: {}", err);
                         error!(SERVER, "Could not send email")
                     })?
-                    .replace("${CODE}", &code.to_string());
-                (&email.subjects.verify, content)
+                    .replace("${CODE}", &code);
+                (email.subjects.verify.replace("${CODE}", &code), content)
             }
         };
         let mut message = Message::builder()
