@@ -2,12 +2,13 @@ use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
 use redis::aio::Connection;
 use redis::aio::PubSub;
+use sqlx::{Pool, Postgres};
 use std::borrow::Cow;
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use todel::models::{ClientPayload, InstanceInfo, ServerPayload};
+use todel::models::{ClientPayload, InstanceInfo, Secret, ServerPayload, Session};
 use todel::Conf;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -49,7 +50,9 @@ pub async fn handle_connection(
     addr: SocketAddr,
     cache: Arc<Mutex<Connection>>,
     pubsub: PubSub,
+    pool: Arc<Pool<Postgres>>,
     conf: Arc<Conf>,
+    secret: Arc<Secret>,
 ) {
     let mut rl_address = IpAddr::from_str("127.0.0.1").unwrap();
 
@@ -110,6 +113,8 @@ pub async fn handle_connection(
     )
     .await;
 
+    let session = Arc::new(Mutex::new(None::<Session>));
+
     let handle_rx = async {
         while let Some(msg) = rx.next().await {
             log::trace!("New gateway message:\n{:#?}", msg);
@@ -119,7 +124,7 @@ pub async fn handle_connection(
                         "Disconnected a client: {}, reason: Hit rate_limit",
                         rl_address
                     );
-                    break;
+                    return "Client got ratelimited".to_string();
                 } else {
                     send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
                     rate_limited = true;
@@ -136,20 +141,47 @@ pub async fn handle_connection(
                                 *last_ping = Instant::now();
                                 send_payload(&tx, &ServerPayload::Pong).await;
                             }
+                            Ok(ClientPayload::Authenticate(token)) => {
+                                let mut session = session.lock().await;
+                                if session.is_some() {
+                                    continue;
+                                }
+                                let mut db = match pool.acquire().await {
+                                    Ok(conn) => conn,
+                                    Err(err) => {
+                                        log::error!(
+                                            "Couldn't acquire database connection: {}",
+                                            err
+                                        );
+                                        return "Server failed to authenticate client".to_string();
+                                    }
+                                };
+                                *session = Some(
+                                    match Session::validate_token(&token, &secret, &mut db).await {
+                                        Ok(session) => session,
+                                        Err(_) => return "Invalid credentials".to_string(),
+                                    },
+                                );
+                                send_payload(&tx, &ServerPayload::Authenticated).await;
+                            }
                             _ => log::debug!("Unknown gateway payload: {}", message),
                         }
                     }
                     _ => log::debug!("Unsupported Gateway message type."),
                 },
-                Err(_) => break,
+                Err(_) => return "Server failed to receive payload".to_string(),
             }
         }
+        return "Connection unexpectedly died".to_string();
     };
 
     let handle_events = async {
         pubsub
             .into_on_message()
             .for_each(|msg| async {
+                if session.lock().await.is_none() {
+                    return;
+                }
                 match deserialize_message(msg) {
                     Ok(msg) => {
                         if let Err(err) = tx
@@ -174,8 +206,8 @@ pub async fn handle_connection(
             log::debug!("Dead connection with client {}", rl_address);
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Client connection dead") }, rl_address).await
         }
-        _ = handle_rx => {
-            close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Client hit rate limit") }, rl_address).await;
+        reason = handle_rx => {
+            close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Owned(reason) }, rl_address).await;
         },
         _ = handle_events => {
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Server Error") }, rl_address).await;

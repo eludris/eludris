@@ -7,7 +7,8 @@ use std::sync::Once;
 use std::{env, sync::Arc};
 
 use anyhow::Context;
-use todel::Conf;
+use sqlx::{pool::PoolOptions, Pool, Postgres};
+use todel::{models::Secret, Conf};
 use tokio::{net::TcpListener, sync::Mutex, task};
 
 #[cfg(test)]
@@ -28,6 +29,8 @@ async fn main() -> Result<(), anyhow::Error> {
         env_logger::init();
     }
 
+    let db_url = env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgresql://root@127.0.0.1:5432/eludris".to_string());
     let redis_url = env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1".to_string());
     let gateway_address = format!(
         "{}:{}",
@@ -42,6 +45,17 @@ async fn main() -> Result<(), anyhow::Error> {
             .await
             .context("Couldn't get an async connection to redis")?,
     ));
+    // the max connections is to stay consistent with oprish and effis even though postgresql
+    // will most likely not support this many connections at once.
+    let pool: Pool<Postgres> = PoolOptions::new()
+        .max_connections(1024)
+        .connect(&db_url)
+        .await
+        .context("Couldn't establish a database pool")?;
+    let pool = Arc::new(pool);
+    let secret = Arc::new(Secret::try_get(&pool).await.context(
+        "Couldn't get instance secret. Make sure oprish is run atleast once before pandemonium",
+    )?);
 
     let conf = Arc::new(Conf::new_from_env()?);
 
@@ -69,7 +83,9 @@ async fn main() -> Result<(), anyhow::Error> {
             addr,
             Arc::clone(&cache),
             pubsub,
+            Arc::clone(&pool),
             Arc::clone(&conf),
+            Arc::clone(&secret),
         ));
         log::trace!("Spawned connection handling task for {}", addr);
     }
