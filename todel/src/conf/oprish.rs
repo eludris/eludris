@@ -85,6 +85,7 @@ impl Default for OprishRateLimits {
             verify_user: verify_user_default(),
             get_user: get_user_default(),
             guest_get_user: guest_get_user_default(),
+            update_profile: update_profile_default(),
             create_session: create_session_default(),
         }
     }
