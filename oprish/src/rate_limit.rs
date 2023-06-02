@@ -43,6 +43,11 @@ impl RateLimiter {
         let rate_limit = match bucket {
             "get_instance_info" => &conf.oprish.rate_limits.get_instance_info,
             "create_message" => &conf.oprish.rate_limits.create_message,
+            "create_user" => &conf.oprish.rate_limits.create_user,
+            "verify_user" => &conf.oprish.rate_limits.verify_user,
+            "get_user" => &conf.oprish.rate_limits.get_user,
+            "guest_get_user" => &conf.oprish.rate_limits.guest_get_user,
+            "create_session" => &conf.oprish.rate_limits.create_session,
             _ => unreachable!(),
         };
         RateLimiter {
