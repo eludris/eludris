@@ -224,6 +224,7 @@ const switchCase = (content: string, new_case: string | null): string => {
 const displayType = (type: string): string => {
   type = type
     .replace(/Option<(.+)>/gm, '$1')
+    .replace(/Option<(.+)>/gm, '$1')
     .replace(/Json<(.+)>/gm, '$1')
     .replace(/Form<(.+)>/gm, '$1')
     .replace(/Box<(.+)>/gm, '$1')
