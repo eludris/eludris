@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   bio VARCHAR(4096),
   avatar BIGINT,
   banner BIGINT,
-  badges BIT VARYING(64) NOT NULL DEFAULT b'0',
-  permissions BIT VARYING(64) NOT NULL DEFAULT b'0',
+  badges BIGINT NOT NULL DEFAULT 0,
+  permissions BIGINT NOT NULL DEFAULT 0,
   verified BOOLEAN NOT NULL DEFAULT FALSE,
   email VARCHAR(256) UNIQUE NOT NULL,
   password CHAR(97) NOT NULL, -- The length of the argon2 encoded strings with our configuration
