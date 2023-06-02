@@ -1,8 +1,8 @@
 use std::ops::Not;
 
 use syn::{
-    spanned::Spanned, Attribute, Error, Field, GenericArgument, Lit, Meta, MetaNameValue,
-    NestedMeta, PathArguments, PathSegment, Type,
+    spanned::Spanned, AngleBracketedGenericArguments, Attribute, Error, Field, GenericArgument,
+    Lit, Meta, MetaNameValue, NestedMeta, PathArguments, PathSegment, Type,
 };
 
 use super::models::FieldInfo;
@@ -118,8 +118,13 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                                 ommitable = true;
                                 if let Type::Path(ty) = &field.ty {
                                     if ty.path.segments.last().unwrap().ident == "Option" {
-                                        if let Some(qself) = &ty.qself {
-                                            if let Type::Path(ty) = &*qself.ty {
+                                        if let PathArguments::AngleBracketed(
+                                            AngleBracketedGenericArguments { args, .. },
+                                        ) = &ty.path.segments.last().unwrap().arguments
+                                        {
+                                            if let GenericArgument::Type(Type::Path(ty)) =
+                                                args.last().unwrap()
+                                            {
                                                 if ty.path.segments.last().unwrap().ident
                                                     == "Option"
                                                 {
