@@ -57,12 +57,18 @@ instance_name = "" # This is required, has to be over 0 characters long.
 url = "" # This instance's Oprish url
 
 #[oprish.rate_limits]
-#get_instance_info = { reset_after = 5, limit = 2}
-#create_message = { reset_after = 5, limit = 10}
+#get_instance_info = { reset_after = 5, limit = 2 }
+#create_message = { reset_after = 5, limit = 10 }
+#create_user = { reset_after = 3600, limit = 1 }
+#verify_user = { reset_after = 3600, limit = 1 }
+#get_user = { reset_after = 5, limit = 10 }
+#guest_get_user = { reset_after = 5, limit = 5 }
+#update_profile = { reset_after = 3600, limit = 5 }
+#create_user = { reset_after = 1800, limit = 5 }
 
 [pandemonium]
 url = "" # This instance's Pandemonium url
-#rate_limit = { reset_after = 10, limit = 5}
+#rate_limit = { reset_after = 10, limit = 5 }
 
 [effis]
 #file_size = "20MB" # The maximum file size for all the assets
@@ -78,7 +84,7 @@ url = "" # This instance's Effis url
 #[effis.rate_limits]
 # The rate limit for all buckets besides the attachments one, these buckets are
 # stuff like avatars, guild icons, etc.
-#assets = { reset_after = 60, limit = 5, file_size_limit = "30MB"}
+#assets = { reset_after = 60, limit = 5, file_size_limit = "30MB" }
 #attachments = { reset_after = 180, limit = 20 file_size_limit = "500MB" }
 # This is a normal rate limit
 #fetch_file = { reset_after = 60, limit = 30 }
