@@ -8,11 +8,11 @@ use lazy_static::lazy_static;
 use rand::Rng;
 use redis::AsyncCommands;
 use regex::Regex;
-use sqlx::{pool::PoolConnection, Postgres};
+use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
-    models::{ErrorResponse, Session, User, UserCreate},
+    models::{ErrorResponse, Session, UpdateUserProfile, User, UserCreate},
     Conf,
 };
 
@@ -38,6 +38,11 @@ impl UserCreate {
                 VALIDATION,
                 "username", "The user's username must be between 2 and 32 characters in length"
             ))
+        } else if !self.username.chars().any(|f| f.is_alphabetic()) {
+            Err(error!(
+                VALIDATION,
+                "username", "The user's username must have at least one alphabetical letter"
+            ))
         } else if !EMAIL_REGEX.is_match(&self.email) {
             Err(error!(
                 VALIDATION,
@@ -54,6 +59,25 @@ impl UserCreate {
     }
 }
 
+// TODO: validate that display names are are more than 2 characters and less than 32
+// that statuses aren;t 40mb
+// that bios are withing the length limit
+// that avatars and banners are actually valid ids
+impl UpdateUserProfile {
+    pub fn validate(&self) -> Result<(), ErrorResponse> {
+        if self.display_name.is_none()
+            && self.bio.is_none()
+            && self.status.is_none()
+            && self.avatar.is_none()
+            && self.banner.is_none()
+        {
+            Err(error!(VALIDATION, "body", "At least one field must exist"))
+        } else {
+            Ok(())
+        }
+    }
+}
+
 impl User {
     pub async fn create<H: PasswordHasher, R: CryptoRngCore, C: AsyncCommands>(
         user: UserCreate,
@@ -64,7 +88,7 @@ impl User {
         mailer: &Emailer,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
-    ) -> Result<User, ErrorResponse> {
+    ) -> Result<Self, ErrorResponse> {
         user.validate()?;
         if let Some(existing_user) = sqlx::query!(
             "
@@ -136,7 +160,7 @@ VALUES($1, $2, $3, $4, $5)
             log::error!("Failed to store user in database: {}", err);
             error!(SERVER, "Could not save user data")
         })?;
-        Ok(User {
+        Ok(Self {
             id,
             username: user.username,
             display_name: None,
@@ -223,6 +247,126 @@ AND $1 - (id >> 16) > 604800000 -- seven days
         .execute(db)
         .await?;
         Ok(())
+    }
+
+    pub async fn get(id: u64, db: &mut PoolConnection<Postgres>) -> Result<Self, ErrorResponse> {
+        sqlx::query!(
+            "
+SELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions
+FROM users
+WHERE id = $1
+            ",
+            id as i64
+        )
+        .fetch_optional(db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't get user from database: {}", err);
+            error!(SERVER, "Failed to get user data")
+        })?
+        .map(|u| Self {
+            id: u.id as u64,
+            username: u.username,
+            display_name: u.display_name,
+            social_credit: u.social_credit,
+            status: u.status,
+            bio: u.bio,
+            avatar: u.avatar.map(|a| a as u64),
+            banner: u.banner.map(|b| b as u64),
+            badges: u.badges as u64,
+            permissions: u.permissions as u64,
+        })
+        .ok_or_else(|| error!(NOT_FOUND))
+    }
+
+    pub async fn get_username(
+        username: &str,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<Self, ErrorResponse> {
+        sqlx::query!(
+            "
+SELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions
+FROM users
+WHERE username = $1
+            ",
+            username
+        )
+        .fetch_optional(db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't get user from database: {}", err);
+            error!(SERVER, "Failed to get user data")
+        })?
+        .map(|u| Self {
+            id: u.id as u64,
+            username: u.username,
+            display_name: u.display_name,
+            social_credit: u.social_credit,
+            status: u.status,
+            bio: u.bio,
+            avatar: u.avatar.map(|a| a as u64),
+            banner: u.banner.map(|b| b as u64),
+            badges: u.badges as u64,
+            permissions: u.permissions as u64,
+        })
+        .ok_or_else(|| error!(NOT_FOUND))
+    }
+
+    pub async fn update_profile(
+        id: u64,
+        profile: UpdateUserProfile,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<Self, ErrorResponse> {
+        profile.validate()?;
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
+        let mut seperated = query.separated(", ");
+        if let Some(display_name) = profile.display_name {
+            seperated
+                .push("display_name = ")
+                .push_bind_unseparated(display_name);
+        }
+        if let Some(bio) = profile.bio {
+            seperated.push("bio = ").push_bind_unseparated(bio);
+        }
+        if let Some(status) = profile.status {
+            seperated.push("status = ").push_bind_unseparated(status);
+        }
+        if let Some(avatar) = profile.avatar {
+            seperated
+                .push("avatar = ")
+                .push_bind_unseparated(avatar.map(|a| a as i64));
+        }
+        if let Some(banner) = profile.banner {
+            seperated
+                .push("banner = ")
+                .push_bind_unseparated(banner.map(|b| b as i64));
+        }
+        Ok(
+        query
+            .push(" WHERE id = ")
+            .push_bind(id as i64)
+            .push(
+                " RETURNING id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions",
+            )
+            .build()
+            .fetch_one(db)
+            .await
+            .map(|u| Self {
+                id: u.get::<i64, _>("id") as u64,
+                username: u.get("username"),
+                display_name: u.get("display_name"),
+                social_credit: u.get("social_credit"),
+                status: u.get("status"),
+                bio: u.get("bio"),
+                avatar: u.get::<Option<i64>, _>("avatar").map(|a| a as u64),
+                banner: u.get::<Option<i64>, _>("banner").map(|b| b as u64),
+                badges: u.get::<i64, _>("badges") as u64,
+                permissions: u.get::<i64, _>("permissions") as u64,
+            })
+            .map_err(|err| {
+                log::error!("Couldn't update user profile: {}", err);
+                error!(SERVER, "Failed to update user profile")
+            })?)
     }
 }
 
