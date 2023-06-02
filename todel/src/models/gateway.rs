@@ -82,6 +82,18 @@ pub enum ServerPayload {
         /// The pandemonium ratelimit info.
         rate_limit: RateLimitConf,
     },
+    /// The event sent when the client has successfully authenticated.
+    ///
+    /// -----
+    ///
+    /// ### Examples
+    ///
+    /// ```json
+    /// {
+    ///   "op": "AUTHENTICATED",
+    /// }
+    /// ```
+    Authenticated,
     /// The event sent when the client receives a [`Message`].
     ///
     /// -----
@@ -123,8 +135,23 @@ pub enum ClientPayload {
     /// ### Example
     ///
     /// ```json
-    /// > {"op":"PING"}
-    /// < {"op":"PONG"}
+    /// {
+    ///   "op": "PING"
+    /// }
     /// ```
     Ping,
+    /// The first payload the client is supposed to send. The data of this payload is expected to
+    /// be a session token obtained from the [`create_session`] route.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "AUTHENTICATE",
+    ///   "d": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyMzQxMDY1MjYxMDU3LCJzZXNzaW9uX2lkIjoyMzQxMDgyNDMxNDg5fQ.j-nMmVTLXplaC4opGdZH32DUSWt1yD9Tm9hgB9M6oi4" // You're not supposed to use this example token (eckd)
+    /// }
+    /// ```
+    Authenticate(String),
 }
