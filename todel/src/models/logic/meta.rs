@@ -12,7 +12,10 @@ pub struct Secret(pub Hmac<Sha256>);
 
 impl Secret {
     pub async fn get<R: Rng + CryptoRng>(db: &Pool<Postgres>, rng: &mut R) -> Result<Secret, ()> {
-        let secret = match sqlx::query!("SELECT * FROM meta").fetch_optional(db).await {
+        let secret = match sqlx::query!("SELECT secret FROM meta")
+            .fetch_optional(db)
+            .await
+        {
             Ok(Some(record)) => record.secret,
             Ok(None) => {
                 let secret: Vec<u8> = (0..128).map(|_| rng.gen()).collect();
@@ -45,5 +48,18 @@ VALUES($1)
                 Err(())
             }
         }
+    }
+
+    pub async fn try_get(db: &Pool<Postgres>) -> Option<Self> {
+        Some(Self(
+            Hmac::new_from_slice(
+                &sqlx::query!("SELECT secret FROM meta")
+                    .fetch_optional(db)
+                    .await
+                    .ok()??
+                    .secret,
+            )
+            .ok()?,
+        ))
     }
 }
