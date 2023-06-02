@@ -4,8 +4,8 @@ use rocket::serde::json::Json;
 use rocket::{Route, State};
 use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 use rocket_db_pools::Connection;
-use todel::http::ClientIP;
-use todel::models::{ErrorResponse, Message, ServerPayload};
+use todel::http::{ClientIP, TokenAuth, DB};
+use todel::models::{ErrorResponse, Message, MessageCreate, ServerPayload, User};
 use todel::Conf;
 
 /// Post a message to Eludris.
@@ -27,24 +27,20 @@ use todel::Conf;
 #[autodoc("/messages", category = "Messaging")]
 #[post("/", data = "<message>")]
 pub async fn create_message(
-    message: Json<Message>,
-    address: ClientIP,
+    message: Json<MessageCreate>,
+    mut db: Connection<DB>,
     mut cache: Connection<Cache>,
     conf: &State<Conf>,
+    session: TokenAuth,
+    ip: ClientIP,
 ) -> RateLimitedRouteResponse<Result<Json<Message>, ErrorResponse>> {
-    let mut rate_limiter = RateLimiter::new("create_message", address, conf.inner());
+    let mut rate_limiter = RateLimiter::new("create_message", ip, conf.inner());
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     let mut message = message.into_inner();
-    message.author = message.author.trim().to_string();
     message.content = message.content.trim().to_string();
 
-    if message.author.len() < 2 || message.author.len() > 32 {
-        error!(
-            rate_limiter,
-            VALIDATION, "author", "Message author has to be between 2 and 32 characters long"
-        );
-    } else if message.content.is_empty() || message.content.len() > conf.oprish.message_limit {
+    if message.content.is_empty() || message.content.len() > conf.oprish.message_limit {
         error!(
             rate_limiter,
             VALIDATION,
@@ -56,7 +52,12 @@ pub async fn create_message(
         );
     }
 
-    let payload = ServerPayload::MessageCreate(message);
+    let payload = ServerPayload::MessageCreate(Message {
+        author: User::get(session.0.user_id, &mut db)
+            .await
+            .map_err(|err| rate_limiter.add_headers(err))?,
+        content: message.content,
+    });
     cache
         .publish::<&str, String, ()>("oprish-events", serde_json::to_string(&payload).unwrap())
         .await
@@ -84,7 +85,6 @@ mod tests {
     async fn create_message() {
         let client = Client::untracked(rocket().unwrap()).await.unwrap();
         let message = Message {
-            author: "Woo".to_string(),
             content: "HeWoo there".to_string(),
         };
 
