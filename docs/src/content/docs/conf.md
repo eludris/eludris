@@ -19,12 +19,6 @@ is required in `Eludris.toml`.
 Here's the example `.env` file found in the repository.
 
 ```sh
-ELUDRIS_CONF = Eludris.toml # the path to your configuration file
-REDIS_URL = redis://127.0.0.1:6379
-DATABASE_URL = postgresql://root:root@localhost:5432/eludris
-
-# Don't forget to also change the ports in the docker-compose.yml
-
 # oprish
 OPRISH_PORT = 7159
 
@@ -33,6 +27,12 @@ PANDEMONIUM_PORT = 7160
 
 # effis
 EFFIS_PORT = 7161
+
+# Used when running Eludris outside of Docker
+
+# ELUDRIS_CONF = Eludris.toml # the path to your configuration file
+# REDIS_URL = redis://127.0.0.1:6379
+# DATABASE_URL = postgresql://root:root@localhost:5432/eludris
 ```
 
 ## Eludris.toml
@@ -56,13 +56,13 @@ instance_name = "" # This is required, has to be over 0 characters long.
 #message_limit = 2048 # The maximum message content length.
 url = "" # This instance's Oprish url
 
-#[oprish.rate limits]
+#[oprish.rate_limits]
 #get_instance_info = { reset_after = 5, limit = 2}
 #create_message = { reset_after = 5, limit = 10}
 
 [pandemonium]
 url = "" # This instance's Pandemonium url
-#rate limit = { reset_after = 10, limit = 5}
+#rate_limit = { reset_after = 10, limit = 5}
 
 [effis]
 #file_size = "20MB" # The maximum file size for all the assets
@@ -75,11 +75,31 @@ url = "" # This instance's Effis url
 # (if the effis.file_size allows so) or for example 5 2MB files, after either of
 # which I get rate limited.
 
-#[effis.rate limits]
+#[effis.rate_limits]
 # The rate limit for all buckets besides the attachments one, these buckets are
 # stuff like avatars, guild icons, etc.
 #assets = { reset_after = 60, limit = 5, file_size_limit = "30MB"}
 #attachments = { reset_after = 180, limit = 20 file_size_limit = "500MB" }
 # This is a normal rate limit
 #fetch_file = { reset_after = 60, limit = 30 }
+
+# This entire section *is* optional and Eludris *will* function without it. However,
+# using an SMTP relay for your instance is really beneficial as - not only does it
+# ensure that every user has a valid email **that they own, and not just some other
+# person's** - it also makes stuff like password resets possible.
+[email]
+# The URL of your SMTP relay
+relay = ""
+# The name of your instance's sender
+name = ""
+# The address of your instance's sender
+address = ""
+# The credentials of your SMTP relay
+#credentials = { username = "", password = "" }
+
+# The subjects of the emails your instance sends out if you have an SMTP relay setup.
+# Leaving a subject as an empty string makes the email have no subject.
+#[email.subjects]
+# The subject of your instance's verification email
+#verify = "Your Eludris Verification Code is ${CODE}"
 ```

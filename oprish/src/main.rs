@@ -3,8 +3,10 @@ extern crate rocket;
 #[macro_use]
 extern crate todel;
 
+mod cleanup;
 mod cors;
 mod database;
+mod email;
 mod rate_limit;
 mod routes;
 
@@ -13,13 +15,17 @@ use std::env;
 use std::sync::Once;
 
 use anyhow::Context;
+use argon2::Argon2;
+use cleanup::ScheduledCleanup;
 use database::DatabaseFairing;
+use email::EmailFairing;
 use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::Database;
 use routes::*;
 use todel::{
     http::{Cache, DB},
+    ids::IdGenerator,
     Conf,
 };
 use tokio::sync::Mutex;
@@ -72,10 +78,14 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     Ok(rocket::custom(config)
         .manage(Conf::new_from_env()?)
         .manage(Mutex::new(StdRng::from_entropy()))
+        .manage(Mutex::new(IdGenerator::new()))
+        .manage(Argon2::default())
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)
         .attach(DatabaseFairing)
+        .attach(EmailFairing)
+        .attach(ScheduledCleanup)
         .mount("/", get_routes())
         .mount("/messages", messages::get_routes()))
 }

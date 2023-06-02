@@ -16,6 +16,9 @@ services:
       - type: bind
         source: Eludris.toml
         target: /Eludris.toml
+      - type: bind
+        source: static
+        target: /static
     build:
       context: .
       dockerfile: oprish/Dockerfile

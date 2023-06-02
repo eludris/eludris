@@ -19,11 +19,12 @@ impl<'r> FromRequest<'r> for TokenAuth {
     type Error = ErrorResponse;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let pool = DB::fetch(request.rocket()).expect("Could not get the managed pool");
-        let mut db = pool
-            .acquire()
-            .await
-            .expect("Failed to acquire database connection");
+        let mut db = {
+            let pool = DB::fetch(request.rocket()).expect("Could not get the managed pool");
+            pool.acquire()
+                .await
+                .expect("Failed to acquire database connection")
+        };
         let secret = request
             .rocket()
             .state::<Secret>()

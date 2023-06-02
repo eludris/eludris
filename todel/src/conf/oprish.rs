@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 use super::RateLimitConf;
 
 /// Oprish configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OprishConf {
+    pub url: String,
     #[serde(default = "message_limit_default")]
     pub message_limit: usize,
-    pub url: String,
     #[serde(default)]
     pub rate_limits: OprishRateLimits,
 }
@@ -45,7 +45,7 @@ fn message_limit_default() -> usize {
 /// }
 /// ```
 #[autodoc(category = "Instance")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OprishRateLimits {
     /// Rate limits for the [`get_instance_info`] endpoint.
     #[serde(default = "get_instance_info_default")]
