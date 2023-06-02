@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_with::rust::double_option;
 
 /// The user payload.
 ///
@@ -78,4 +79,58 @@ pub struct UserCreate {
     pub email: String,
     /// The user's password.
     pub password: String,
+}
+
+/// The SetUserProfile payload. This payload is used to update a user's profile. The abscence of a
+/// field or it being `undefined` means that it won't have an effect. Explicitly setting a field as
+/// `null` will clear it.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "display_name": "HappyRu",
+///   "bio": "I am very happy!"
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UpdateUserProfile {
+    /// The user's new display name. This field has to be between 2 and 32 characters long.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub display_name: Option<Option<String>>,
+    /// The user's new status. This field cannot be more than 128 characters long.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub status: Option<Option<String>>,
+    /// The user's new bio. The upper limit is the instance's [`InstanceInfo`] `bio_limit`.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub bio: Option<Option<String>>,
+    /// The user's new avatar. This field has to be a valid file ID in the "avatar" bucket.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub avatar: Option<Option<u64>>,
+    /// The user's new banner. This field has to be a valid file ID in the "banner" bucket.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub banner: Option<Option<u64>>,
 }
