@@ -19,7 +19,7 @@ pub async fn update_profile(
     let mut rate_limiter = RateLimiter::new("get_user", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        User::update_profile(session.0.user_id, profile.into_inner(), &mut *db)
+        User::update_profile(session.0.user_id, profile.into_inner(), &mut db)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     ))

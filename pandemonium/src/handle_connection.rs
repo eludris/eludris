@@ -172,7 +172,7 @@ pub async fn handle_connection(
                 Err(_) => return "Server failed to receive payload".to_string(),
             }
         }
-        return "Connection unexpectedly died".to_string();
+        "Connection unexpectedly died".to_string()
     };
 
     let handle_events = async {

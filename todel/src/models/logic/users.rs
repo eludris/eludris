@@ -341,7 +341,6 @@ WHERE username = $1
                 .push("banner = ")
                 .push_bind_unseparated(banner.map(|b| b as i64));
         }
-        Ok(
         query
             .push(" WHERE id = ")
             .push_bind(id as i64)
@@ -366,7 +365,7 @@ WHERE username = $1
             .map_err(|err| {
                 log::error!("Couldn't update user profile: {}", err);
                 error!(SERVER, "Failed to update user profile")
-            })?)
+            })
     }
 }
 
