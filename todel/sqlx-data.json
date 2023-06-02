@@ -113,24 +113,6 @@
     },
     "query": "\nINSERT INTO meta(secret)\nVALUES($1)\n                    "
   },
-  "a511cbeb10ffa0127589db87a0c0860d91eab5da47c3d571766b82e71c0d0712": {
-    "describe": {
-      "columns": [
-        {
-          "name": "secret",
-          "ordinal": 0,
-          "type_info": "Bytea"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT * FROM meta"
-  },
   "af56cab8b325c60ec1b17cc65533cffa5878106c305e63db53d91c99cb4784d2": {
     "describe": {
       "columns": [
@@ -156,6 +138,24 @@
       }
     },
     "query": "\nSELECT id, password\nFROM users\nWHERE username = $1\nOR email = $1\n            "
+  },
+  "bfc1cae49f22d427cacd6221d276ed7945bc5c31bd236c46168306032ea7e060": {
+    "describe": {
+      "columns": [
+        {
+          "name": "secret",
+          "ordinal": 0,
+          "type_info": "Bytea"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT secret FROM meta"
   },
   "c2b36794cf3b5e2c48d0d198c4034f6a76da00d44185769ba83f631bed486794": {
     "describe": {
@@ -238,6 +238,80 @@
     },
     "query": "\nDELETE FROM users\nWHERE verified = FALSE\nAND $1 - (id >> 16) > 604800000 -- seven days\n            "
   },
+  "d51bdee7ebb07031f7ecfeff82505460a5d6bf3110e0746013575f9720f22c68": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "social_credit",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "bio",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "avatar",
+          "ordinal": 6,
+          "type_info": "Int8"
+        },
+        {
+          "name": "banner",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "badges",
+          "ordinal": 8,
+          "type_info": "Int8"
+        },
+        {
+          "name": "permissions",
+          "ordinal": 9,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions\nFROM users\nWHERE username = $1\n            "
+  },
   "d61851b597e97612806b2530c2f751e0e8fc4009e34b17532e2460b1ee9d9c38": {
     "describe": {
       "columns": [],
@@ -280,6 +354,80 @@
       }
     },
     "query": "\nSELECT username, email\nFROM users\nWHERE username = $1\nOR email = $2\n            "
+  },
+  "fa166e404315572ff4df523ce5451c4325df09ba724c50c5db89adee664140dc": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "social_credit",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "bio",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "avatar",
+          "ordinal": 6,
+          "type_info": "Int8"
+        },
+        {
+          "name": "banner",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "badges",
+          "ordinal": 8,
+          "type_info": "Int8"
+        },
+        {
+          "name": "permissions",
+          "ordinal": 9,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions\nFROM users\nWHERE id = $1\n            "
   },
   "fc04fcf2b80dc6ca7cef09a8e149e57845a1fde1f40333d404f720fbe5fd03b3": {
     "describe": {
