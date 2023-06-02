@@ -10,7 +10,7 @@ use futures::SinkExt;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use reqwest::header::{self, HeaderValue};
 use reqwest::Client;
-use todel::models::{ClientPayload, InstanceInfo, Message, ServerPayload};
+use todel::models::{ClientPayload, InstanceInfo, MessageCreate, ServerPayload};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
@@ -61,8 +61,7 @@ async fn main() -> Result<()> {
                     let client = Client::builder().default_headers(headers).build()?;
                     client
                         .post(format!("{}/messages", state.instance_info.oprish_url))
-                        .json(&Message {
-                            author: ip.clone(),
+                        .json(&MessageCreate {
                             content: format!("Message from client {}", client_id),
                         })
                         .send()
