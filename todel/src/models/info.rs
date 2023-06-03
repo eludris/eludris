@@ -84,6 +84,9 @@ pub struct InstanceInfo {
     pub file_size: u64,
     /// The maximum file size (in bytes) of an attachment.
     pub attachment_file_size: u64,
+    /// The instance's email address if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email_address: Option<String>,
     /// The rate limits that apply to the connected Eludris instance.
     ///
     /// This is not present if the `rate_limits` query parameter is not set.
@@ -160,6 +163,7 @@ impl InstanceInfo {
             effis_url: conf.effis.url.clone(),
             file_size: conf.effis.file_size,
             attachment_file_size: conf.effis.attachment_file_size,
+            email_address: conf.email.as_ref().map(|e| e.address.clone()),
             rate_limits: rate_limits.then_some(InstanceRateLimits {
                 oprish: conf.oprish.rate_limits.clone(),
                 pandemonium: conf.pandemonium.rate_limit.clone(),
