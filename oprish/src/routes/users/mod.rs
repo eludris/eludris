@@ -16,6 +16,30 @@ use tokio::sync::Mutex;
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Create a new user.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   --json '{
+///   "username": "yendri",
+///   "email": "yendri@llamoyendri.io",
+///   "password": "authentícame por favor"
+/// }' \
+///   https://api.eludris.gay/users
+///
+/// {
+///   "id": 48615849987333,
+///   "username": "yendri",
+///   "social_credit": 0,
+///   "badges": 0,
+///   "permissions": 0
+/// }
+/// ```
+#[autodoc("/users", category = "Users")]
 #[post("/", data = "<user>")]
 pub async fn create_user(
     user: Json<UserCreate>,

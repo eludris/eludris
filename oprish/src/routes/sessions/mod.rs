@@ -11,6 +11,33 @@ use tokio::sync::Mutex;
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Create a new session.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   --json '{
+///   "identifier": "yendri",
+///   "password": "authentícame por favor",
+///   "platform": "linux",
+///   "client":"pilfer"
+/// }' \
+///   https://api.eludris.gay/sessions
+///
+/// {
+///   "token": "<token>",
+///   "session": {
+///     "indentifier": "yendri",
+///     "password": "authentícame por favor",
+///     "platform": "linux",
+///     "client": "pilfer"
+///   }
+/// }
+/// ```
+#[autodoc("/sessions", category = "Sessions")]
 #[post("/", data = "<session>")]
 pub async fn create_session(
     session: Json<SessionCreate>,

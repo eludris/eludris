@@ -8,6 +8,30 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Modify your profile.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -H "Authorization: <token>" \
+///   -X PATCH
+///   --json '{"display_name":"HappyRu","bio":"I am very happy!"}'
+///   https://api.eludris.gay/users/profile
+///
+/// {
+///   "id": 2346806935553
+///   "username": "yendri"
+///   "display_name": "HappyRu"
+///   "social_credit": 0,
+///   "bio": "I am very happy!"
+///   "badges": 0,
+///   "permissions": 0
+/// }
+/// ```
+#[autodoc("/users", category = "Users")]
 #[patch("/profile", data = "<profile>")]
 pub async fn update_profile(
     profile: Json<UpdateUserProfile>,

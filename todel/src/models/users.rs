@@ -70,13 +70,13 @@ impl fmt::Display for User {
 ///
 /// -----
 ///
-/// ### Examples
+/// ### Example
 ///
 /// ```json
 /// {
-///   "username": "yendri",
+///   "username": "yendri",d
 ///   "email": "yendri@llamoyendri.io",
-///   "password": "autentícame por favor" // don't actually use this as a password
+///   "password": "authentícame por favor" // don't actually use this as a password
 /// }
 /// ```
 #[autodoc(category = "Users")]

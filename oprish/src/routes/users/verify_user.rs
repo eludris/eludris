@@ -8,6 +8,19 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Verify your email address.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -X POST \
+///   -H "Authorization: <token>" \
+///   https://api.eludris.gay/users/verify?code=123456
+/// ```
+#[autodoc("/users", category = "Users")]
 #[post("/verify?<code>")]
 pub async fn verify_user(
     code: u32,

@@ -230,7 +230,7 @@ const displayType = (type: string): string => {
     .replace(/Box<(.+)>/gm, '$1')
     .replace(/</gm, '\\<');
 
-  if (type == 'u32' || type == 'u64' || type == 'usize') {
+  if (type == 'u32' || type == 'u64' || type == 'usize' || type == 'i32' || type == 'i64') {
     return 'Number';
   } else if (type == 'bool') {
     return 'Boolean';
