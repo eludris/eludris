@@ -55,8 +55,11 @@ pub struct User {
 
 impl fmt::Display for User {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = self.display_name.as_deref().unwrap_or(&self.username);
-        write!(f, "{}", name)
+        write!(
+            f,
+            "{}",
+            self.display_name.as_ref().unwrap_or(&self.username)
+        )
     }
 }
 
