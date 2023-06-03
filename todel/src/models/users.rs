@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
@@ -49,6 +51,13 @@ pub struct User {
     pub badges: u64,
     /// The user's instance-wide permissions as a bitfield.
     pub permissions: u64,
+}
+
+impl fmt::Display for User {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let name = self.display_name.as_deref().unwrap_or(&self.username);
+        write!(f, "{}", name)
+    }
 }
 
 /// The UserCreate payload.
