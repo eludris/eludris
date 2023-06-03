@@ -19,7 +19,7 @@ url = "" # This instance's Oprish url
 #get_instance_info = { reset_after = 5, limit = 2 }
 #create_message = { reset_after = 5, limit = 10 }
 #create_user = { reset_after = 3600, limit = 1 }
-#verify_user = { reset_after = 3600, limit = 1 }
+#verify_user = { reset_after = 600, limit = 10 }
 #get_user = { reset_after = 5, limit = 10 }
 #guest_get_user = { reset_after = 5, limit = 5 }
 #update_profile = { reset_after = 3600, limit = 5 }

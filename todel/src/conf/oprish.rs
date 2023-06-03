@@ -121,8 +121,8 @@ fn create_user_default() -> RateLimitConf {
 
 fn verify_user_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 3600,
-        limit: 1,
+        reset_after: 600,
+        limit: 10,
     }
 }
 
