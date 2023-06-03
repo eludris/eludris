@@ -11,8 +11,9 @@ instance_name = "" # This is required, has to be over 0 characters long.
 # With rate limits, reset_after is the number of seconds between every bucket reset.
 
 [oprish]
-#message_limit = 2048 # The maximum message content length.
 url = "" # This instance's Oprish url
+#message_limit = 2048 # The maximum message content length.
+#bio_limit = 250 # The maximum bio length
 
 #[oprish.rate_limits]
 #get_instance_info = { reset_after = 5, limit = 2 }
@@ -29,9 +30,9 @@ url = "" # This instance's Pandemonium url
 #rate_limit = { reset_after = 10, limit = 5 }
 
 [effis]
+url = "" # This instance's Effis url
 #file_size = "20MB" # The maximum file size for all the assets
 #attachment_file_size = "100MB" # The maximum file size for the attachment bucket
-url = "" # This instance's Effis url
 
 # Effis rate limits are special, you're not only limited by how many requests per
 # bucket reset, but also by how big the files you upload are, so assuming a rate limit
