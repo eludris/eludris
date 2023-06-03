@@ -12,7 +12,7 @@ use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
-    models::{ErrorResponse, Session, UpdateUserProfile, User, UserCreate},
+    models::{ErrorResponse, File, Session, UpdateUserProfile, User, UserCreate},
     Conf,
 };
 
@@ -59,22 +59,67 @@ impl UserCreate {
     }
 }
 
-// TODO: validate that display names are are more than 2 characters and less than 32
-// that statuses aren;t 40mb
-// that bios are withing the length limit
-// that avatars and banners are actually valid ids
 impl UpdateUserProfile {
-    pub fn validate(&self) -> Result<(), ErrorResponse> {
+    pub async fn validate(
+        &self,
+        conf: &Conf,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
         if self.display_name.is_none()
             && self.bio.is_none()
             && self.status.is_none()
             && self.avatar.is_none()
             && self.banner.is_none()
         {
-            Err(error!(VALIDATION, "body", "At least one field must exist"))
-        } else {
-            Ok(())
+            return Err(error!(VALIDATION, "body", "At least one field must exist"));
         }
+        if let Some(Some(display_name)) = &self.display_name {
+            if display_name.len() < 2 || display_name.len() > 32 {
+                return Err(error!(
+                    VALIDATION,
+                    "display_name",
+                    "The user's display name must be between 2 and 32 characters in length"
+                ));
+            }
+        }
+        if let Some(Some(bio)) = &self.bio {
+            if bio.is_empty() || bio.len() > conf.oprish.bio_limit {
+                return Err(error!(
+                    VALIDATION,
+                    "bio",
+                    format!(
+                        "The user's bio must be between 1 and {} characters in length",
+                        conf.oprish.bio_limit
+                    )
+                ));
+            }
+        }
+        if let Some(Some(status)) = &self.status {
+            if status.is_empty() || status.len() > 150 {
+                return Err(error!(
+                    VALIDATION,
+                    "status",
+                    "The user's status name must be between 1 and 150 characters in length"
+                ));
+            }
+        }
+        if let Some(Some(avatar)) = self.avatar {
+            if File::get(avatar, "avatars", &mut *db).await.is_none() {
+                return Err(error!(
+                    VALIDATION,
+                    "avatar", "The user's avatar must be a valid file that must exist"
+                ));
+            }
+        }
+        if let Some(Some(banner)) = self.avatar {
+            if File::get(banner, "banner", &mut *db).await.is_none() {
+                return Err(error!(
+                    VALIDATION,
+                    "banner", "The user's banner must be a valid file that must exist"
+                ));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -315,9 +360,10 @@ WHERE username = $1
     pub async fn update_profile(
         id: u64,
         profile: UpdateUserProfile,
+        conf: &Conf,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
-        profile.validate()?;
+        profile.validate(conf, &mut *db).await?;
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
         let mut seperated = query.separated(", ");
         if let Some(display_name) = profile.display_name {
