@@ -43,7 +43,7 @@ pub struct Session {
 ///
 /// ```json
 /// {
-///   "indentifier": "yendri",
+///   "identifier": "yendri",
 ///   "password": "authentícame por favor",
 ///   "platform": "linux",
 ///   "client": "pilfer"

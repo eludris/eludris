@@ -59,6 +59,34 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
                     Ok(())
                 }
                 GenericArgument::Lifetime(_) => Ok(()),
+                GenericArgument::Type(Type::Tuple(ty)) => {
+                    let types = ty
+                        .elems
+                        .iter()
+                        .filter_map(|t| {
+                            let ty = get_type(t).ok()?;
+                            if ty == "Status" {
+                                None
+                            } else {
+                                Some(ty)
+                            }
+                        })
+                        .collect::<Vec<_>>();
+
+                    if types.is_empty() {
+                        return Err(Error::new(
+                            ty.span(),
+                            "Cannot generate documentation for empty tuple types",
+                        ));
+                    } else if types.len() > 1 {
+                        return Err(Error::new(
+                            ty.span(),
+                            "Cannot generate documentation for tuple types with more than one non-Status element",
+                        ));
+                    }
+                    arg_strings.push(types[0].clone());
+                    Ok(())
+                }
                 _ => Err(Error::new(
                     a.span(),
                     "Cannot generate documentation for non-type generics",

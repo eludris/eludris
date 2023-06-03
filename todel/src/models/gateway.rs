@@ -86,7 +86,7 @@ pub enum ServerPayload {
     ///
     /// -----
     ///
-    /// ### Examples
+    /// ### Example
     ///
     /// ```json
     /// {

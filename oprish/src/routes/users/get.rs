@@ -8,6 +8,26 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Get your own user.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -H "Authorization: <token>" \
+///   https://api.eludris.gay/users/@me
+///
+/// {
+///   "id": 48615849987333,
+///   "username": "yendri",
+///   "social_credit": 0,
+///   "badges": 0,
+///   "permissions": 0
+/// }
+/// ```
+#[autodoc("/users", category = "Users")]
 #[get("/@me")]
 pub async fn get_self(
     conf: &State<Conf>,
@@ -24,6 +44,29 @@ pub async fn get_self(
     ))
 }
 
+/// Get a user by ID.
+///
+/// This does not require authorization, but authorized users will get a separate rate limit
+/// which is usually (hopefully) higher than the guest rate limit.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -H "Authorization: <token>" \
+///   https://api.eludris.gay/users/48615849987333
+///
+/// {
+///   "id": 48615849987333,
+///   "username": "yendri",
+///   "social_credit": 0,
+///   "badges": 0,
+///   "permissions": 0
+/// }
+/// ```
+#[autodoc("/users", category = "Users")]
 #[get("/<id>")]
 pub async fn get_user(
     id: u64,
@@ -47,6 +90,29 @@ pub async fn get_user(
     ))
 }
 
+/// Get a user by their username.
+///
+/// This does not require authorization, but authorized users will get a separate rate limit
+/// which is usually (hopefully) higher than the guest rate limit.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -H "Authorization: <token>" \
+///   https://api.eludris.gay/users/yendri
+///
+/// {
+///   "id": 48615849987333,
+///   "username": "yendri",
+///   "social_credit": 0,
+///   "badges": 0,
+///   "permissions": 0
+/// }
+/// ```
+#[autodoc("/users", category = "Users")]
 #[get("/<username>", rank = 1)]
 pub async fn get_user_with_username(
     username: &str,
