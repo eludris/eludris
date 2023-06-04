@@ -12,50 +12,69 @@ use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
-    models::{ErrorResponse, File, Session, UpdateUserProfile, User, UserCreate},
+    models::{ErrorResponse, File, Session, UpdateUser, UpdateUserProfile, User, UserCreate},
     Conf,
 };
 
 use super::{EmailPreset, Emailer};
 
-impl UserCreate {
-    pub fn validate(&self) -> Result<(), ErrorResponse> {
-        lazy_static! {
-            static ref USERNAME_REGEX: Regex =
-                Regex::new(r"^[a-z0-9_-]+$").expect("Could not compile username regex");
-            // https://stackoverflow.com/a/201378
-            static ref EMAIL_REGEX: Regex = Regex::new(r#"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$"#).expect("Could not compile email regex");
-        };
-
-        if !USERNAME_REGEX.is_match(&self.username) {
-            Err(error!(
+pub fn validate_username(username: &str) -> Result<(), ErrorResponse> {
+    lazy_static! {
+        static ref USERNAME_REGEX: Regex =
+            Regex::new(r"^[a-z0-9_-]+$").expect("Could not compile username regex");
+    };
+    if !USERNAME_REGEX.is_match(username) {
+        Err(error!(
                 VALIDATION,
                 "username",
                 "The user's username must only consist of lowercase letters, numbers, underscores and dashes"
             ))
-        } else if self.username.len() < 2 || self.username.len() > 32 {
-            Err(error!(
-                VALIDATION,
-                "username", "The user's username must be between 2 and 32 characters in length"
-            ))
-        } else if !self.username.chars().any(|f| f.is_alphabetic()) {
-            Err(error!(
-                VALIDATION,
-                "username", "The user's username must have at least one alphabetical letter"
-            ))
-        } else if !EMAIL_REGEX.is_match(&self.email) {
-            Err(error!(
-                VALIDATION,
-                "email", "The user's email must be valid"
-            ))
-        } else if self.password.len() < 8 {
-            Err(error!(
-                VALIDATION,
-                "password", "The user's password must be be at least 8 characters long"
-            ))
-        } else {
-            Ok(())
-        }
+    } else if username.len() < 2 || username.len() > 32 {
+        Err(error!(
+            VALIDATION,
+            "username", "The user's username must be between 2 and 32 characters in length"
+        ))
+    } else if !username.chars().any(|f| f.is_alphabetic()) {
+        Err(error!(
+            VALIDATION,
+            "username", "The user's username must have at least one alphabetical letter"
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+pub fn validate_email(email: &str) -> Result<(), ErrorResponse> {
+    lazy_static! {
+        // https://stackoverflow.com/a/201378
+        static ref EMAIL_REGEX: Regex = Regex::new(r#"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$"#).expect("Could not compile email regex");
+    };
+    if !EMAIL_REGEX.is_match(&email) {
+        Err(error!(
+            VALIDATION,
+            "email", "The user's email must be valid"
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+pub fn validate_password(password: &str) -> Result<(), ErrorResponse> {
+    if password.len() < 8 {
+        Err(error!(
+            VALIDATION,
+            "password", "The user's password must be be at least 8 characters long"
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+impl UserCreate {
+    pub fn validate(&self) -> Result<(), ErrorResponse> {
+        validate_username(&self.username)?;
+        validate_email(&self.email)?;
+        validate_password(&self.password)
     }
 }
 
@@ -118,6 +137,43 @@ impl UpdateUserProfile {
                     "banner", "The user's banner must be a valid file that must exist"
                 ));
             }
+        }
+        Ok(())
+    }
+}
+
+impl UpdateUser {
+    pub async fn validate(&self, db: &mut PoolConnection<Postgres>) -> Result<(), ErrorResponse> {
+        if self.username.is_none() && self.email.is_none() && self.new_password.is_none() {
+            return Err(error!(VALIDATION, "body", "At least one field must exist"));
+        }
+        if self.username.is_some() || self.email.is_some() {
+            let mut query: QueryBuilder<Postgres> =
+                QueryBuilder::new("SELECT username, email FROM users WHERE ");
+            let mut seperated = query.separated(" OR ");
+            if let Some(username) = &self.username {
+                validate_username(username)?;
+                seperated
+                    .push("username = ")
+                    .push_bind_unseparated(username);
+            }
+            if let Some(email) = &self.email {
+                validate_email(email)?;
+                seperated.push("email = ").push_bind_unseparated(email);
+            }
+            if let Some(row) = query.build().fetch_optional(db).await.map_err(|err| {
+                log::error!("Couldn't fetch users from database: {}", err);
+                error!(SERVER, "Failed to validate payload")
+            })? {
+                if row.get::<Option<String>, _>("username") == self.username {
+                    return Err(error!(CONFLICT, "username"));
+                } else {
+                    return Err(error!(CONFLICT, "email"));
+                }
+            };
+        }
+        if let Some(password) = &self.new_password {
+            validate_password(password)?;
         }
         Ok(())
     }
@@ -387,6 +443,63 @@ WHERE username = $1
             permissions: u.permissions as u64,
         })
         .ok_or_else(|| error!(NOT_FOUND))
+    }
+
+    pub async fn update<H: PasswordHasher, R: CryptoRngCore>(
+        id: u64,
+        user: UpdateUser,
+        hasher: &H,
+        rng: &mut R,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<Self, ErrorResponse> {
+        user.validate(&mut *db).await?;
+        Self::validate_password(id, &user.password, hasher, db).await?;
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
+        let mut seperated = query.separated(", ");
+        if let Some(username) = user.username {
+            seperated
+                .push("username = ")
+                .push_bind_unseparated(username);
+        }
+        if let Some(email) = user.email {
+            seperated.push("email = ").push_bind_unseparated(email);
+        }
+        if let Some(new_password) = user.new_password {
+            let salt = SaltString::generate(rng);
+            let hash = hasher
+                .hash_password(new_password.as_bytes(), &salt)
+                .map_err(|err| {
+                    log::error!("Failed to hash password: {}", err);
+                    error!(SERVER, "Could not hash password")
+                })?
+                .to_string();
+            seperated.push("password = ").push_bind_unseparated(hash);
+        }
+        query
+            .push(" WHERE id = ")
+            .push_bind(id as i64)
+            .push(
+                " RETURNING id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions",
+            )
+            .build()
+            .fetch_one(db)
+            .await
+            .map(|u| Self {
+                id: u.get::<i64, _>("id") as u64,
+                username: u.get("username"),
+                display_name: u.get("display_name"),
+                social_credit: u.get("social_credit"),
+                status: u.get("status"),
+                bio: u.get("bio"),
+                avatar: u.get::<Option<i64>, _>("avatar").map(|a| a as u64),
+                banner: u.get::<Option<i64>, _>("banner").map(|b| b as u64),
+                badges: u.get::<i64, _>("badges") as u64,
+                permissions: u.get::<i64, _>("permissions") as u64,
+            })
+            .map_err(|err| {
+                log::error!("Couldn't update user profile: {}", err);
+                error!(SERVER, "Failed to update user profile")
+            })
     }
 
     pub async fn update_profile(

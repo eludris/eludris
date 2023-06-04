@@ -93,7 +93,37 @@ pub struct UserCreate {
     pub password: String,
 }
 
-/// The SetUserProfile payload. This payload is used to update a user's profile. The abscence of a
+/// The UpdateUser payload. Any field set to `null`, `undefined` or is missing will be disregarded
+/// and won't affect the user.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "password": "authentícame por favor",
+///   "username": "yendli",
+///   "email": "yendli2@yemail.yom"
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UpdateUser {
+    /// The user's current password for validation.
+    pub password: String,
+    /// The user's new username.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+    /// The user's new email.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    /// The user's new password.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub new_password: Option<String>,
+}
+
+/// The UpdateUserProfile payload. This payload is used to update a user's profile. The abscence of a
 /// field or it being `undefined` means that it won't have an effect. Explicitly setting a field as
 /// `null` will clear it.
 ///
