@@ -176,3 +176,20 @@ pub struct UpdateUserProfile {
     )]
     pub banner: Option<Option<u64>>,
 }
+
+/// The DeleteUser payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "password": "wowsuchpassword"
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DeleteUser {
+    pub password: String,
+}

@@ -1,3 +1,4 @@
+mod delete;
 mod get;
 mod profile;
 mod update;
@@ -84,5 +85,6 @@ pub fn get_routes() -> Vec<Route> {
         get::get_user_with_username,
         update::update_user,
         profile::update_profile,
+        delete::delete_user,
     ]
 }

@@ -39,8 +39,9 @@ impl Session {
             "
 SELECT id, password
 FROM users
-WHERE username = $1
-OR email = $1
+WHERE (username = $1
+OR email = $1)
+AND is_deleted = FALSE
             ",
             session.identifier
         )
@@ -108,10 +109,13 @@ VALUES($1, $2, $3, $4, $5)
             .map_err(|_| error!(UNAUTHORIZED))?;
         let session = sqlx::query!(
             "
-SELECT *
-FROM sessions
-WHERE id = $1
-AND user_id = $2
+SELECT s.id, s.user_id, s.platform, s.client, s.ip
+FROM sessions s
+LEFT JOIN users u
+ON s.user_id = u.id
+WHERE s.id = $1
+AND s.user_id = $2
+AND u.is_deleted = FALSE
             ",
             claims.session_id as i64,
             claims.user_id as i64

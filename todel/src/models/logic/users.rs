@@ -12,7 +12,9 @@ use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
-    models::{ErrorResponse, File, Session, UpdateUser, UpdateUserProfile, User, UserCreate},
+    models::{
+        DeleteUser, ErrorResponse, File, Session, UpdateUser, UpdateUserProfile, User, UserCreate,
+    },
     Conf,
 };
 
@@ -149,7 +151,7 @@ impl UpdateUser {
         }
         if self.username.is_some() || self.email.is_some() {
             let mut query: QueryBuilder<Postgres> =
-                QueryBuilder::new("SELECT username, email FROM users WHERE ");
+                QueryBuilder::new("SELECT username, email FROM users WHERE (");
             let mut seperated = query.separated(" OR ");
             if let Some(username) = &self.username {
                 validate_username(username)?;
@@ -161,10 +163,16 @@ impl UpdateUser {
                 validate_email(email)?;
                 seperated.push("email = ").push_bind_unseparated(email);
             }
-            if let Some(row) = query.build().fetch_optional(db).await.map_err(|err| {
-                log::error!("Couldn't fetch users from database: {}", err);
-                error!(SERVER, "Failed to validate payload")
-            })? {
+            if let Some(row) = query
+                .push(") AND is_deleted = FALSE")
+                .build()
+                .fetch_optional(db)
+                .await
+                .map_err(|err| {
+                    log::error!("Couldn't fetch users from database: {}", err);
+                    error!(SERVER, "Failed to validate payload")
+                })?
+            {
                 if row.get::<Option<String>, _>("username") == self.username {
                     return Err(error!(CONFLICT, "username"));
                 } else {
@@ -193,7 +201,7 @@ impl User {
         user.validate()?;
         if let Some(existing_user) = sqlx::query!(
             "
-SELECT username, email
+SELECT username, email, is_deleted
 FROM users
 WHERE username = $1
 OR email = $2
@@ -210,7 +218,23 @@ OR email = $2
             );
             error!(SERVER, "Could not create user")
         })? {
-            if existing_user.username == user.username {
+            if existing_user.is_deleted {
+                sqlx::query!(
+                    "
+DELETE FROM users
+WHERE username = $1
+OR email= $2
+                    ",
+                    user.username,
+                    user.email
+                )
+                .execute(&mut *db)
+                .await
+                .map_err(|err| {
+                    log::error!("Failed to clean up pre-existing deleted user: {}", err);
+                    error!(SERVER, "Could not create user")
+                })?;
+            } else if existing_user.username == user.username {
                 return Err(error!(CONFLICT, "username"));
             } else {
                 return Err(error!(CONFLICT, "email"));
@@ -286,6 +310,7 @@ VALUES($1, $2, $3, $4, $5)
 SELECT password
 FROM users
 WHERE id = $1
+AND is_deleted = FALSE
             ",
             id as i64
         )
@@ -318,6 +343,7 @@ WHERE id = $1
 SELECT verified
 FROM users
 WHERE id = $1
+AND is_deleted = FALSE
             ",
             session.user_id as i64
         )
@@ -365,29 +391,13 @@ WHERE id = $1
         Ok(())
     }
 
-    pub async fn clean_up_unverified(db: &mut PoolConnection<Postgres>) -> Result<(), sqlx::Error> {
-        sqlx::query!(
-            "
-DELETE FROM users
-WHERE verified = FALSE
-AND $1 - (id >> 16) > 604800000 -- seven days
-            ",
-            SystemTime::now()
-                .duration_since(*ELUDRIS_EPOCH)
-                .unwrap_or_else(|_| Duration::ZERO)
-                .as_millis() as i64
-        )
-        .execute(db)
-        .await?;
-        Ok(())
-    }
-
     pub async fn get(id: u64, db: &mut PoolConnection<Postgres>) -> Result<Self, ErrorResponse> {
         sqlx::query!(
             "
 SELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions
 FROM users
 WHERE id = $1
+AND is_deleted = FALSE
             ",
             id as i64
         )
@@ -421,6 +431,7 @@ WHERE id = $1
 SELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions
 FROM users
 WHERE username = $1
+AND is_deleted = FALSE
             ",
             username
         )
@@ -557,6 +568,60 @@ WHERE username = $1
                 log::error!("Couldn't update user profile: {}", err);
                 error!(SERVER, "Failed to update user profile")
             })
+    }
+
+    pub async fn delete<V: PasswordVerifier>(
+        id: u64,
+        delete: DeleteUser,
+        verifier: &V,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
+        Self::validate_password(id, &delete.password, verifier, db).await?;
+        sqlx::query!(
+            "
+UPDATE users
+SET is_deleted = TRUE
+WHERE id = $1",
+            id as i64
+        )
+        .execute(db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't mark user as deleted: {}", err);
+            error!(SERVER, "Failed to delete user")
+        })?;
+        Ok(())
+    }
+}
+
+impl User {
+    pub async fn clean_up_unverified(db: &mut PoolConnection<Postgres>) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE verified = FALSE
+AND $1 - (id >> 16) > 604800000 -- seven days
+            ",
+            SystemTime::now()
+                .duration_since(*ELUDRIS_EPOCH)
+                .unwrap_or_else(|_| Duration::ZERO)
+                .as_millis() as i64
+        )
+        .execute(db)
+        .await?;
+        Ok(())
+    }
+
+    pub async fn clean_up_deleted(db: &mut PoolConnection<Postgres>) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE is_deleted = TRUE
+            ",
+        )
+        .execute(db)
+        .await?;
+        Ok(())
     }
 }
 
