@@ -328,6 +328,26 @@
     },
     "query": "\nINSERT INTO users(id, username, verified, email, password)\nVALUES($1, $2, $3, $4, $5)\n            "
   },
+  "d98d6fa48bb901685fc833cfb58b8839f31a3b10a67ce9492c72daca3153f4f3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "password",
+          "ordinal": 0,
+          "type_info": "Bpchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT password\nFROM users\nWHERE id = $1\n            "
+  },
   "f2c1e7c3eeeca9c248eef366073bdf551a3de8ed4941ade9bfdc13461316e899": {
     "describe": {
       "columns": [
