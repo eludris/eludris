@@ -2,7 +2,7 @@ use std::time::{Duration, SystemTime};
 
 use argon2::{
     password_hash::{rand_core::CryptoRngCore, SaltString},
-    PasswordHasher,
+    PasswordHash, PasswordHasher, PasswordVerifier,
 };
 use lazy_static::lazy_static;
 use rand::Rng;
@@ -217,6 +217,38 @@ VALUES($1, $2, $3, $4, $5)
             badges: 0,
             permissions: 0,
         })
+    }
+
+    pub async fn validate_password<V: PasswordVerifier>(
+        id: u64,
+        password: &str,
+        verifier: &V,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
+        let hash = sqlx::query!(
+            "
+SELECT password
+FROM users
+WHERE id = $1
+            ",
+            id as i64
+        )
+        .fetch_one(&mut *db)
+        .await
+        .map_err(|err| {
+            log::error!("Could not fetch the user's password: {}", err);
+            error!(SERVER, "Failed to fetch the user's password")
+        })?
+        .password;
+        verifier
+            .verify_password(
+                password.as_bytes(),
+                &PasswordHash::new(&hash).map_err(|err| {
+                    log::error!("Couldn't parse password hash: {}", err);
+                    error!(SERVER, "Failed to validate the user's password")
+                })?,
+            )
+            .map_err(|_| error!(UNAUTHORIZED))
     }
 
     pub async fn verify<C: AsyncCommands>(
