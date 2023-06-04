@@ -1,5 +1,5 @@
 use argon2::Argon2;
-use rocket::{http::Status, serde::json::Json, Route, State};
+use rocket::{http::Status, response::status::Custom, serde::json::Json, Route, State};
 use rocket_db_pools::Connection;
 use todel::{
     http::{Cache, ClientIP, DB},
@@ -48,11 +48,11 @@ pub async fn create_session(
     mut db: Connection<DB>,
     mut cache: Connection<Cache>,
     ip: ClientIP,
-) -> RateLimitedRouteResponse<(Status, Json<SessionCreated>)> {
+) -> RateLimitedRouteResponse<Custom<Json<SessionCreated>>> {
     let mut rate_limiter = RateLimiter::new("create_session", &ip, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
 
-    rate_limiter.wrap_response((
+    rate_limiter.wrap_response(Custom(
         Status::Created,
         Json(
             Session::create(

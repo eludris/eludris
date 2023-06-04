@@ -1,10 +1,11 @@
 mod get;
 mod profile;
-mod verify_user;
+mod update;
+mod verify;
 
 use argon2::Argon2;
 use rand::rngs::StdRng;
-use rocket::{http::Status, serde::json::Json, Route, State};
+use rocket::{http::Status, response::status::Custom, serde::json::Json, Route, State};
 use rocket_db_pools::Connection;
 use todel::{
     http::{Cache, ClientIP, DB},
@@ -51,11 +52,11 @@ pub async fn create_user(
     mut db: Connection<DB>,
     mut cache: Connection<Cache>,
     ip: ClientIP,
-) -> RateLimitedRouteResponse<(Status, Json<User>)> {
+) -> RateLimitedRouteResponse<Custom<Json<User>>> {
     let mut rate_limiter = RateLimiter::new("create_user", ip, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
 
-    rate_limiter.wrap_response((
+    rate_limiter.wrap_response(Custom(
         Status::Created,
         Json(
             User::create(
@@ -77,10 +78,11 @@ pub async fn create_user(
 pub fn get_routes() -> Vec<Route> {
     routes![
         create_user,
-        verify_user::verify_user,
+        verify::verify_user,
         get::get_self,
         get::get_user,
         get::get_user_with_username,
+        update::update_user,
         profile::update_profile,
     ]
 }
