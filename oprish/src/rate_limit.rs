@@ -47,7 +47,9 @@ impl RateLimiter {
             "verify_user" => &conf.oprish.rate_limits.verify_user,
             "get_user" => &conf.oprish.rate_limits.get_user,
             "guest_get_user" => &conf.oprish.rate_limits.guest_get_user,
-            "create_session" => &conf.oprish.rate_limits.create_session,
+            "update_user" => &conf.oprish.rate_limits.guest_get_user,
+            "update_profile" => &conf.oprish.rate_limits.update_user,
+            "create_session" => &conf.oprish.rate_limits.update_profile,
             _ => unreachable!(),
         };
         RateLimiter {

@@ -75,6 +75,9 @@ pub struct OprishRateLimits {
     /// someone who hasn't made an account.
     #[serde(default = "guest_get_user_default")]
     pub guest_get_user: RateLimitConf,
+    /// Rate limits for the [`update_user`] enpoint.
+    #[serde(default = "update_user_default")]
+    pub update_user: RateLimitConf,
     /// Rate limits for the [`update_profile`] enpoint.
     #[serde(default = "update_profile_default")]
     pub update_profile: RateLimitConf,
@@ -92,6 +95,7 @@ impl Default for OprishRateLimits {
             verify_user: verify_user_default(),
             get_user: get_user_default(),
             guest_get_user: guest_get_user_default(),
+            update_user: update_user_default(),
             update_profile: update_profile_default(),
             create_session: create_session_default(),
         }
@@ -136,6 +140,13 @@ fn get_user_default() -> RateLimitConf {
 fn guest_get_user_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
+        limit: 5,
+    }
+}
+
+fn update_user_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 3600,
         limit: 5,
     }
 }
