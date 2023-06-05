@@ -26,6 +26,8 @@ url = "" # This instance's Oprish url
 #update_profile = { reset_after = 3600, limit = 5 }
 #delete_user = { reset_after = 3600, limit = 1 }
 #create_session = { reset_after = 1800, limit = 5 }
+#get_sessions = { reset_after = 300, limit = 5 }
+#delete_session = { reset_after = 300, limit = 10 }
 
 [pandemonium]
 url = "" # This instance's Pandemonium url

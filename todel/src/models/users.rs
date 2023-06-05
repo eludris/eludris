@@ -177,7 +177,8 @@ pub struct UpdateUserProfile {
     pub banner: Option<Option<u64>>,
 }
 
-/// The DeleteUser payload.
+/// The DeleteCredentials payload. This is used in multiple places in the API to provide extra
+/// credentials for deleting important user-related stuff.
 ///
 /// -----
 ///
@@ -190,6 +191,6 @@ pub struct UpdateUserProfile {
 /// ```
 #[autodoc(category = "Users")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct DeleteUser {
+pub struct PasswordDeleteCredentials {
     pub password: String,
 }

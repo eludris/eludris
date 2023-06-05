@@ -67,9 +67,9 @@ pub async fn get_self(
 /// }
 /// ```
 #[autodoc("/users", category = "Users")]
-#[get("/<id>")]
+#[get("/<user_id>")]
 pub async fn get_user(
-    id: u64,
+    user_id: u64,
     conf: &State<Conf>,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -84,7 +84,7 @@ pub async fn get_user(
     }
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        User::get(id, &mut db)
+        User::get(user_id, &mut db)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     ))

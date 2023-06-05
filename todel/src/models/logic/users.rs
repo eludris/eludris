@@ -13,7 +13,8 @@ use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
     models::{
-        DeleteUser, ErrorResponse, File, Session, UpdateUser, UpdateUserProfile, User, UserCreate,
+        ErrorResponse, File, PasswordDeleteCredentials, Session, UpdateUser, UpdateUserProfile,
+        User, UserCreate,
     },
     Conf,
 };
@@ -572,7 +573,7 @@ AND is_deleted = FALSE
 
     pub async fn delete<V: PasswordVerifier>(
         id: u64,
-        delete: DeleteUser,
+        delete: PasswordDeleteCredentials,
         verifier: &V,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
@@ -581,7 +582,8 @@ AND is_deleted = FALSE
             "
 UPDATE users
 SET is_deleted = TRUE
-WHERE id = $1",
+WHERE id = $1
+            ",
             id as i64
         )
         .execute(db)
