@@ -8,13 +8,13 @@ use lazy_static::lazy_static;
 use rand::Rng;
 use redis::AsyncCommands;
 use regex::Regex;
-use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
+use sqlx::{pool::PoolConnection, Database, Decode, Postgres, QueryBuilder, Row};
 
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
     models::{
-        ErrorResponse, File, PasswordDeleteCredentials, Session, UpdateUser, UpdateUserProfile,
-        User, UserCreate,
+        ErrorResponse, File, PasswordDeleteCredentials, Session, Status, StatusType, UpdateUser,
+        UpdateUserProfile, User, UserCreate,
     },
     Conf,
 };
@@ -90,6 +90,7 @@ impl UpdateUserProfile {
         if self.display_name.is_none()
             && self.bio.is_none()
             && self.status.is_none()
+            && self.status_type.is_none()
             && self.avatar.is_none()
             && self.banner.is_none()
         {
@@ -185,6 +186,18 @@ impl UpdateUser {
             validate_password(password)?;
         }
         Ok(())
+    }
+}
+
+impl<'r, DB: Database> Decode<'r, DB> for Status
+where
+    &'r str: Decode<'r, DB>,
+{
+    fn decode(
+        value: <DB as sqlx::database::HasValueRef<'r>>::ValueRef,
+    ) -> Result<Self, sqlx::error::BoxDynError> {
+        Ok(serde_json::from_str(<&str as Decode<DB>>::decode(value)?)
+            .expect("Couldn't deserialize status type"))
     }
 }
 
@@ -291,12 +304,17 @@ VALUES($1, $2, $3, $4, $5)
             username: user.username,
             display_name: None,
             social_credit: 0,
-            status: None,
+            status: Status {
+                status_type: StatusType::Offline,
+                text: None,
+            },
             bio: None,
             avatar: None,
             banner: None,
             badges: 0,
             permissions: 0,
+            email: Some(user.email),
+            verified: Some(conf.email.is_none()),
         })
     }
 
@@ -392,14 +410,21 @@ WHERE id = $1
         Ok(())
     }
 
-    pub async fn get(id: u64, db: &mut PoolConnection<Postgres>) -> Result<Self, ErrorResponse> {
+    #[allow(clippy::blocks_in_if_conditions)] // it's supposedly bad beacuse of code cleanness but
+                                              // in this case it's cleaner
+    pub async fn get<C: AsyncCommands>(
+        id: u64,
+        requester_id: Option<u64>,
+        db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
+    ) -> Result<Self, ErrorResponse> {
         sqlx::query!(
-            "
-SELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions
+            r#"
+SELECT id, username, display_name, social_credit, status, status_type as "status_type: StatusType", bio, avatar, banner, badges, permissions, email, verified
 FROM users
 WHERE id = $1
 AND is_deleted = FALSE
-            ",
+            "#,
             id as i64
         )
         .fetch_optional(db)
@@ -408,32 +433,56 @@ AND is_deleted = FALSE
             log::error!("Couldn't get user from database: {}", err);
             error!(SERVER, "Failed to get user data")
         })?
-        .map(|u| Self {
-            id: u.id as u64,
-            username: u.username,
-            display_name: u.display_name,
-            social_credit: u.social_credit,
-            status: u.status,
-            bio: u.bio,
-            avatar: u.avatar.map(|a| a as u64),
-            banner: u.banner.map(|b| b as u64),
-            badges: u.badges as u64,
-            permissions: u.permissions as u64,
+        .map(|u| async move {
+            Ok(Self {
+                id: u.id as u64,
+                username: u.username,
+                display_name: u.display_name,
+                social_credit: u.social_credit,
+                status: if  Some(id) == requester_id  ||
+                    cache
+                    .sismember::<_, _, bool>("sessions", u.id as u64)
+                    .await
+                    .map_err(|err| {
+                        log::error!("Failed to determine if user is online: {}", err);
+                        error!(SERVER, "Couldn't provide user data")
+                    })? {
+                        Status {
+                        status_type: u.status_type,
+                            text: u.status,
+                        }
+                } else {
+                    Status {
+                        status_type: StatusType::Offline,
+                        text: None,
+                    }
+                },
+                bio: u.bio,
+                avatar: u.avatar.map(|a| a as u64),
+                banner: u.banner.map(|b| b as u64),
+                badges: u.badges as u64,
+                permissions: u.permissions as u64,
+                email: (Some(id) == requester_id).then_some(u.email),
+                verified: (Some(id) == requester_id).then_some(u.verified)
+            })
         })
-        .ok_or_else(|| error!(NOT_FOUND))
+        .ok_or_else(|| error!(NOT_FOUND))?.await
     }
 
-    pub async fn get_username(
+    #[allow(clippy::blocks_in_if_conditions)]
+    pub async fn get_username<C: AsyncCommands>(
         username: &str,
+        requester_id: Option<u64>,
         db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
     ) -> Result<Self, ErrorResponse> {
         sqlx::query!(
-            "
-SELECT id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions
+            r#"
+SELECT id, username, display_name, social_credit, status, status_type as "status_type: StatusType", bio, avatar, banner, badges, permissions, email, verified
 FROM users
 WHERE username = $1
 AND is_deleted = FALSE
-            ",
+            "#,
             username
         )
         .fetch_optional(db)
@@ -442,19 +491,40 @@ AND is_deleted = FALSE
             log::error!("Couldn't get user from database: {}", err);
             error!(SERVER, "Failed to get user data")
         })?
-        .map(|u| Self {
-            id: u.id as u64,
-            username: u.username,
-            display_name: u.display_name,
-            social_credit: u.social_credit,
-            status: u.status,
-            bio: u.bio,
-            avatar: u.avatar.map(|a| a as u64),
-            banner: u.banner.map(|b| b as u64),
-            badges: u.badges as u64,
-            permissions: u.permissions as u64,
+        .map(|u| async move {
+            Ok(Self {
+                id: u.id as u64,
+                username: u.username,
+                display_name: u.display_name,
+                social_credit: u.social_credit,
+                status: if Some(u.id as u64) == requester_id || cache
+                    .sismember::<_, _, bool>("sessions", u.id as u64)
+                    .await
+                    .map_err(|err| {
+                        log::error!("Failed to determine if user is online: {}", err);
+                        error!(SERVER, "Couldn't provide user data")
+                    })? {
+                    Status {
+                        status_type: u.status_type,
+                        text: u.status,
+                    }
+                } else {
+                    Status {
+                        status_type: StatusType::Offline,
+                        text: None,
+                    }
+                },
+                bio: u.bio,
+                avatar: u.avatar.map(|a| a as u64),
+                banner: u.banner.map(|b| b as u64),
+                badges: u.badges as u64,
+                permissions: u.permissions as u64,
+                email: (Some(u.id as u64) == requester_id).then_some(u.email),
+                verified: (Some(u.id as u64) == requester_id).then_some(u.verified)
+            })
         })
-        .ok_or_else(|| error!(NOT_FOUND))
+        .ok_or_else(|| error!(NOT_FOUND))?
+        .await
     }
 
     pub async fn update<H: PasswordHasher, R: CryptoRngCore>(
@@ -491,7 +561,7 @@ AND is_deleted = FALSE
             .push(" WHERE id = ")
             .push_bind(id as i64)
             .push(
-                " RETURNING id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions",
+                " RETURNING id, username, display_name, social_credit, status, status_type, bio, avatar, banner, badges, permissions, email, verification",
             )
             .build()
             .fetch_one(db)
@@ -501,12 +571,17 @@ AND is_deleted = FALSE
                 username: u.get("username"),
                 display_name: u.get("display_name"),
                 social_credit: u.get("social_credit"),
-                status: u.get("status"),
+                status: Status {
+                    status_type: u.get("status_type"),
+                    text: u.get("status"),
+                },
                 bio: u.get("bio"),
                 avatar: u.get::<Option<i64>, _>("avatar").map(|a| a as u64),
                 banner: u.get::<Option<i64>, _>("banner").map(|b| b as u64),
                 badges: u.get::<i64, _>("badges") as u64,
                 permissions: u.get::<i64, _>("permissions") as u64,
+                email: Some(u.get("email")),
+                verified: Some(u.get("verified")),
             })
             .map_err(|err| {
                 log::error!("Couldn't update user profile: {}", err);
@@ -534,6 +609,11 @@ AND is_deleted = FALSE
         if let Some(status) = profile.status {
             seperated.push("status = ").push_bind_unseparated(status);
         }
+        if let Some(status_type) = profile.status_type {
+            seperated
+                .push("status_type = ")
+                .push_bind_unseparated(status_type);
+        }
         if let Some(avatar) = profile.avatar {
             seperated
                 .push("avatar = ")
@@ -548,7 +628,7 @@ AND is_deleted = FALSE
             .push(" WHERE id = ")
             .push_bind(id as i64)
             .push(
-                " RETURNING id, username, display_name, social_credit, status, bio, avatar, banner, badges, permissions",
+                " RETURNING id, username, display_name, social_credit, status, status_type, bio, avatar, banner, badges, permissions, email, verified",
             )
             .build()
             .fetch_one(db)
@@ -558,12 +638,17 @@ AND is_deleted = FALSE
                 username: u.get("username"),
                 display_name: u.get("display_name"),
                 social_credit: u.get("social_credit"),
-                status: u.get("status"),
+                status: Status {
+                    status_type: u.get("status_type"),
+                    text: u.get("status"),
+                },
                 bio: u.get("bio"),
                 avatar: u.get::<Option<i64>, _>("avatar").map(|a| a as u64),
                 banner: u.get::<Option<i64>, _>("banner").map(|b| b as u64),
                 badges: u.get::<i64, _>("badges") as u64,
                 permissions: u.get::<i64, _>("permissions") as u64,
+                email: Some(u.get("email")),
+                verified: Some(u.get("verified")),
             })
             .map_err(|err| {
                 log::error!("Couldn't update user profile: {}", err);

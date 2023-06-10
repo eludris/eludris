@@ -53,13 +53,13 @@ pub async fn create_message(
     }
 
     let payload = ServerPayload::MessageCreate(Message {
-        author: User::get(session.0.user_id, &mut db)
+        author: User::get(session.0.user_id, None, &mut db, &mut *cache)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
         content: message.content,
     });
     cache
-        .publish::<&str, String, ()>("oprish-events", serde_json::to_string(&payload).unwrap())
+        .publish::<&str, String, ()>("eludris-events", serde_json::to_string(&payload).unwrap())
         .await
         .unwrap();
     if let ServerPayload::MessageCreate(message) = payload {
@@ -95,7 +95,7 @@ mod tests {
 
         let cache = pool.get().await.unwrap();
         let mut cache = Connection::take(cache).into_pubsub();
-        cache.subscribe("oprish-events").await.unwrap();
+        cache.subscribe("eludris-events").await.unwrap();
 
         let response = client
             .post(uri!("/messages", create_message))

@@ -29,6 +29,7 @@ regex = { version = "1.8.3", optional = true}
 rocket = { version = "0.5.0-rc.2", optional = true, features = ["json"] }
 rocket_db_pools = { version = "0.1.0-rc.3", features = ["sqlx_postgres", "deadpool_redis", "sqlx"], optional = true }
 serde = { version = "1.0.144", features = ["derive"] }
+serde_json = { version = "1.0.96", optional = true }
 serde_with = "3.0.0"
 sha2 = { version = "0.10.6", optional = true }
 sha256 = { version = "1.1.1", optional = true }
@@ -41,5 +42,5 @@ ubyte = { version = "0.10.3", features = ["serde"] }
 url = { version = "2.2.2", optional = true }
 
 [features]
-logic = ["dep:anyhow", "dep:argon2", "dep:hmac", "dep:jwt", "dep:lazy_static", "dep:lettre", "dep:log", "dep:rand", "dep:redis", "dep:regex", "dep:sha2", "dep:sha256", "dep:sqlx", "dep:tokio", "dep:toml", "dep:url"]
+logic = ["dep:anyhow", "dep:argon2", "dep:hmac", "dep:jwt", "dep:lazy_static", "dep:lettre", "dep:log", "dep:rand", "dep:redis", "dep:regex", "dep:serde_json", "dep:sha2", "dep:sha256", "dep:sqlx", "dep:tokio", "dep:toml", "dep:url"]
 http = ["logic", "dep:ffprobe", "dep:image", "dep:imagesize", "dep:rocket", "dep:rocket_db_pools", "dep:tree_magic_mini"]

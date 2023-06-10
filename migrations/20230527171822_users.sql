@@ -1,4 +1,4 @@
-CREATE TYPE STATUS AS ENUM ('ONLINE', 'OFFLINE', 'IDLE', 'BUSY');
+CREATE TYPE status AS ENUM ('ONLINE', 'OFFLINE', 'IDLE', 'BUSY');
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY,
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   -- Thanks Emre, Olivier, Sharp Eyes and Sham.
   social_credit INT NOT NULL DEFAULT 0, -- All hail Xi Jinping
   status VARCHAR(128),
-  status_type STATUS DEFAULT 'ONLINE',
+  status_type status NOT NULL DEFAULT 'ONLINE',
   bio VARCHAR(4096),
   avatar BIGINT,
   banner BIGINT,

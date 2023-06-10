@@ -3,6 +3,43 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
+/// The type of a user's status.
+///
+/// This is a string.
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+#[cfg_attr(feature = "logic", derive(sqlx::Type))]
+#[cfg_attr(feature = "logic", sqlx(type_name = "status"))]
+#[cfg_attr(feature = "logic", sqlx(rename_all = "UPPERCASE"))]
+pub enum StatusType {
+    Online,
+    Offline,
+    Idle,
+    Busy,
+}
+
+/// A user's status.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "type": "BUSY",
+///   "text": "ayúdame por favor",
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Status {
+    #[serde(rename = "type")]
+    pub status_type: StatusType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+}
+
 /// The user payload.
 ///
 /// -----
@@ -15,7 +52,10 @@ use serde_with::rust::double_option;
 ///   "username": "yendri",
 ///   "display_name": "Nicolas",
 ///   "social_credit": -69420,
-///   "status": "ayúdame por favor",
+///   "status": {
+///     "type": "BUSY",
+///     "text": "ayúdame por favor",
+///    },
 ///   "bio": "NICOLAAAAAAAAAAAAAAAAAAS!!!\n\n\nhttps://cdn.eludris.gay/static/nicolas.mp4",
 ///   "avatar": 2255112175647,
 ///   "banner": 2255049523230,
@@ -35,9 +75,8 @@ pub struct User {
     pub display_name: Option<String>,
     /// The user's social credit score.
     pub social_credit: i32,
-    /// The user's status. This field cannot be more than 128 characters long.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
+    /// The user's status.
+    pub status: Status,
     /// The user's bio. The upper limit is the instance's [`InstanceInfo`] `bio_limit`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bio: Option<String>,
@@ -51,6 +90,12 @@ pub struct User {
     pub badges: u64,
     /// The user's instance-wide permissions as a bitfield.
     pub permissions: u64,
+    /// The user's email. This is only shown when the user queries their own data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    /// The user's verification status. This is only shown when the user queries their own data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub verified: Option<bool>,
 }
 
 impl fmt::Display for User {
@@ -147,13 +192,16 @@ pub struct UpdateUserProfile {
         with = "double_option"
     )]
     pub display_name: Option<Option<String>>,
-    /// The user's new status. This field cannot be more than 128 characters long.
+    /// The user's new status. This field cannot be more than 150 characters long.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         with = "double_option"
     )]
     pub status: Option<Option<String>>,
+    /// The user's new status type. This must be one of `ONLINE`, `OFFLINE`, `IDLE` and `BUSY`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status_type: Option<StatusType>,
     /// The user's new bio. The upper limit is the instance's [`InstanceInfo`] `bio_limit`.
     #[serde(
         default,

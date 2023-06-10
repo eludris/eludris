@@ -38,9 +38,14 @@ pub async fn get_self(
     let mut rate_limiter = RateLimiter::new("get_user", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        User::get(session.0.user_id, &mut db)
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
+        User::get(
+            session.0.user_id,
+            Some(session.0.user_id),
+            &mut db,
+            &mut cache.into_inner(),
+        )
+        .await
+        .map_err(|err| rate_limiter.add_headers(err))?,
     ))
 }
 
@@ -77,16 +82,21 @@ pub async fn get_user(
     ip: ClientIP,
 ) -> RateLimitedRouteResponse<Json<User>> {
     let mut rate_limiter;
-    if let Some(session) = session {
+    if let Some(session) = &session {
         rate_limiter = RateLimiter::new("get_user", session.0.user_id, conf);
     } else {
         rate_limiter = RateLimiter::new("guest_get_user", ip, conf);
     }
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        User::get(user_id, &mut db)
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
+        User::get(
+            user_id,
+            session.map(|s| s.0.user_id),
+            &mut db,
+            &mut cache.into_inner(),
+        )
+        .await
+        .map_err(|err| rate_limiter.add_headers(err))?,
     ))
 }
 
@@ -123,15 +133,20 @@ pub async fn get_user_with_username(
     ip: ClientIP,
 ) -> RateLimitedRouteResponse<Json<User>> {
     let mut rate_limiter;
-    if let Some(session) = session {
+    if let Some(session) = &session {
         rate_limiter = RateLimiter::new("get_user", session.0.user_id, conf);
     } else {
         rate_limiter = RateLimiter::new("guest_get_user", ip, conf);
     }
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        User::get_username(username, &mut db)
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
+        User::get_username(
+            username,
+            session.map(|s| s.0.user_id),
+            &mut db,
+            &mut cache.into_inner(),
+        )
+        .await
+        .map_err(|err| rate_limiter.add_headers(err))?,
     ))
 }

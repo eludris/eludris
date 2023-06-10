@@ -2991,6 +2991,7 @@ dependencies = [
  "rocket",
  "rocket_db_pools",
  "serde",
+ "serde_json",
  "serde_with",
  "sha2",
  "sha256",

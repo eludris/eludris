@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{InstanceInfo, Message};
+use super::{InstanceInfo, Message, Status, User};
 use crate::conf::RateLimitConf;
 
 /// Pandemonium websocket payloads sent by the server to the client.
@@ -21,7 +21,7 @@ pub enum ServerPayload {
     /// }
     /// ```
     Pong,
-    /// The event sent when the client gets gateway rate limited.
+    /// The payload sent when the client gets gateway rate limited.
     ///
     /// The client is supposed to wait `wait` milliseconds before sending any more events,
     /// otherwise they are disconnected.
@@ -82,7 +82,8 @@ pub enum ServerPayload {
         /// The pandemonium ratelimit info.
         rate_limit: RateLimitConf,
     },
-    /// The event sent when the client has successfully authenticated.
+    /// The payload sent when the client has successfully authenticated. This contains the data the
+    /// user needs on startup.
     ///
     /// -----
     ///
@@ -91,10 +92,57 @@ pub enum ServerPayload {
     /// ```json
     /// {
     ///   "op": "AUTHENTICATED",
+    ///   "users": [
+    ///     {
+    ///       "id": 48615849987333,
+    ///       "username": "foobar",
+    ///       "social_credit": 42,
+    ///       "badges": 0,
+    ///       "permissions": 0
+    ///     }
+    ///   ],
     /// }
     /// ```
-    Authenticated,
-    /// The event sent when the client receives a [`Message`].
+    Authenticated {
+        /// The currently online users who are relavent to the connector.
+        users: Vec<User>,
+    },
+    /// The payload received when a user updates themselves. This includes both user updates from
+    /// the [`update_user`] endpoint and profile updates from the [`update_profile`] endpoint.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "id": 48615849987333,
+    ///   "username": "foobar",
+    ///   "social_credit": 42,
+    ///   "badges": 0,
+    ///   "permissions": 0
+    /// }
+    /// ```
+    UserUpdate(User),
+    /// The payload sent when a user's presence is updated.
+    ///
+    /// This is mainly used for when a user goes offline or online.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "user_id": 48615849987333,
+    ///   "status": {
+    ///     "type": "IDLE",
+    ///     "text": "BURY THE LIGHT DEEP WITHIN"
+    ///   }
+    /// }
+    /// ```
+    PresenceUpdate { user_id: u64, status: Status },
+    /// The payload sent when the client receives a [`Message`].
     ///
     /// -----
     ///

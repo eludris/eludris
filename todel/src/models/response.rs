@@ -1,4 +1,6 @@
 #![macro_use]
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 /// Shared fields between all error response variants.
@@ -227,6 +229,22 @@ macro_rules! error {
                 message: "Server encountered an unexpected error".to_string(),
             },
             info: $info.to_string(),
+        }
+    }
+}
+
+impl Display for ErrorResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ErrorResponse::Unauthorized { shared, .. } => write!(f, "{}", shared.message),
+            ErrorResponse::Forbidden { shared, .. } => write!(f, "{}", shared.message),
+            ErrorResponse::NotFound { shared, .. } => write!(f, "{}", shared.message),
+            ErrorResponse::Conflict { shared, item } => write!(f, "{}: {}", shared.message, item),
+            ErrorResponse::Validation {
+                info, value_name, ..
+            } => write!(f, "Invalid {}: {}", value_name, info),
+            ErrorResponse::RateLimited { shared, .. } => write!(f, "{}", shared.message),
+            ErrorResponse::Server { shared, info } => write!(f, "{}: {}", shared.message, info),
         }
     }
 }

@@ -1,10 +1,10 @@
 use argon2::Argon2;
 use rand::rngs::StdRng;
 use rocket::{serde::json::Json, State};
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::{UpdateUser, User},
+    models::{ServerPayload, UpdateUser, User},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -23,7 +23,7 @@ pub async fn update_user(
 ) -> RateLimitedRouteResponse<Json<User>> {
     let mut rate_limiter = RateLimiter::new("update_user", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
-    rate_limiter.wrap_response(Json(
+    let payload = ServerPayload::UserUpdate(
         User::update(
             session.0.user_id,
             user.into_inner(),
@@ -33,5 +33,14 @@ pub async fn update_user(
         )
         .await
         .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+    );
+    cache
+        .publish::<&str, String, ()>("eludris-events", serde_json::to_string(&payload).unwrap())
+        .await
+        .unwrap();
+    if let ServerPayload::UserUpdate(user) = payload {
+        rate_limiter.wrap_response(Json(user))
+    } else {
+        unreachable!()
+    }
 }

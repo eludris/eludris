@@ -74,8 +74,8 @@ async fn main() -> Result<(), anyhow::Error> {
                 continue;
             }
         };
-        if let Err(err) = pubsub.subscribe("oprish-events").await {
-            log::warn!("Couldn't subscribe to oprish-events: {:?}", err);
+        if let Err(err) = pubsub.subscribe("eludris-events").await {
+            log::warn!("Couldn't subscribe to eludris-events: {:?}", err);
             continue;
         }
         task::spawn(handle_connection::handle_connection(
