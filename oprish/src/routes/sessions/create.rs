@@ -23,7 +23,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 ///   "identifier": "yendri",
 ///   "password": "authentícame por favor",
 ///   "platform": "linux",
-///   "client":"pilfer"
+///   "client": "pilfer"
 /// }' \
 ///   https://api.eludris.gay/sessions
 ///

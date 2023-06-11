@@ -9,6 +9,20 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Delete your user.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -X DELETE \
+///   -H "Authorization: <token>" \
+///   --json '{"password": "wowsuchpassword"}'
+///   https://api.eludris.gay/users
+/// ```
+#[autodoc("/users", category = "Users")]
 #[delete("/", data = "<delete>")]
 pub async fn delete_user(
     delete: Json<PasswordDeleteCredentials>,
