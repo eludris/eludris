@@ -11,6 +11,30 @@ use tokio::sync::Mutex;
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Modify your user account.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -H "Authorization: <token>" \
+///   -X PATCH
+///   --json '{"email":"nicolas.maduro@presidencia.gob.ve","username":"nicolas"}'
+///   https://api.eludris.gay/users
+///
+/// {
+///   "id": 2346806935553
+///   "username": "nicolas"
+///   "display_name": "HappyRu"
+///   "social_credit": 0,
+///   "bio": "I am very happy!"
+///   "badges": 0,
+///   "permissions": 0
+/// }
+/// ```
+#[autodoc("/users", category = "Users")]
 #[patch("/", data = "<user>")]
 pub async fn update_user(
     user: Json<UpdateUser>,
