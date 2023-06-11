@@ -9,6 +9,19 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Delete a session.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -X DELETE \
+///   -H "Authorization: <token>" \
+///   https://api.eludris.gay/sessions/2342734331909
+/// ```
+#[autodoc("/sessions", category = "Sessions")]
 #[delete("/<session_id>", data = "<delete>")]
 pub async fn delete_session(
     session_id: u64,
