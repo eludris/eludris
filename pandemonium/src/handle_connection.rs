@@ -173,7 +173,6 @@ pub async fn handle_connection(
                                         Ok(session) => session,
                                         Err(_) => return "Invalid credentials".to_string(),
                                     };
-                                send_payload(&tx, &ServerPayload::Authenticated).await;
                                 let mut cache = cache.lock().await;
                                 let sessions: u32 = match cache
                                     .incr(format!("session:{}", user_session.user_id), 1)
@@ -237,7 +236,7 @@ pub async fn handle_connection(
                                                     if user.status.status_type
                                                         != StatusType::Offline
                                                     {
-                                                        users.push(user);
+                                                        user_datas.push(user);
                                                     }
                                                 }
                                                 Err(err) => {
@@ -256,7 +255,7 @@ pub async fn handle_connection(
                                         return "Failed to connect user".to_string();
                                     }
                                 };
-                                send_payload(&tx, &ServerPayload::Ready { users }).await;
+                                send_payload(&tx, &ServerPayload::Authenticated { users }).await;
                                 *session = Some(SessionData {
                                     session: user_session,
                                     user,
