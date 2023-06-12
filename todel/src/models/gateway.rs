@@ -92,6 +92,13 @@ pub enum ServerPayload {
     /// ```json
     /// {
     ///   "op": "AUTHENTICATED",
+    ///   "user": {
+    ///     "id": 48615849987334,
+    ///     "username": "barbaz",
+    ///     "social_credit": 3,
+    ///     "badges": 0,
+    ///     "permissions": 0
+    ///   },
     ///   "users": [
     ///     {
     ///       "id": 48615849987333,
@@ -104,6 +111,7 @@ pub enum ServerPayload {
     /// }
     /// ```
     Authenticated {
+        user: User,
         /// The currently online users who are relavent to the connector.
         users: Vec<User>,
     },

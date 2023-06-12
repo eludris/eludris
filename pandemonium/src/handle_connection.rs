@@ -255,11 +255,14 @@ pub async fn handle_connection(
                                         return "Failed to connect user".to_string();
                                     }
                                 };
-                                send_payload(&tx, &ServerPayload::Authenticated { users }).await;
-                                *session = Some(SessionData {
-                                    session: user_session,
-                                    user,
-                                });
+                                let payload = ServerPayload::Authenticated { user, users };
+                                send_payload(&tx, &payload).await;
+                                if let ServerPayload::Authenticated { user, .. } = payload {
+                                    *session = Some(SessionData {
+                                        session: user_session,
+                                        user,
+                                    });
+                                }
                             }
                             _ => log::debug!("Unknown gateway payload: {}", message),
                         }

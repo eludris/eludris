@@ -250,6 +250,21 @@ impl Display for ErrorResponse {
 }
 
 #[cfg(feature = "logic")]
+impl ErrorResponse {
+    pub fn shared(&self) -> &SharedErrorData {
+        match self {
+            ErrorResponse::Unauthorized { shared, .. } => shared,
+            ErrorResponse::Forbidden { shared, .. } => shared,
+            ErrorResponse::NotFound { shared, .. } => shared,
+            ErrorResponse::Conflict { shared, .. } => shared,
+            ErrorResponse::Validation { shared, .. } => shared,
+            ErrorResponse::RateLimited { shared, .. } => shared,
+            ErrorResponse::Server { shared, .. } => shared,
+        }
+    }
+}
+
+#[cfg(feature = "logic")]
 #[cfg(test)]
 mod tests {
     use crate::models::{ErrorResponse, SharedErrorData};
