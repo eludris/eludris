@@ -93,6 +93,28 @@ pub enum ErrorResponse {
         /// The conflicting item.
         item: String,
     },
+    /// The error when a server isn't able to reduce a response even though the client's request
+    /// isn't explicitly wrong. This usually happens when an instance isn't configured to provide a
+    /// response.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "type": "MISDIRECTED",
+    ///   "status": 421,
+    ///   "message": "Misdirected request",
+    ///   "info": "The instance isn't configured to deal with unbased individuals"
+    /// }
+    /// ```
+    Misdirected {
+        #[serde(flatten)]
+        shared: SharedErrorData,
+        /// Extra information about what went wrong.
+        info: String,
+    },
     /// The error when a request a client sends is incorrect and fails validation.
     ///
     /// -----
@@ -203,6 +225,15 @@ macro_rules! error {
             item: $item.to_string(),
         }
     };
+    (MISDIRECTED, $info:expr) => {
+        ErrorResponse::Misdirected {
+            shared: $crate::models::SharedErrorData {
+                status: 421,
+                message: "Misdirected request".to_string(),
+            },
+            info: $info.to_string(),
+        }
+    };
     (VALIDATION, $value_name:expr, $info:expr) => {
         ErrorResponse::Validation {
             shared: $crate::models::SharedErrorData {
@@ -240,6 +271,9 @@ impl Display for ErrorResponse {
             ErrorResponse::Forbidden { shared, .. } => write!(f, "{}", shared.message),
             ErrorResponse::NotFound { shared, .. } => write!(f, "{}", shared.message),
             ErrorResponse::Conflict { shared, item } => write!(f, "{}: {}", shared.message, item),
+            ErrorResponse::Misdirected { shared, info } => {
+                write!(f, "{}: {}", shared.message, info)
+            }
             ErrorResponse::Validation {
                 info, value_name, ..
             } => write!(f, "Invalid {}: {}", value_name, info),
@@ -257,6 +291,7 @@ impl ErrorResponse {
             ErrorResponse::Forbidden { shared, .. } => shared,
             ErrorResponse::NotFound { shared, .. } => shared,
             ErrorResponse::Conflict { shared, .. } => shared,
+            ErrorResponse::Misdirected { shared, .. } => shared,
             ErrorResponse::Validation { shared, .. } => shared,
             ErrorResponse::RateLimited { shared, .. } => shared,
             ErrorResponse::Server { shared, .. } => shared,
