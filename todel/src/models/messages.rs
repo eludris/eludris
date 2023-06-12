@@ -73,5 +73,6 @@ pub struct Message {
     /// The message's author.
     pub author: User,
     /// There message's data.
+    #[serde(flatten)]
     pub message: MessageCreate,
 }
