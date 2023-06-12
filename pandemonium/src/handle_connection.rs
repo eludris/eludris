@@ -10,7 +10,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use todel::models::{
-    ClientPayload, InstanceInfo, Secret, ServerPayload, Session, StatusType, User,
+    ClientPayload, InstanceInfo, Secret, ServerPayload, Session, Status, StatusType, User,
 };
 use todel::Conf;
 use tokio::net::TcpStream;
@@ -211,15 +211,21 @@ pub async fn handle_connection(
                                     }
                                 };
                                 if user.status.status_type != StatusType::Offline {
-                                    cache.publish::<_, _, ()>(
-                                        "eludris-events",
-                                        serde_json::to_string(&ServerPayload::PresenceUpdate {
-                                            user_id: user_session.user_id,
-                                            // I don't like this either
-                                            status: user.status.clone(),
-                                        })
-                                        .expect("Couldn't serialize PRESENCE_UPDATE event"),
-                                    );
+                                    if let Err(err) = cache
+                                        .publish::<_, _, ()>(
+                                            "eludris-events",
+                                            serde_json::to_string(&ServerPayload::PresenceUpdate {
+                                                user_id: user_session.user_id,
+                                                // I don't like this either
+                                                status: user.status.clone(),
+                                            })
+                                            .expect("Couldn't serialize PRESENCE_UPDATE event"),
+                                        )
+                                        .await
+                                    {
+                                        log::error!("Failed to publish PRESENCE_UPDATE: {}", err);
+                                        return "Failed to connect user".to_string();
+                                    };
                                 }
                                 let users: Vec<User> = match cache
                                     .smembers::<_, Vec<u64>>("sessions")
@@ -342,6 +348,24 @@ pub async fn handle_connection(
             if let Err(err) = cache.srem::<_, _, ()>("sessions", session.user.id).await {
                 log::error!("Failed to remove user from online users: {}", err);
             }
+        }
+        if session.user.status.status_type != StatusType::Offline {
+            if let Err(err) = cache
+                .publish::<_, _, ()>(
+                    "eludris-events",
+                    serde_json::to_string(&ServerPayload::PresenceUpdate {
+                        user_id: session.user.id,
+                        status: Status {
+                            status_type: StatusType::Offline,
+                            text: None,
+                        },
+                    })
+                    .expect("Couldn't serialize PRESENCE_UPDATE event"),
+                )
+                .await
+            {
+                log::error!("Failed to publish PRESENCE_UPDATE: {}", err);
+            };
         }
     }
 }
