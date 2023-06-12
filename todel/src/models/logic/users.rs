@@ -259,7 +259,7 @@ OR email= $2
         if let Some(email) = &conf.email {
             let code = rng.gen_range(100000..999999);
             cache
-                .set::<_, _, ()>(format!("verification:{}", id), code)
+                .set_ex::<_, _, ()>(format!("verification:{}", id), code, 604_800_000)
                 .await
                 .map_err(|err| {
                     log::error!("Failed to set verification code in cache: {}", err);
