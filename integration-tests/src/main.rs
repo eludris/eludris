@@ -63,6 +63,7 @@ async fn main() -> Result<()> {
                         .post(format!("{}/messages", state.instance_info.oprish_url))
                         .json(&MessageCreate {
                             content: format!("Message from client {}", client_id),
+                            disguise: None,
                         })
                         .send()
                         .await?;

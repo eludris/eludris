@@ -40,6 +40,7 @@ pub async fn create_message(
     let mut message = message.into_inner();
     message.content = message.content.trim().to_string();
 
+    // TODO: handle validation in logic impl
     if message.content.is_empty() || message.content.len() > conf.oprish.message_limit {
         error!(
             rate_limiter,
@@ -51,12 +52,24 @@ pub async fn create_message(
             )
         );
     }
+    if let Some(disguise) = &message.disguise {
+        if let Some(name) = &disguise.name {
+            if name.len() < 2 || name.len() > 32 {
+                error!(
+                    rate_limiter,
+                    VALIDATION,
+                    "disguise.name",
+                    "The user's disguise name must be between 2 and 32 characters in length"
+                );
+            }
+        }
+    }
 
     let payload = ServerPayload::MessageCreate(Message {
         author: User::get(session.0.user_id, None, &mut db, &mut *cache)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
-        content: message.content,
+        message,
     });
     cache
         .publish::<&str, String, ()>("eludris-events", serde_json::to_string(&payload).unwrap())
