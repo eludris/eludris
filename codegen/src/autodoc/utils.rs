@@ -73,18 +73,15 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
                         })
                         .collect::<Vec<_>>();
 
-                    if types.is_empty() {
-                        return Err(Error::new(
-                            ty.span(),
-                            "Cannot generate documentation for empty tuple types",
-                        ));
-                    } else if types.len() > 1 {
+                    if types.len() > 1 {
                         return Err(Error::new(
                             ty.span(),
                             "Cannot generate documentation for tuple types with more than one non-Status element",
                         ));
                     }
-                    arg_strings.push(types[0].clone());
+                    if !types.is_empty() {
+                        arg_strings.push(types[0].clone());
+                    }
                     Ok(())
                 }
                 _ => Err(Error::new(
@@ -113,7 +110,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
 ) -> Result<Vec<FieldInfo>, Error> {
     let mut field_infos = vec![];
     'outer: for field in fields {
-        let name = field
+        let mut name = field
             .ident
             .as_ref()
             .ok_or_else(|| {
@@ -161,6 +158,10 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                                             }
                                         }
                                     }
+                                }
+                            } else if meta.path.is_ident("rename") {
+                                if let Lit::Str(lit) = meta.lit {
+                                    name = lit.value();
                                 }
                             }
                         }
