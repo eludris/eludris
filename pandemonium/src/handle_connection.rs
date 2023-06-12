@@ -334,7 +334,7 @@ pub async fn handle_connection(
         let sessions: u32 = match cache.decr(format!("session:{}", session.user.id), 1).await {
             Ok(sessions) => sessions,
             Err(err) => {
-                log::error!("Failed to idecrement user active session counter: {}", err);
+                log::error!("Failed to decrement user active session counter: {}", err);
                 return;
             }
         };
