@@ -57,9 +57,16 @@ url = "" # This instance's Effis url
 # ensure that every user has a valid email **that they own, and not just some other
 # person's** - it also makes stuff like password resets possible.
 [email]
-
-#verify = "Your Eludris Verification Code is ${CODE}"# The subjects of the emails your instance sends out if you have an SMTP relay setup.# The credentials of your SMTP relayaddress = ""# The address of your instance's sendername = ""# The name of your instance's senderrelay = ""# The URL of your SMTP relay
+# The URL of your SMTP relay
+relay = ""
+# The name of your instance's sender
+name = ""
+# The address of your instance's sender
+address = ""
+# The credentials of your SMTP relay
 #credentials = { username = "", password = "" }
+
+# The subjects of the emails your instance sends out if you have an SMTP relay setup.
 # Leaving a subject as an empty string makes the email have no subject.
 #[email.subjects]
 # The subject of your instance's verification email

@@ -41,13 +41,10 @@ impl Fairing for ScheduledCleanup {
                 if let Err(err) = User::clean_up_unverified(&mut db).await {
                     log::error!("Couldn't clean up unverified users: {}", err);
                 }
-                if let Err(err) = User::clean_up_deleted(&mut db).await {
-                    log::error!("Couldn't clean up deleted users: {}", err);
-                }
                 sleep(
                     Duration::days(1)
                         .to_std()
-                        .expect("Couldn't convery chrono Duration to std Duration"),
+                        .expect("Couldn't convert chrono Duration to std Duration"),
                 )
                 .await;
             }
