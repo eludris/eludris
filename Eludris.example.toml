@@ -63,3 +63,4 @@ url = "" # This instance's Effis url
 # Leaving a subject as an empty string makes the email have no subject.
 #[email.subjects]
 # The subject of your instance's verification email
+#verify = "Your Eludris Verification Code is ${CODE}"
