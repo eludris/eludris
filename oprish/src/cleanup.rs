@@ -34,7 +34,7 @@ impl Fairing for ScheduledCleanup {
             let first_sleep = midnight
                 .signed_duration_since(now)
                 .to_std()
-                .expect("Couldn't determine how many seconds there are untill next midnight");
+                .expect("Couldn't determine how many seconds there are until next midnight");
             sleep(first_sleep).await;
             loop {
                 log::info!("Running scheduled cleanup");

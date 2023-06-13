@@ -100,10 +100,12 @@ relay = ""
 name = ""
 # The address of your instance's sender
 address = ""
+# The credentials of your SMTP relay
 #credentials = { username = "", password = "" }
 
 # The subjects of the emails your instance sends out if you have an SMTP relay setup.
 # Leaving a subject as an empty string makes the email have no subject.
 #[email.subjects]
+# The subject of your instance's verification email
 #verify = "Your Eludris Verification Code is ${CODE}"
 ```
