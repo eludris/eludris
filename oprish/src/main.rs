@@ -16,9 +16,6 @@ use std::sync::Once;
 
 use anyhow::Context;
 use argon2::Argon2;
-use cleanup::ScheduledCleanup;
-use database::DatabaseFairing;
-use email::EmailFairing;
 use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::Database;
@@ -29,6 +26,9 @@ use todel::{
 };
 use tokio::sync::Mutex;
 
+use cleanup::ScheduledCleanup;
+use database::DatabaseFairing;
+use email::EmailFairing;
 use routes::*;
 
 #[cfg(test)]
