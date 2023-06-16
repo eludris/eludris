@@ -84,6 +84,12 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`delete_user`] enpoint.
     #[serde(default = "delete_user_default")]
     pub delete_user: RateLimitConf,
+    /// Rate limits for the [`create_password_reset_code`] enpoint.
+    #[serde(default = "create_password_reset_code_default")]
+    pub create_password_reset_code: RateLimitConf,
+    /// Rate limits for the [`reset_password`] enpoint.
+    #[serde(default = "reset_password_default")]
+    pub reset_password: RateLimitConf,
     /// Rate limits for the [`create_session`] endpoint.
     #[serde(default = "create_session_default")]
     pub create_session: RateLimitConf,
@@ -107,6 +113,8 @@ impl Default for OprishRateLimits {
             update_user: update_user_default(),
             update_profile: update_profile_default(),
             delete_user: delete_user_default(),
+            create_password_reset_code: create_session_default(),
+            reset_password: reset_password_default(),
             create_session: create_session_default(),
             get_sessions: get_sessions_default(),
             delete_session: delete_session_default(),
@@ -173,6 +181,20 @@ fn update_profile_default() -> RateLimitConf {
 fn delete_user_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 3600,
+        limit: 1,
+    }
+}
+
+fn create_password_reset_code_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 1800,
+        limit: 2,
+    }
+}
+
+fn reset_password_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 1800,
         limit: 1,
     }
 }
