@@ -7,7 +7,7 @@ documentation.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-todel = { features = ["http"], version = "0.3.0", path = "../todel" }
+todel = { features = ["http"], version = "0.4.0-alpha1", path = "../todel" }
 anyhow = "1.0.71"
 dotenvy = "0.15.6"
 env_logger = "0.10.0"

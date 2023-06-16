@@ -15,6 +15,6 @@ log = "0.4.17"
 rand = "0.8.5"
 reqwest = { version = "0.11.17", features = ["json", "multipart"] }
 serde_json = "1.0.96"
-todel = { version = "0.3.2", path = "../todel" }
+todel = { version = "0.4.0-alpha1", path = "../todel" }
 tokio = { version = "1.28.1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-tungstenite = { version = "0.19.0", features = ["native-tls"] }
