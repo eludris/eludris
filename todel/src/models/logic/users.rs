@@ -568,7 +568,7 @@ AND is_deleted = FALSE
             .push(" WHERE id = ")
             .push_bind(id as i64)
             .push(
-                " RETURNING id, username, display_name, social_credit, status, status_type, bio, avatar, banner, badges, permissions, email, verification",
+                " RETURNING id, username, display_name, social_credit, status, status_type, bio, avatar, banner, badges, permissions, email, verified",
             )
             .build()
             .fetch_one(db)

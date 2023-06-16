@@ -34,20 +34,17 @@ impl Fairing for ScheduledCleanup {
             let first_sleep = midnight
                 .signed_duration_since(now)
                 .to_std()
-                .expect("Couldn't determine how many seconds there are untill next midnight");
+                .expect("Couldn't determine how many seconds there are until next midnight");
             sleep(first_sleep).await;
             loop {
                 log::info!("Running scheduled cleanup");
                 if let Err(err) = User::clean_up_unverified(&mut db).await {
                     log::error!("Couldn't clean up unverified users: {}", err);
                 }
-                if let Err(err) = User::clean_up_deleted(&mut db).await {
-                    log::error!("Couldn't clean up deleted users: {}", err);
-                }
                 sleep(
                     Duration::days(1)
                         .to_std()
-                        .expect("Couldn't convery chrono Duration to std Duration"),
+                        .expect("Couldn't convert chrono Duration to std Duration"),
                 )
                 .await;
             }
