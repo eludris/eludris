@@ -34,27 +34,41 @@ pub struct RateLimiter {
     last_reset: u64,
 }
 
+macro_rules! match_buckets {
+    ($bucket:expr, $conf:expr, $($bucket_name:ident),+, $(,)?) => {
+        match $bucket {
+            $(
+                stringify!($bucket_name) => &$conf.oprish.rate_limits.$bucket_name,
+            )+
+            _ => unreachable!()
+        }
+    };
+}
+
 impl RateLimiter {
     /// Creates a new RateLimiter
     pub fn new<I>(bucket: &str, identifier: I, conf: &Conf) -> RateLimiter
     where
         I: Display,
     {
-        let rate_limit = match bucket {
-            "get_instance_info" => &conf.oprish.rate_limits.get_instance_info,
-            "create_message" => &conf.oprish.rate_limits.create_message,
-            "create_user" => &conf.oprish.rate_limits.create_user,
-            "verify_user" => &conf.oprish.rate_limits.verify_user,
-            "get_user" => &conf.oprish.rate_limits.get_user,
-            "guest_get_user" => &conf.oprish.rate_limits.guest_get_user,
-            "update_user" => &conf.oprish.rate_limits.guest_get_user,
-            "update_profile" => &conf.oprish.rate_limits.update_user,
-            "delete_user" => &conf.oprish.rate_limits.delete_user,
-            "create_session" => &conf.oprish.rate_limits.update_profile,
-            "get_sessions" => &conf.oprish.rate_limits.get_sessions,
-            "delete_session" => &conf.oprish.rate_limits.delete_session,
-            _ => unreachable!(),
-        };
+        let rate_limit = match_buckets!(
+            bucket,
+            conf,
+            get_instance_info,
+            create_message,
+            create_user,
+            verify_user,
+            get_user,
+            guest_get_user,
+            update_user,
+            update_profile,
+            delete_user,
+            create_password_reset_code,
+            reset_password,
+            create_session,
+            get_sessions,
+            delete_session,
+        );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),
             reset_after: Duration::from_secs(rate_limit.reset_after as u64),
