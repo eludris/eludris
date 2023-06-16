@@ -310,6 +310,26 @@
     },
     "query": "\nSELECT s.id, s.user_id, s.platform, s.client, s.ip\nFROM sessions s\nLEFT JOIN users u\nON s.user_id = u.id\nWHERE s.id = $1\nAND s.user_id = $2\nAND u.is_deleted = FALSE\n            "
   },
+  "34d9f175c75aa685a6dff3bbf2deccffed00d1159ca8838e5c048e37a4c13dfb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT username\nFROM users\nWHERE email = $1\n                "
+  },
   "3c2a41ee5fd6e994d02db53c05538cbe83df3f017a89c1db20a5b0663f60ac8f": {
     "describe": {
       "columns": [],
@@ -390,6 +410,19 @@
       }
     },
     "query": "\nSELECT verified\nFROM users\nWHERE id = $1\nAND is_deleted = FALSE\n            "
+  },
+  "b1f958f6c7d566bbacf56d4b902a80f89581176fb710c6fb95f21bcb78ea220a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Bpchar",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nUPDATE users\nSET password = $1\nWHERE email = $2\n            "
   },
   "b4510f779f59e9bc186a1ce02bd7e1c61c837e970fd8dbb10abc3247e4c12330": {
     "describe": {
