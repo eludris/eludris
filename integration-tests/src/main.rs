@@ -180,13 +180,3 @@ async fn close_socket(
         .context("Could not close websocket connection")?;
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::main;
-
-    #[test]
-    fn integration_tests() {
-        main().unwrap();
-    }
-}
