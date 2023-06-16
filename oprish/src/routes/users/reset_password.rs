@@ -20,8 +20,7 @@ pub async fn create_password_reset_code(
     mut db: Connection<DB>,
     mut cache: Connection<Cache>,
 ) -> RateLimitedRouteResponse<Custom<()>> {
-    let mut rate_limiter =
-        RateLimiter::new("create_password_reset_code", &create_code.email, conf);
+    let mut rate_limiter = RateLimiter::new("create_password_reset_code", &create_code.email, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     rate_limiter.wrap_response(Custom(
