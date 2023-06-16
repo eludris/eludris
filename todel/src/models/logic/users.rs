@@ -13,8 +13,8 @@ use sqlx::{pool::PoolConnection, Database, Decode, Postgres, QueryBuilder, Row};
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
     models::{
-        ErrorResponse, File, PasswordDeleteCredentials, Session, Status, StatusType, UpdateUser,
-        UpdateUserProfile, User, UserCreate,
+        CreatePasswordResetCode, ErrorResponse, File, PasswordDeleteCredentials, ResetPassword,
+        Session, Status, StatusType, UpdateUser, UpdateUserProfile, User, UserCreate,
     },
     Conf,
 };
@@ -186,6 +186,13 @@ impl UpdateUser {
             validate_password(password)?;
         }
         Ok(())
+    }
+}
+
+impl ResetPassword {
+    pub fn validate(&self) -> Result<(), ErrorResponse> {
+        validate_email(&self.email)?;
+        validate_password(&self.password)
     }
 }
 
@@ -677,6 +684,111 @@ WHERE id = $1
             log::error!("Couldn't mark user as deleted: {}", err);
             error!(SERVER, "Failed to delete user")
         })?;
+        Ok(())
+    }
+
+    pub async fn create_password_reset_code<R: CryptoRngCore, C: AsyncCommands>(
+        create_code: CreatePasswordResetCode,
+        rng: &mut R,
+        conf: &Conf,
+        mailer: &Emailer,
+        db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
+    ) -> Result<(), ErrorResponse> {
+        validate_email(&create_code.email)?;
+        if let Some(email) = &conf.email {
+            let username = sqlx::query!(
+                "
+SELECT username
+FROM users
+WHERE email = $1
+                ",
+                create_code.email,
+            )
+            .fetch_optional(db)
+            .await
+            .map_err(|err| {
+                log::error!("Failed to fetch user data: {}", err);
+                error!(SERVER, "Couldn't fetch user data")
+            })?
+            .ok_or_else(|| error!(NOT_FOUND))?
+            .username;
+            let code = rng.gen_range(100000..999999);
+            cache
+                .set_ex::<_, _, ()>(format!("password-reset:{}", create_code.email), code, 86400)
+                .await
+                .map_err(|err| {
+                    log::error!("Failed to set verification code in cache: {}", err);
+                    error!(SERVER, "Could not send verification email")
+                })?;
+            mailer
+                .send_email(
+                    &format!("{} <{}>", username, create_code.email),
+                    EmailPreset::Verify { code },
+                    // EmailPreset::PasswordReset { code },
+                    email,
+                )
+                .await?;
+            Ok(())
+        } else {
+            Err(error!(
+                MISDIRECTED,
+                "This instance doesn't have a configured email"
+            ))
+        }
+    }
+
+    pub async fn reset_password<H: PasswordHasher, R: CryptoRngCore, C: AsyncCommands>(
+        reset: ResetPassword,
+        hasher: &H,
+        rng: &mut R,
+        db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
+    ) -> Result<(), ErrorResponse> {
+        reset.validate()?;
+        let cache_code: u32 = cache
+            .get(format!("password-reset:{}", reset.email))
+            .await
+            .map_err(|err| {
+                log::error!("Failed to get code from cache: {}", err);
+                error!(SERVER, "Couldn't reset the user's password")
+            })?;
+        if reset.code != cache_code {
+            return Err(error!(VALIDATION, "code", "Incorrect password reset code"));
+        }
+        let salt = SaltString::generate(rng);
+        let hash = hasher
+            .hash_password(reset.password.as_bytes(), &salt)
+            .map_err(|err| {
+                log::error!("Failed to hash password: {}", err);
+                error!(SERVER, "Could not hash password")
+            })?
+            .to_string();
+        sqlx::query!(
+            "
+UPDATE users
+SET password = $1
+WHERE email = $2
+            ",
+            reset.email,
+            hash
+        )
+        .execute(db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to set user password hash in database: {}", err);
+            error!(SERVER, "Couldn't reset the user's pasword")
+        })?;
+        cache
+            .del::<_, ()>(format!("password-reset:{}", reset.email))
+            .await
+            .map_err(|err| {
+                log::error!(
+                    "Failed to remove user password reset code from cache: {}",
+                    err
+                );
+                error!(SERVER, "Couldn't reset the user's  password")
+            })?;
         Ok(())
     }
 }

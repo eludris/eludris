@@ -225,6 +225,50 @@ pub struct UpdateUserProfile {
     pub banner: Option<Option<u64>>,
 }
 
+/// The CreatePasswordResetCode payload. This is used when a user wants to generate a code
+/// to reset their password, most commonly because they forgot their old one.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "email": "someemail@ma.il"
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CreatePasswordResetCode {
+    /// The user's email.
+    pub email: String,
+}
+
+/// The ResetPassword payload. This is used when the user wants to reset their password using a
+/// password reset code.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "code": 234567,
+///   "email": "someemail@ma.il",
+///   "password": "wow such security"
+/// }
+/// ```
+#[autodoc(category = "Users")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ResetPassword {
+    /// The password reset code the user got emailed.
+    pub code: u32,
+    /// The user's email.
+    pub email: String,
+    /// The user's new password.
+    pub password: String,
+}
+
 /// The DeleteCredentials payload. This is used in multiple places in the API to provide extra
 /// credentials for deleting important user-related stuff.
 ///
