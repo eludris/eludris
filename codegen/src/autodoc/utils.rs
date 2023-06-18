@@ -114,7 +114,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                 )
             })?
             .to_string();
-        let field_type = get_type(&field.ty)?;
+        let mut field_type = get_type(&field.ty)?;
         let doc = get_doc(&field.attrs)?;
         let mut flattened = false;
         let mut nullable = false;
@@ -135,6 +135,10 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                         NestedMeta::Meta(Meta::NameValue(meta)) => {
                             if meta.path.is_ident("skip_serializing_if") {
                                 ommitable = true;
+                                // Strip Option<> from type.
+                                if field_type.starts_with("Option<") {
+                                    field_type = field_type[7..field_type.len() - 1].to_string();
+                                }
                                 if let Type::Path(ty) = &field.ty {
                                     if ty.path.segments.last().unwrap().ident == "Option" {
                                         if let Some(qself) = &ty.qself {
@@ -143,6 +147,9 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                                                     == "Option"
                                                 {
                                                     nullable = true;
+                                                    field_type = field_type
+                                                        [7..field_type.len() - 1]
+                                                        .to_string();
                                                 }
                                             }
                                         }
@@ -159,6 +166,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         if let Type::Path(ty) = &field.ty {
             if ty.path.segments.last().unwrap().ident == "Option" && !ommitable {
                 nullable = true;
+                field_type = field_type[7..field_type.len() - 1].to_string();
             }
         }
         field_infos.push(FieldInfo {

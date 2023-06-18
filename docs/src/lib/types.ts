@@ -70,7 +70,7 @@ export interface Body {
   format: string;
 }
 
-export interface Body {
+export interface Response {
   type: string;
   format: string;
 }

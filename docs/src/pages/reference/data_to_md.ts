@@ -12,10 +12,6 @@ import {
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
 
-const TYPE_OVERRIDES: Record<string, string> = {
-  FetchResponse: 'Raw file content.'
-};
-
 export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
@@ -181,6 +177,8 @@ const displayRoute = (item: RouteInfo): string => {
       content += `\n\nA JSON ${displayType(body_type)}`;
     } else if (item.body.format == 'multipart/form-data') {
       content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
+    } else if (item.body.format == 'raw') {
+      content += 'Raw file content.';
     } else {
       content += `\n\n${displayType(body_type)}`;
     }
@@ -194,13 +192,17 @@ const displayRoute = (item: RouteInfo): string => {
   if (item.response) {
     content += '\n\n## Response';
     let response_type = item.response.type;
-    content += `\n\n${displayType(response_type)}`;
-    const innerType = AUTODOC_ENTRIES.items.find((entry) =>
-      entry.endsWith(`/${response_type}.json`)
-    );
-    if (innerType) {
-      let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
-      content += `\n\n${briefItem(data.item, data.name)}`;
+    if (item.response.format == 'raw') {
+      content += '\n\nRaw file content.';
+    } else {
+      content += `\n\n${displayType(response_type)}`;
+      const innerType = AUTODOC_ENTRIES.items.find((entry) =>
+        entry.endsWith(`/${response_type}.json`)
+      );
+      if (innerType) {
+        let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(data.item, data.name)}`;
+      }
     }
   }
   return content.substring(2); // to remove the first double newline
@@ -232,8 +234,6 @@ const displayType = (type: string): string => {
     return 'String';
   } else if (type == 'TempFile') {
     return 'File';
-  } else if (type in TYPE_OVERRIDES) {
-    return TYPE_OVERRIDES[type];
   }
 
   let entry = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
