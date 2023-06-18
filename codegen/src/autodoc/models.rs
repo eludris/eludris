@@ -90,4 +90,5 @@ pub struct Body {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Response {
     pub r#type: String,
+    pub rate_limit: bool,
 }

@@ -2,12 +2,23 @@ use std::collections::HashMap;
 
 use proc_macro::Span;
 use quote::ToTokens;
-use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType};
+use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType, Type};
 
 use super::{
     models::{Body, Item, ParamInfo, Response, RouteInfo},
     utils::get_type,
 };
+
+fn has_rate_limits(ty: &Type) -> Result<bool, Error> {
+    if let Type::Path(path) = ty {
+        if let Some(item) = path.path.segments.last() {
+            if item.ident == "RateLimitedRouteResponse" {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
 
 pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
     let mut base = "".to_string();
@@ -41,9 +52,9 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         .expect("Ident removed itself")
         .to_string()
         .to_uppercase();
-    let response_type = match item.sig.output {
-        ReturnType::Default => None,
-        ReturnType::Type(_, ty) => Some(get_type(&ty)?),
+    let (response_type, rate_limit) = match item.sig.output {
+        ReturnType::Default => (None, false),
+        ReturnType::Type(_, ty) => (Some(get_type(&ty)?), has_rate_limits(&ty)?),
     };
 
     let mut params = HashMap::new();
@@ -148,7 +159,10 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         path_params,
         query_params,
         body: body_type.map(|t| Body { r#type: t }),
-        response: response_type.map(|t| Response { r#type: t }),
+        response: response_type.map(|t| Response {
+            r#type: t,
+            rate_limit,
+        }),
         requires_auth,
     }))
 }
