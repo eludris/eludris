@@ -42,7 +42,10 @@ pub fn get_type(ty: &Type) -> Result<String, Error> {
 }
 
 pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
-    if segment.ident == "RateLimitedRouteResponse" || segment.ident == "Result" {
+    if segment.ident == "RateLimitedRouteResponse"
+        || segment.ident == "Result"
+        || segment.ident == "Box"
+    {
         if let PathArguments::AngleBracketed(args) = &segment.arguments {
             if let Some(GenericArgument::Type(Type::Path(ty))) = args.args.first() {
                 if let Some(segment) = ty.path.segments.last() {
