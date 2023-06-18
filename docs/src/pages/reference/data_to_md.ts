@@ -173,9 +173,9 @@ const displayRoute = (item: RouteInfo): string => {
       content += `\n|${param.name}|${displayType(param.param_type)}|`;
     });
   }
-  if (item.body_type) {
+  if (item.body) {
     content += '\n\n## Request Body';
-    let body_type = item.body_type;
+    let body_type = item.body.type;
     if (body_type.startsWith('Json<')) {
       content += `\n\nA JSON ${displayType(body_type)}`;
     } else if (body_type.startsWith('Form<')) {

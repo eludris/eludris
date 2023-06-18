@@ -5,7 +5,7 @@ use quote::ToTokens;
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType};
 
 use super::{
-    models::{Item, ParamInfo, RouteInfo},
+    models::{Body, Item, ParamInfo, RouteInfo},
     utils::get_type,
 };
 
@@ -147,7 +147,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         route,
         path_params,
         query_params,
-        body_type,
+        body: body_type.map(|t| Body { r#type: t }),
         return_type,
         requires_auth,
     }))

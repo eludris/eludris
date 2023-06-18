@@ -65,13 +65,17 @@ export interface QueryParamInfo {
   param_type: string;
 }
 
+export interface Body {
+  type: string;
+}
+
 export interface RouteInfo {
   type: ItemType.Route;
   method: string;
   route: string;
   path_params: PathParamInfo[];
   query_params: QueryParamInfo[];
-  body_type: string | null;
+  body: Body | null;
   return_type: string | null;
   requires_auth?: boolean;
 }

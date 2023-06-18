@@ -24,9 +24,9 @@ pub struct FieldInfo {
     pub name: String,
     pub doc: Option<String>,
     pub field_type: String,
-    pub flattened: bool,
     pub nullable: bool,
     pub ommitable: bool,
+    pub flattened: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -76,8 +76,13 @@ pub struct RouteInfo {
     pub route: String,
     pub path_params: Vec<ParamInfo>,
     pub query_params: Vec<ParamInfo>,
-    pub body_type: Option<String>,
+    pub body: Option<Body>,
     pub return_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub requires_auth: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Body {
+    pub r#type: String,
 }
