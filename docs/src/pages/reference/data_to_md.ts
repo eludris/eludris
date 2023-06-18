@@ -93,7 +93,8 @@ const displayFields = (fields: FieldInfo[]): string => {
 
 const displayField = (field: FieldInfo): string => {
   const innerType =
-    field.flattened && AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.field_type}.json`));
+    field.flattened &&
+    AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.field_type}.json`));
   if (innerType) {
     let innerData: ObjectInfo = JSON.parse(
       readFileSync(`public/autodoc/${innerType}`).toString()
@@ -190,14 +191,16 @@ const displayRoute = (item: RouteInfo): string => {
       content += `\n\n${briefItem(data.item, data.name)}`;
     }
   }
-  if (item.return_type) {
+  if (item.response) {
     content += '\n\n## Response';
-    let return_type = item.return_type
+    let response_type = item.response.type
       .replace(/Result<(.+?), .+?>/gm, '$1')
       .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
       .replace(/Json<(.+?)>/gm, '$1');
-    content += `\n\n${displayType(return_type)}`;
-    const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${return_type}.json`));
+    content += `\n\n${displayType(response_type)}`;
+    const innerType = AUTODOC_ENTRIES.items.find((entry) =>
+      entry.endsWith(`/${response_type}.json`)
+    );
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
       content += `\n\n${briefItem(data.item, data.name)}`;

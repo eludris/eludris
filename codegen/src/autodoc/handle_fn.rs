@@ -5,7 +5,7 @@ use quote::ToTokens;
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType};
 
 use super::{
-    models::{Body, Item, ParamInfo, RouteInfo},
+    models::{Body, Item, ParamInfo, Response, RouteInfo},
     utils::get_type,
 };
 
@@ -41,7 +41,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         .expect("Ident removed itself")
         .to_string()
         .to_uppercase();
-    let return_type = match item.sig.output {
+    let response_type = match item.sig.output {
         ReturnType::Default => None,
         ReturnType::Type(_, ty) => Some(get_type(&ty)?),
     };
@@ -148,7 +148,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         path_params,
         query_params,
         body: body_type.map(|t| Body { r#type: t }),
-        return_type,
+        response: response_type.map(|t| Response { r#type: t }),
         requires_auth,
     }))
 }

@@ -69,6 +69,10 @@ export interface Body {
   type: string;
 }
 
+export interface Body {
+  type: string;
+}
+
 export interface RouteInfo {
   type: ItemType.Route;
   method: string;
@@ -76,7 +80,7 @@ export interface RouteInfo {
   path_params: PathParamInfo[];
   query_params: QueryParamInfo[];
   body: Body | null;
-  return_type: string | null;
+  response: Response | null;
   requires_auth?: boolean;
 }
 

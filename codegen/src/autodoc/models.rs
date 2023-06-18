@@ -77,12 +77,17 @@ pub struct RouteInfo {
     pub path_params: Vec<ParamInfo>,
     pub query_params: Vec<ParamInfo>,
     pub body: Option<Body>,
-    pub return_type: Option<String>,
+    pub response: Option<Response>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub requires_auth: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Body {
+    pub r#type: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Response {
     pub r#type: String,
 }
