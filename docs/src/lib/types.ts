@@ -1,5 +1,5 @@
 export enum ItemType {
-  Struct = 'struct',
+  Object = 'object',
   Enum = 'enum',
   Route = 'route'
 }
@@ -13,8 +13,8 @@ export interface FieldInfo {
   ommitable: boolean;
 }
 
-export interface StructInfo {
-  type: ItemType.Struct;
+export interface ObjectInfo {
+  type: ItemType.Object;
   fields: FieldInfo[];
 }
 
@@ -76,7 +76,7 @@ export interface RouteInfo {
   guards: string[];
 }
 
-export type Item = StructInfo | EnumInfo | RouteInfo;
+export type Item = ObjectInfo | EnumInfo | RouteInfo;
 
 export interface ItemInfo {
   name: string;

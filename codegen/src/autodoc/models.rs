@@ -14,7 +14,7 @@ pub struct ItemInfo {
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum Item {
-    Struct(StructInfo),
+    Object(ObjectInfo),
     Enum(EnumInfo),
     Route(RouteInfo),
 }
@@ -30,7 +30,7 @@ pub struct FieldInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct StructInfo {
+pub struct ObjectInfo {
     pub fields: Vec<FieldInfo>,
 }
 

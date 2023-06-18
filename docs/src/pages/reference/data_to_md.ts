@@ -5,7 +5,7 @@ import {
   FieldInfo,
   ItemInfo,
   ItemType,
-  StructInfo,
+  ObjectInfo,
   VariantType,
   RouteInfo,
   Item
@@ -22,11 +22,12 @@ export default (info: ItemInfo): string => {
   if (info.item.type == ItemType.Route) {
     // Replace angle brackets with HTML character entities
     const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
-    content += `\n\n<span class="method">${info.item.method
-      }</span><span class="route">${route.replace(
-        /&lt;*.+?&gt;/gm,
-        '<span class="special-segment">$&</span>'
-      )}</span>`;
+    content += `\n\n<span class="method">${
+      info.item.method
+    }</span><span class="route">${route.replace(
+      /&lt;*.+?&gt;/gm,
+      '<span class="special-segment">$&</span>'
+    )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -34,7 +35,7 @@ export default (info: ItemInfo): string => {
     example = parts.join('-----');
     content += `\n\n${displayDoc(doc)}`;
   }
-  if (info.item.type == ItemType.Struct) {
+  if (info.item.type == ItemType.Object) {
     content += `\n\n${displayFields(info.item.fields)}`;
   } else if (info.item.type == ItemType.Enum) {
     info.item.variants.forEach((variant) => {
@@ -61,7 +62,7 @@ export default (info: ItemInfo): string => {
 };
 
 const briefItem = (item: Item, model: string): string => {
-  if (item.type == ItemType.Struct) {
+  if (item.type == ItemType.Object) {
     if (!item.fields.length) {
       return '';
     }
@@ -94,7 +95,7 @@ const displayField = (field: FieldInfo): string => {
   const innerType =
     field.flattened && AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.field_type}.json`));
   if (innerType) {
-    let innerData: StructInfo = JSON.parse(
+    let innerData: ObjectInfo = JSON.parse(
       readFileSync(`public/autodoc/${innerType}`).toString()
     ).item;
     let fields = '';
@@ -103,8 +104,9 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
-    }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
+    field.nullable ? '?' : ''
+  }|${displayInlineDoc(field.doc)}|`;
 };
 
 const getTagDescription = (tag: string, model: string): string => {
