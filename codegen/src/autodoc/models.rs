@@ -47,7 +47,7 @@ pub enum EnumVariant {
         doc: Option<String>,
         field_type: String,
     },
-    Struct {
+    Object {
         name: String,
         doc: Option<String>,
         fields: Vec<FieldInfo>,

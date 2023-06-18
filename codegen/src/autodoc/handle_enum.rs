@@ -85,7 +85,7 @@ fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
                 field_type: get_type(&field.ty)?,
             }
         }
-        Fields::Named(struct_fields) => EnumVariant::Struct {
+        Fields::Named(struct_fields) => EnumVariant::Object {
             name,
             doc,
             fields: get_field_infos(struct_fields.named.iter())?,

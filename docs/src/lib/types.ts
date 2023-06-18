@@ -21,7 +21,7 @@ export interface ObjectInfo {
 export enum VariantType {
   Unit = 'unit',
   Tuple = 'tuple',
-  Struct = 'struct'
+  Object = 'object'
 }
 
 export interface UnitEnumVariant {
@@ -38,7 +38,7 @@ export interface TupleEnumVariant {
 }
 
 export interface StructEnumVariant {
-  type: VariantType.Struct;
+  type: VariantType.Object;
   name: string;
   doc: string | null;
   fields: FieldInfo[];

@@ -139,7 +139,7 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
         content += `\n\n${briefItem(data.item, data.name)}`;
       }
     }
-  } else if (variant.type == VariantType.Struct) {
+  } else if (variant.type == VariantType.Object) {
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
       let name = switchCase(variant.name, item.rename_all);
