@@ -85,10 +85,12 @@ pub struct RouteInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Body {
     pub r#type: String,
+    pub format: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Response {
     pub r#type: String,
+    pub format: String,
     pub rate_limit: bool,
 }

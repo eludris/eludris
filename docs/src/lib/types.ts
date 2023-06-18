@@ -67,10 +67,12 @@ export interface QueryParamInfo {
 
 export interface Body {
   type: string;
+  format: string;
 }
 
 export interface Body {
   type: string;
+  format: string;
 }
 
 export interface RouteInfo {

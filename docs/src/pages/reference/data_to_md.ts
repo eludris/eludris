@@ -177,9 +177,9 @@ const displayRoute = (item: RouteInfo): string => {
   if (item.body) {
     content += '\n\n## Request Body';
     let body_type = item.body.type;
-    if (body_type.startsWith('Json<')) {
+    if (item.body.format == 'application/json') {
       content += `\n\nA JSON ${displayType(body_type)}`;
-    } else if (body_type.startsWith('Form<')) {
+    } else if (item.body.format == 'multipart/form-data') {
       content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
     } else {
       content += `\n\n${displayType(body_type)}`;
@@ -193,10 +193,7 @@ const displayRoute = (item: RouteInfo): string => {
   }
   if (item.response) {
     content += '\n\n## Response';
-    let response_type = item.response.type
-      .replace(/Result<(.+?), .+?>/gm, '$1')
-      .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
-      .replace(/Json<(.+?)>/gm, '$1');
+    let response_type = item.response.type;
     content += `\n\n${displayType(response_type)}`;
     const innerType = AUTODOC_ENTRIES.items.find((entry) =>
       entry.endsWith(`/${response_type}.json`)
@@ -227,14 +224,7 @@ const switchCase = (content: string, new_case: string | null): string => {
 };
 
 const displayType = (type: string): string => {
-  type = type
-    .replace(/Option<(.+)>/gm, '$1')
-    .replace(/Json<(.+)>/gm, '$1')
-    .replace(/Form<(.+)>/gm, '$1')
-    .replace(/Box<(.+)>/gm, '$1')
-    .replace(/</gm, '\\<');
-
-  if (type == 'u32' || type == 'u64' || type == 'usize') {
+  if (/^(u|i)(size|\d\d)$/gm.test(type)) {
     return 'Number';
   } else if (type == 'bool') {
     return 'Boolean';

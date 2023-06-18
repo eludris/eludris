@@ -20,6 +20,27 @@ fn has_rate_limits(ty: &Type) -> Result<bool, Error> {
     Ok(false)
 }
 
+fn route_format(ty: String) -> Result<(String, String), Error> {
+    if ty.starts_with("Json<") {
+        Ok((
+            ty[5..ty.len() - 1].to_string(),
+            "application/json".to_string(),
+        ))
+    } else if ty.starts_with("Form<") {
+        Ok((
+            ty[5..ty.len() - 1].to_string(),
+            "multipart/form-data".to_string(),
+        ))
+    } else if ty == "FetchResponse" {
+        Ok((ty, "raw".to_string()))
+    } else {
+        return Err(Error::new(
+            Span::call_site().into(),
+            "Could not parse route format",
+        ));
+    }
+}
+
 pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
     let mut base = "".to_string();
 
@@ -52,9 +73,9 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         .expect("Ident removed itself")
         .to_string()
         .to_uppercase();
-    let (response_type, rate_limit) = match item.sig.output {
+    let (response, rate_limit) = match item.sig.output {
         ReturnType::Default => (None, false),
-        ReturnType::Type(_, ty) => (Some(get_type(&ty)?), has_rate_limits(&ty)?),
+        ReturnType::Type(_, ty) => (Some(route_format(get_type(&ty)?)?), has_rate_limits(&ty)?),
     };
 
     let mut params = HashMap::new();
@@ -128,7 +149,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         }
     }
 
-    let mut body_type = None;
+    let mut body = None;
     for meta in metas {
         if let NestedMeta::Meta(Meta::NameValue(meta)) = meta {
             if meta.path.is_ident("data") {
@@ -136,7 +157,9 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
                     let value = lit.value();
                     // the absence of this should be handled by rocket
                     // also, the format of the lit here is `<name>` because... reasons
-                    body_type = Some(params.remove(&value[1..value.len() - 1]).unwrap());
+                    body = Some(route_format(
+                        params.remove(&value[1..value.len() - 1]).unwrap(),
+                    )?);
                 } // rocket should handle other cases for us
             }
         }
@@ -158,9 +181,13 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         route,
         path_params,
         query_params,
-        body: body_type.map(|t| Body { r#type: t }),
-        response: response_type.map(|t| Response {
-            r#type: t,
+        body: body.map(|b| Body {
+            r#type: b.0,
+            format: b.1,
+        }),
+        response: response.map(|r| Response {
+            r#type: r.0,
+            format: r.1,
             rate_limit,
         }),
         requires_auth,
