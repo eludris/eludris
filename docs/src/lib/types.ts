@@ -73,6 +73,8 @@ export interface Body {
 export interface Response {
   type: string;
   format: string;
+  status_code: number;
+  rate_limits: boolean;
 }
 
 export interface RouteInfo {

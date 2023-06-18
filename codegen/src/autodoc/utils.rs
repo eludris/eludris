@@ -45,6 +45,7 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
     if segment.ident == "RateLimitedRouteResponse"
         || segment.ident == "Result"
         || segment.ident == "Box"
+        || segment.ident == "Custom"
     {
         if let PathArguments::AngleBracketed(args) = &segment.arguments {
             if let Some(GenericArgument::Type(Type::Path(ty))) = args.args.first() {

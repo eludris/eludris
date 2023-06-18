@@ -92,5 +92,6 @@ pub struct Body {
 pub struct Response {
     pub r#type: String,
     pub format: String,
+    pub status_code: u8,
     pub rate_limit: bool,
 }

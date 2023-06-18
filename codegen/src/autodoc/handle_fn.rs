@@ -36,12 +36,12 @@ fn route_format(ty: String) -> Result<(String, String), Error> {
     } else {
         return Err(Error::new(
             Span::call_site().into(),
-            "Could not parse route format",
+            format!("Could not parse route format: {}", ty),
         ));
     }
 }
 
-pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
+pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn, status_code: u8) -> Result<Item, Error> {
     let mut base = "".to_string();
 
     for attr in attrs.iter() {
@@ -188,6 +188,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         response: response.map(|r| Response {
             r#type: r.0,
             format: r.1,
+            status_code,
             rate_limit,
         }),
         requires_auth,

@@ -177,8 +177,6 @@ const displayRoute = (item: RouteInfo): string => {
       content += `\n\nA JSON ${displayType(body_type)}`;
     } else if (item.body.format == 'multipart/form-data') {
       content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
-    } else if (item.body.format == 'raw') {
-      content += 'Raw file content.';
     } else {
       content += `\n\n${displayType(body_type)}`;
     }
@@ -190,12 +188,12 @@ const displayRoute = (item: RouteInfo): string => {
     }
   }
   if (item.response) {
-    content += '\n\n## Response';
+    content += `\n\n## Response\n\n<span class="status">${item.response.status_code}</span>`;
     let response_type = item.response.type;
     if (item.response.format == 'raw') {
-      content += '\n\nRaw file content.';
+      content += 'Raw file content.';
     } else {
-      content += `\n\n${displayType(response_type)}`;
+      content += `${displayType(response_type)}`;
       const innerType = AUTODOC_ENTRIES.items.find((entry) =>
         entry.endsWith(`/${response_type}.json`)
       );
