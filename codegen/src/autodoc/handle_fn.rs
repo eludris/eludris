@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use proc_macro::Span;
+use quote::ToTokens;
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType};
 
 use super::{
@@ -54,6 +55,7 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
                 if let Ok(param_type) = get_type(&param.ty) {
                     params.insert(name, param_type);
                 } else {
+                    println!("{}", &param.ty.to_token_stream());
                     params.insert(name, "Guard".to_string());
                 }
             }
@@ -129,6 +131,17 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         }
     }
 
+    let requires_auth = match params.get("session").map(|s| s.to_string()).as_deref() {
+        Some("TokenAuth") => Some(true),
+        Some("Option<TokenAuth>") => Some(false),
+        Some(_) => {
+            return Err(Error::new(
+                Span::call_site().into(),
+                "Session parameter must be of type TokenAuth or Option<TokenAuth>",
+            ))
+        }
+        None => None,
+    };
     Ok(Item::Route(RouteInfo {
         method,
         route,
@@ -136,6 +149,6 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn) -> Result<Item, Error> {
         query_params,
         body_type,
         return_type,
-        guards: params.into_keys().collect(),
+        requires_auth,
     }))
 }

@@ -73,7 +73,7 @@ export interface RouteInfo {
   query_params: QueryParamInfo[];
   body_type: string | null;
   return_type: string | null;
-  guards: string[];
+  requires_auth?: boolean;
 }
 
 export type Item = ObjectInfo | EnumInfo | RouteInfo;

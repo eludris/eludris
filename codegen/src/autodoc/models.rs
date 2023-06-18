@@ -78,5 +78,6 @@ pub struct RouteInfo {
     pub query_params: Vec<ParamInfo>,
     pub body_type: Option<String>,
     pub return_type: Option<String>,
-    pub guards: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requires_auth: Option<bool>,
 }
