@@ -1,3 +1,5 @@
+use lazy_static::lazy_static;
+use regex::Regex;
 use syn::{spanned::Spanned, Error, Fields, ItemEnum, Lit, Meta, NestedMeta, Variant};
 
 use super::{
@@ -50,20 +52,37 @@ pub fn handle_enum(_: &[NestedMeta], item: ItemEnum) -> Result<Item, Error> {
 
     let mut variants = vec![];
     for variant in item.variants {
-        variants.push(get_variant(variant)?);
+        variants.push(get_variant(variant, &rename_all)?);
     }
 
     Ok(Item::Enum(EnumInfo {
         content,
         tag,
         untagged,
-        rename_all,
         variants,
     }))
 }
-fn get_variant(variant: Variant) -> Result<EnumVariant, syn::Error> {
+fn get_variant(variant: Variant, case: &Option<String>) -> Result<EnumVariant, syn::Error> {
+    lazy_static! {
+        static ref SNAKE_REPLACE: Regex = Regex::new(r"(\S)([A-Z])").unwrap();
+    }
+
     let doc = get_doc(&variant.attrs)?;
-    let name = variant.ident.to_string();
+    let raw_name = variant.ident.to_string();
+    let name = match case.as_deref() {
+        Some("SCREAMING_SNAKE_CASE") => SNAKE_REPLACE
+            .replace_all(&raw_name, "${1}_$2")
+            .to_uppercase(),
+        Some("UPPERCASE") => raw_name.to_uppercase(),
+        Some("lowercase") => raw_name.to_lowercase(),
+        Some(s) => {
+            return Err(syn::Error::new(
+                variant.span(),
+                format!("Unknown rename_all case: {}", s),
+            ))
+        }
+        None => raw_name,
+    };
     Ok(match variant.fields {
         Fields::Unit => EnumVariant::Unit { name, doc },
         Fields::Unnamed(fields) => {

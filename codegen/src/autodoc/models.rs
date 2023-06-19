@@ -60,7 +60,6 @@ pub struct EnumInfo {
     pub tag: Option<String>,
     pub untagged: bool,
     pub content: Option<String>,
-    pub rename_all: Option<String>,
     pub variants: Vec<EnumVariant>,
 }
 

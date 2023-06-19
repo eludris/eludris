@@ -114,15 +114,13 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
   let content = '';
   if (variant.type == VariantType.Unit) {
     if (item.tag) {
-      let name = switchCase(variant.name, item.rename_all);
       let desc = getTagDescription(item.tag, model);
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${name}"|${desc}`;
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${variant.name}"|${desc}`;
     }
   } else if (variant.type == VariantType.Tuple) {
     if (item.tag) {
-      let name = switchCase(variant.name, item.rename_all);
       let desc = getTagDescription(item.tag, model);
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${name}"|${desc}`;
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${variant.name}"|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
       }
@@ -139,11 +137,10 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
   } else if (variant.type == VariantType.Object) {
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
-      let name = switchCase(variant.name, item.rename_all);
       let desc = getTagDescription(item.tag, model);
-      content += `\n|${item.tag}|"${name}"|${desc}`;
+      content += `\n|${item.tag}|"${variant.name}"|${desc}`;
       if (item.content) {
-        content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant`;
+        content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant.`;
         content += '\n\nWith the data of this variant being:';
         content += `\n\n${displayFields(variant.fields)}`;
       } else {
@@ -216,15 +213,8 @@ const displayInlineDoc = (doc: string | null | undefined): string => {
     .replace(/(\S)\n(\S)/gm, '$1 $2');
 };
 
-const switchCase = (content: string, new_case: string | null): string => {
-  if (new_case == 'SCREAMING_SNAKE_CASE') {
-    return content.replace(/(\S)([A-Z])/gm, '$1_$2').toUpperCase();
-  }
-  return content;
-};
-
 const displayType = (type: string): string => {
-  if (/^(u|i)(size|\d\d)$/gm.test(type)) {
+  if (/^(u|i)(size|\d{1,2})$/gm.test(type)) {
     return 'Number';
   } else if (type == 'bool') {
     return 'Boolean';
@@ -239,8 +229,22 @@ const displayType = (type: string): string => {
 };
 
 const uncodeName = (name: string): string => {
-  return name
-    .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
-    .replace(/[A-Z]/gm, ' $&')
-    .trim();
+  return (
+    name
+      // snake_case
+      .replace(
+        /([a-zA-Z]+)_([a-zA-Z]+)/gm,
+        (_, p1: string, p2: string) =>
+          `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}${p2[0].toUpperCase()}${p2
+            .slice(1)
+            .toLowerCase()}`
+      )
+      // UPPER -> lower
+      .replace(/^[A-Z]+$/gm, (p1: string) => p1.toLowerCase())
+      // _underscore
+      .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+      // Title Case
+      .replace(/[A-Z]/gm, ' $&')
+      .trim()
+  );
 };
