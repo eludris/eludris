@@ -10,9 +10,13 @@ which is used to actually customise the behaviour of your instance's outward-fac
 APIs like rate limits and whatnot.
 
 The [eludris/eludris](https://github.com/eludris/eludris) meta repository comes with
-examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `ExampleEludris.toml`,
+examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `Eludris.example.toml`,
 all you have to do is rename them to their respective names and add whatever configuration
 is required in `Eludris.toml`.
+
+Finally and the least required, the `assets/` directory. This contains static assets
+that your instance uses for stuff like emails. The meta repository defaults are more
+than fine for most instances but you can still modify them however you may want to.
 
 ## .env
 
