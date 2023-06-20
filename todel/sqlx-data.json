@@ -117,6 +117,59 @@
     },
     "query": "\nDELETE FROM sessions\nWHERE id = $1\nAND user_id = $2 -- This should be unnecessary but eh\n            "
   },
+  "18fab9165239d3b3abec22363b1fd730b1ff3d8fd7c6a24eefad87f815f786b9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Bpchar",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nUPDATE users\nSET password = $1\nWHERE email = $2\nreturning username, email\n            "
+  },
+  "26011e3bc1bea695e2156c02209bff07a186ff3b51a13d7e1c2f134f30dd21ac": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nUPDATE users\nSET is_deleted = TRUE\nWHERE id = $1\nRETURNING username, email\n            "
+  },
   "2c6cafdbbbb96b1676f4eb04ed41babc6bcc0810db1fc906edc7e8cc70469773": {
     "describe": {
       "columns": [
@@ -411,19 +464,6 @@
     },
     "query": "\nSELECT verified\nFROM users\nWHERE id = $1\nAND is_deleted = FALSE\n            "
   },
-  "b1f958f6c7d566bbacf56d4b902a80f89581176fb710c6fb95f21bcb78ea220a": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Bpchar",
-          "Text"
-        ]
-      }
-    },
-    "query": "\nUPDATE users\nSET password = $1\nWHERE email = $2\n            "
-  },
   "b4510f779f59e9bc186a1ce02bd7e1c61c837e970fd8dbb10abc3247e4c12330": {
     "describe": {
       "columns": [
@@ -563,18 +603,6 @@
       }
     },
     "query": "\nSELECT username, email, is_deleted\nFROM users\nWHERE username = $1\nOR email = $2\n            "
-  },
-  "d3ff52638e9f1b5e11b4f9f597e091569b6397e674fc9ff0aa32cd1e22ea36b6": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "\nUPDATE users\nSET is_deleted = TRUE\nWHERE id = $1\n            "
   },
   "d4131cfc2246292039d30fdae1849cb13420f140a898353f2abbbc93028f6c55": {
     "describe": {
