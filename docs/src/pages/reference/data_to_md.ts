@@ -168,20 +168,29 @@ const displayRoute = (item: RouteInfo): string => {
     });
   }
   if (item.body) {
-    content += '\n\n## Request Body';
+    content += '\n\n## Request Body\n\n';
     let body_type = item.body.type;
+    let format: string | null = null;
     if (item.body.format == 'application/json') {
-      content += `\n\nA JSON ${displayType(body_type)}`;
+      format = 'JSON';
     } else if (item.body.format == 'multipart/form-data') {
-      content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
-    } else {
-      content += `\n\n${displayType(body_type)}`;
+      format = 'Multi-part form data';
     }
 
     const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      if (!data.hidden) {
+        if (format) {
+          content += `A ${format} ${displayType(body_type)}`;
+        } else {
+          content += displayType(body_type);
+        }
+      }
+
       content += `\n\n${briefItem(data.item, data.name)}`;
+    } else {
+      content += displayType(body_type);
     }
   }
   if (item.response) {
