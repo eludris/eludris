@@ -44,6 +44,7 @@ pub async fn reset_password(
     conf: &State<Conf>,
     rng: &State<Mutex<StdRng>>,
     hasher: &State<Argon2<'static>>,
+    mailer: &State<Emailer>,
     mut db: Connection<DB>,
     mut cache: Connection<Cache>,
 ) -> RateLimitedRouteResponse<Custom<()>> {
@@ -56,6 +57,8 @@ pub async fn reset_password(
             reset.into_inner(),
             hasher.inner(),
             &mut *rng.lock().await,
+            mailer,
+            conf,
             &mut db,
             &mut cache.into_inner(),
         )

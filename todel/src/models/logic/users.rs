@@ -275,7 +275,10 @@ OR email= $2
             mailer
                 .send_email(
                     &format!("{} <{}>", user.username, user.email),
-                    EmailPreset::Verify { code },
+                    EmailPreset::Verify {
+                        username: &user.username,
+                        code,
+                    },
                     email,
                 )
                 .await?;
@@ -536,24 +539,26 @@ AND is_deleted = FALSE
 
     pub async fn update<H: PasswordHasher, R: CryptoRngCore>(
         id: u64,
-        user: UpdateUser,
+        update: UpdateUser,
+        mailer: &Emailer,
+        conf: &Conf,
         hasher: &H,
         rng: &mut R,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
-        user.validate(&mut *db).await?;
-        Self::validate_password(id, &user.password, hasher, db).await?;
+        update.validate(&mut *db).await?;
+        Self::validate_password(id, &update.password, hasher, db).await?;
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
         let mut seperated = query.separated(", ");
-        if let Some(username) = user.username {
+        if let Some(username) = &update.username {
             seperated
                 .push("username = ")
                 .push_bind_unseparated(username);
         }
-        if let Some(email) = user.email {
+        if let Some(email) = &update.email {
             seperated.push("email = ").push_bind_unseparated(email);
         }
-        if let Some(new_password) = user.new_password {
+        if let Some(new_password) = &update.new_password {
             let salt = SaltString::generate(rng);
             let hash = hasher
                 .hash_password(new_password.as_bytes(), &salt)
@@ -564,7 +569,7 @@ AND is_deleted = FALSE
                 .to_string();
             seperated.push("password = ").push_bind_unseparated(hash);
         }
-        query
+        let user = query
             .push(" WHERE id = ")
             .push_bind(id as i64)
             .push(
@@ -593,7 +598,26 @@ AND is_deleted = FALSE
             .map_err(|err| {
                 log::error!("Couldn't update user profile: {}", err);
                 error!(SERVER, "Failed to update user profile")
-            })
+            })?;
+        if let Some(email) = &conf.email {
+            mailer
+                .send_email(
+                    &format!(
+                        "{} <{}>",
+                        user.username,
+                        user.email.as_ref().expect("Couldn't get user email")
+                    ),
+                    EmailPreset::UserUpdated {
+                        username: &user.username,
+                        new_username: update.username.as_deref(),
+                        new_email: update.email.as_deref(),
+                        password: update.new_password.is_some(),
+                    },
+                    email,
+                )
+                .await?;
+        }
+        Ok(user)
     }
 
     pub async fn update_profile(
@@ -667,23 +691,37 @@ AND is_deleted = FALSE
         id: u64,
         delete: PasswordDeleteCredentials,
         verifier: &V,
+        mailer: &Emailer,
+        conf: &Conf,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
         Self::validate_password(id, &delete.password, verifier, db).await?;
-        sqlx::query!(
+        let user = sqlx::query!(
             "
 UPDATE users
 SET is_deleted = TRUE
 WHERE id = $1
+RETURNING username, email
             ",
             id as i64
         )
-        .execute(db)
+        .fetch_one(db)
         .await
         .map_err(|err| {
             log::error!("Couldn't mark user as deleted: {}", err);
             error!(SERVER, "Failed to delete user")
         })?;
+        if let Some(email) = &conf.email {
+            mailer
+                .send_email(
+                    &format!("{} <{}>", user.username, user.email),
+                    EmailPreset::Delete {
+                        username: &user.username,
+                    },
+                    email,
+                )
+                .await?;
+        }
         Ok(())
     }
 
@@ -724,8 +762,10 @@ WHERE email = $1
             mailer
                 .send_email(
                     &format!("{} <{}>", username, create_code.email),
-                    EmailPreset::Verify { code },
-                    // EmailPreset::PasswordReset { code },
+                    EmailPreset::PasswordReset {
+                        username: &username,
+                        code,
+                    },
                     email,
                 )
                 .await?;
@@ -742,6 +782,8 @@ WHERE email = $1
         reset: ResetPassword,
         hasher: &H,
         rng: &mut R,
+        mailer: &Emailer,
+        conf: &Conf,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
     ) -> Result<(), ErrorResponse> {
@@ -764,16 +806,17 @@ WHERE email = $1
                 error!(SERVER, "Could not hash password")
             })?
             .to_string();
-        sqlx::query!(
+        let user = sqlx::query!(
             "
 UPDATE users
 SET password = $1
 WHERE email = $2
+returning username, email
             ",
             reset.email,
             hash
         )
-        .execute(db)
+        .fetch_one(db)
         .await
         .map_err(|err| {
             log::error!("Failed to set user password hash in database: {}", err);
@@ -789,6 +832,20 @@ WHERE email = $2
                 );
                 error!(SERVER, "Couldn't reset the user's  password")
             })?;
+        if let Some(email) = &conf.email {
+            mailer
+                .send_email(
+                    &format!("{} <{}>", user.username, user.email),
+                    EmailPreset::UserUpdated {
+                        username: &user.username,
+                        new_username: None,
+                        new_email: None,
+                        password: true,
+                    },
+                    email,
+                )
+                .await?;
+        }
         Ok(())
     }
 }

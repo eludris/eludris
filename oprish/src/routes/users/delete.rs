@@ -3,7 +3,7 @@ use rocket::{http::Status, response::status::Custom, serde::json::Json, State};
 use rocket_db_pools::Connection;
 use todel::{
     http::{Cache, ClientIP, TokenAuth, DB},
-    models::{PasswordDeleteCredentials, User},
+    models::{Emailer, PasswordDeleteCredentials, User},
     Conf,
 };
 
@@ -28,6 +28,7 @@ pub async fn delete_user(
     delete: Json<PasswordDeleteCredentials>,
     conf: &State<Conf>,
     verifier: &State<Argon2<'static>>,
+    mailer: &State<Emailer>,
     mut db: Connection<DB>,
     mut cache: Connection<Cache>,
     session: TokenAuth,
@@ -42,6 +43,8 @@ pub async fn delete_user(
             session.0.user_id,
             delete.into_inner(),
             verifier.inner(),
+            mailer,
+            conf,
             &mut db,
         )
         .await
