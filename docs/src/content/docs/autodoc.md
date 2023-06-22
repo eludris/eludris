@@ -117,7 +117,7 @@ An enum usually has a `tag` which is a key to which variant is present. It is a 
 
 If an enum is `untagged`, the variant would have to be figured out by finding which variant will deserialize correctly. This is only used right now for if each variant is a `unit`, so the correct variant can be figured out by what the value is.
 
-If an enum is not `untagged`, but also does not have a `tag`, this means it is "externally tagged". An external tag means that the tag is in the key, and the variant is in the value.
+If `untagged` is `false`, and `tag` is `null`, this means it is "externally tagged". An external tag means that the tag is in the key, and the variant is in the value.
 
 An example of this in JSON:
 
@@ -183,7 +183,7 @@ The `query_params` field contains the `?query&parameters`. These of course are r
 
 The [`body`](#body) field contains information about how to format your request body. `body.type` can refer to a [primitive type](#primitive-types) or a type in the inventory. `body.format` is a [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) such as `application/json` or `multipart/form-data`.
 
-The [`response`](#response) field contains information about what the response body is like. `response.type` can refer to a [primitive type](#primitive-types) or a type in the inventory. `response.format` is a [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) such as `application/json` or `multipart/form-data`. `response.format` may also be `"raw"` if it is the raw content of a file (such as `Get File` and `Get Attachment`). `response.status_code` refers to the [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) of the response. `response.rate_limit` ddefines whether the response will contain rate limit headers.
+The [`response`](#response) field contains information about what the response body is like. `response.type` can refer to a [primitive type](#primitive-types) or a type in the inventory. `response.format` is a [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) such as `application/json` or `multipart/form-data`. `response.format` may also be `"raw"` if it is the raw content of a file (such as `Get File` and `Get Attachment`). `response.status_code` refers to the [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) of the response. `response.rate_limit` defines whether the response will contain rate limit headers.
 
 #### Example
 
@@ -229,7 +229,7 @@ The [`response`](#response) field contains information about what the response b
 
 ### Item Info
 
-`ItemInfo` contains metadata about all kinda of items. `category` is used in the public documentation for headers, it has no real meaning otherwise.
+`ItemInfo` contains metadata about all kinds of items. `category` is used in the public documentation for headers, it has no real meaning otherwise.
 
 | Field    | Type          | Description                                                                          |
 | -------- | ------------- | ------------------------------------------------------------------------------------ |
