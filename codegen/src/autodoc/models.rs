@@ -25,7 +25,7 @@ pub struct FieldInfo {
     pub doc: Option<String>,
     pub field_type: String,
     pub nullable: bool,
-    pub ommitable: bool,
+    pub omittable: bool,
     pub flattened: bool,
 }
 

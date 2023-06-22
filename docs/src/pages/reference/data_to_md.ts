@@ -101,7 +101,7 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
+  return `|${field.name}${field.omittable ? '?' : ''}|${displayType(field.field_type)}${
     field.nullable ? '?' : ''
   }|${displayInlineDoc(field.doc)}|`;
 };

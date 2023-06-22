@@ -10,7 +10,7 @@ export interface FieldInfo {
   field_type: string;
   flattened: boolean;
   nullable: boolean;
-  ommitable: boolean;
+  omittable: boolean;
 }
 
 export interface ObjectInfo {

@@ -119,7 +119,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         let doc = get_doc(&field.attrs)?;
         let mut flattened = false;
         let mut nullable = false;
-        let mut ommitable = false;
+        let mut omittable = false;
 
         // I'm sorry, Torvalds
         for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
@@ -135,7 +135,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                         }
                         NestedMeta::Meta(Meta::NameValue(meta)) => {
                             if meta.path.is_ident("skip_serializing_if") {
-                                ommitable = true;
+                                omittable = true;
                                 // Strip Option<> from type.
                                 if field_type.starts_with("Option<") {
                                     field_type = field_type[7..field_type.len() - 1].to_string();
@@ -165,7 +165,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         }
 
         if let Type::Path(ty) = &field.ty {
-            if ty.path.segments.last().unwrap().ident == "Option" && !ommitable {
+            if ty.path.segments.last().unwrap().ident == "Option" && !omittable {
                 nullable = true;
                 field_type = field_type[7..field_type.len() - 1].to_string();
             }
@@ -176,7 +176,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
             doc,
             flattened,
             nullable,
-            ommitable,
+            omittable,
         })
     }
     Ok(field_infos)
