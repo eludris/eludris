@@ -8,7 +8,7 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
-/// Create a new session.
+/// Get all sessions.
 ///
 /// -----
 ///
@@ -16,23 +16,25 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 ///
 /// ```sh
 /// curl \
-///   --json '{
-///   "identifier": "yendri",
-///   "password": "authentícame por favor",
-///   "platform": "linux",
-///   "client":"pilfer"
-/// }' \
+///   -H "Authorization: <token>" \
 ///   https://api.eludris.gay/sessions
 ///
-/// {
-///   "token": "<token>",
-///   "session": {
-///     "indentifier": "yendri",
-///     "password": "authentícame por favor",
+/// [
+///   {
+///     "id": 2472278163458,
+///     "user_id": 48615849987333,
 ///     "platform": "linux",
-///     "client": "pilfer"
+///     "client": "pilfer",
+///     "ip": "fc00:e10d:7150:b1gb:00b5:f00d:babe:1337",
+///   },
+///   {
+///     "id": 2472278163867,
+///     "user_id": 48615849987333,
+///     "platform": "python",
+///     "client": "velum",
+///     "ip": "127.0.0.1",
 ///   }
-/// }
+/// ]
 /// ```
 #[autodoc("/sessions", category = "Sessions")]
 #[get("/")]
