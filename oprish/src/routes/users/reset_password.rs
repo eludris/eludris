@@ -11,6 +11,18 @@ use tokio::sync::Mutex;
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
+/// Send a password reset code to your email.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   --json '{"email": "yendri@llamoyendri.io"}' \
+///   https://api.eludris.gay/users/reset-password
+/// ```
+#[autodoc("/users", category = "Users")]
 #[post("/reset-password", data = "<create_code>")]
 pub async fn create_password_reset_code(
     create_code: Json<CreatePasswordResetCode>,
@@ -38,6 +50,19 @@ pub async fn create_password_reset_code(
     ))
 }
 
+/// Reset your password using the password reset code.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```sh
+/// curl \
+///   -X PATCH \
+///   --json '{"code":234567,"email":"someemail@ma.il","password":"wow such security"}' \
+///   https://api.eludris.gay/users/reset-password
+/// ```
+#[autodoc("/users", category = "Users")]
 #[patch("/reset-password", data = "<reset>")]
 pub async fn reset_password(
     reset: Json<ResetPassword>,
