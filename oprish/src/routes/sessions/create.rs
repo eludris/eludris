@@ -30,10 +30,11 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// {
 ///   "token": "<token>",
 ///   "session": {
-///     "indentifier": "yendri",
-///     "password": "authentícame por favor",
+///     "id": 2472278163458,
+///     "user_id": 48615849987333,
 ///     "platform": "linux",
-///     "client": "pilfer"
+///     "client": "pilfer",
+///     "ip": "fc00:e10d:7150:b1gb:00b5:f00d:babe:1337"
 ///   }
 /// }
 /// ```
