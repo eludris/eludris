@@ -305,9 +305,9 @@ pub async fn handle_connection(
                             if user.status.status_type == StatusType::Offline {
                                 user.status.text = None;
                             }
+                            user.email = None;
+                            user.verified = None;
                         }
-                        user.email = None;
-                        user.verified = None;
                         send_payload(&tx, &ServerPayload::UserUpdate(user)).await;
                     }
                     Ok(msg) => {
