@@ -289,7 +289,7 @@ pub async fn handle_connection(
                 if session.is_none() {
                     return;
                 }
-                let mut session = session.as_mut().unwrap();
+                let session = session.as_mut().unwrap();
                 match deserialize_message(msg) {
                     Ok(ServerPayload::PresenceUpdate { user_id, status }) => {
                         if user_id == session.user.id {
