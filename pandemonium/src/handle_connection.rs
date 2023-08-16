@@ -293,23 +293,22 @@ pub async fn handle_connection(
                 match deserialize_message(msg) {
                     Ok(ServerPayload::PresenceUpdate { user_id, status }) => {
                         if user_id == session.user.id {
-                            session.user.status = status;
-                        } else {
-                            send_payload(&tx, &ServerPayload::PresenceUpdate { user_id, status })
-                                .await;
+                            session.user.status = status.clone();
                         }
+                        send_payload(&tx, &ServerPayload::PresenceUpdate { user_id, status }).await;
                     }
                     Ok(ServerPayload::UserUpdate(mut user)) => {
                         if user.id == session.user.id {
-                            session.user = user;
-                        } else {
+                            session.user = user.clone();
+                        }
+                        if user.id != session.user.id {
                             if user.status.status_type == StatusType::Offline {
                                 user.status.text = None;
                             }
-                            user.email = None;
-                            user.verified = None;
-                            send_payload(&tx, &ServerPayload::UserUpdate(user)).await;
                         }
+                        user.email = None;
+                        user.verified = None;
+                        send_payload(&tx, &ServerPayload::UserUpdate(user)).await;
                     }
                     Ok(msg) => {
                         send_payload(&tx, &msg).await;
