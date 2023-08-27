@@ -224,7 +224,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     id,
                     file_id: id,
                     name,
-                    content_type: mime.to_string(),
+                    content_type: mime,
                     hash,
                     bucket,
                     spoiler,
