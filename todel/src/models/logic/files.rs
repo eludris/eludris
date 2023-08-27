@@ -135,8 +135,9 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             }
         } else {
             let file = tokio::task::spawn_blocking(move || {
-                let mime = tree_magic_mini::from_u8(&data);
-                let (width, height) = match mime {
+                let mime = tree_magic::from_u8(&data);
+                println!("{:?}", mime);
+                let (width, height) = match mime.as_str() {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
                             let mut reader = ImageReader::open(&path)
