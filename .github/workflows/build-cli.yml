@@ -7,6 +7,9 @@ on:
     types:
       - published
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.ref }}-${{ github.event_name == 'release' }}
   cancel-in-progress: true

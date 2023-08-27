@@ -11,6 +11,7 @@ on:
       - "main"
 
 permissions:
+  contents: read
   packages: write
 
 jobs:
