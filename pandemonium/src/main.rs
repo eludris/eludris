@@ -7,6 +7,7 @@ use std::sync::Once;
 use std::{env, sync::Arc};
 
 use anyhow::Context;
+use redis::AsyncCommands;
 use sqlx::{pool::PoolOptions, Pool, Postgres};
 use todel::{models::Secret, Conf};
 use tokio::{net::TcpListener, sync::Mutex, task};
@@ -45,6 +46,14 @@ async fn main() -> Result<(), anyhow::Error> {
             .await
             .context("Couldn't get an async connection to redis")?,
     ));
+
+    cache
+        .lock()
+        .await
+        .del("sessions")
+        .await
+        .context("Couldn't remove the sessions key")?; // wei wei wei wei
+
     // the max connections is to stay consistent with oprish and effis even though postgresql
     // will most likely not support this many connections at once.
     let pool: Pool<Postgres> = PoolOptions::new()

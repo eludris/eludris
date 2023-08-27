@@ -247,10 +247,10 @@ pub async fn handle_connection(
                                                 }
                                                 Err(err) => {
                                                     log::error!(
-                                                        "Failed to get online users: {}",
+                                                        "Failed to get online user {}: {}",
+                                                        user_id,
                                                         err
                                                     );
-                                                    return "Failed to connect user".to_string();
                                                 }
                                             }
                                         }
