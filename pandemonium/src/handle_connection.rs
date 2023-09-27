@@ -302,6 +302,24 @@ pub async fn handle_connection(
                             session.user = user.clone();
                         }
                         if user.id != session.user.id {
+                            let sessions: u32 = match cache
+                                .lock()
+                                .await
+                                .get(format!("session:{}", user.id))
+                                .await
+                            {
+                                Ok(sessions) => sessions,
+                                Err(err) => {
+                                    log::error!(
+                                        "Failed to get user active session counter: {}",
+                                        err
+                                    );
+                                    return;
+                                }
+                            };
+                            if sessions == 0 {
+                                user.status.status_type = StatusType::Offline;
+                            }
                             if user.status.status_type == StatusType::Offline {
                                 user.status.text = None;
                             }
