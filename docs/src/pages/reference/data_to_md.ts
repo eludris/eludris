@@ -89,8 +89,7 @@ const displayFields = (fields: FieldInfo[]): string => {
 
 const displayField = (field: FieldInfo): string => {
   const innerType =
-    field.flattened &&
-    AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.field_type}.json`));
+    field.flattened && AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.type}.json`));
   if (innerType) {
     let innerData: ObjectInfo = JSON.parse(
       readFileSync(`public/autodoc/${innerType}`).toString()
@@ -101,7 +100,7 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.omittable ? '?' : ''}|${displayType(field.field_type)}${
+  return `|${field.name}${field.omittable ? '?' : ''}|${displayType(field.type)}${
     field.nullable ? '?' : ''
   }|${displayInlineDoc(field.doc)}|`;
 };

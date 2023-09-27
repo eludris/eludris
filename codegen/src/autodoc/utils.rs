@@ -115,7 +115,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                 )
             })?
             .to_string();
-        let mut field_type = get_type(&field.ty)?;
+        let mut r#type = get_type(&field.ty)?;
         let doc = get_doc(&field.attrs)?;
         let mut flattened = false;
         let mut nullable = false;
@@ -137,8 +137,8 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                             if meta.path.is_ident("skip_serializing_if") {
                                 omittable = true;
                                 // Strip Option<> from type.
-                                if field_type.starts_with("Option<") {
-                                    field_type = field_type[7..field_type.len() - 1].to_string();
+                                if r#type.starts_with("Option<") {
+                                    r#type = r#type[7..r#type.len() - 1].to_string();
                                 }
                                 if let Type::Path(ty) = &field.ty {
                                     if ty.path.segments.last().unwrap().ident == "Option" {
@@ -148,9 +148,8 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                                                     == "Option"
                                                 {
                                                     nullable = true;
-                                                    field_type = field_type
-                                                        [7..field_type.len() - 1]
-                                                        .to_string();
+                                                    r#type =
+                                                        r#type[7..r#type.len() - 1].to_string();
                                                 }
                                             }
                                         }
@@ -167,12 +166,12 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         if let Type::Path(ty) = &field.ty {
             if ty.path.segments.last().unwrap().ident == "Option" && !omittable {
                 nullable = true;
-                field_type = field_type[7..field_type.len() - 1].to_string();
+                r#type = r#type[7..r#type.len() - 1].to_string();
             }
         }
         field_infos.push(FieldInfo {
             name,
-            field_type,
+            r#type,
             doc,
             flattened,
             nullable,

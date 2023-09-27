@@ -28,7 +28,7 @@ The following are types that do not refer to another item in the inventory.
 
 An object is simply a collection of fields with names and types. The `fields` key contains a list of [FieldInfo](#field-info) objects, which contain information about the field. An object correlates to a "struct"/"interface"/"class" in most languages.
 
-Each field has a `name` key, which is the name of the field, and a `field_type` key, which is the type of the field. The `field_type` key can be a [primitive type](#primitive-types) (such as `String`), or another item in the inventory (such as `Message`).
+Each field has a `name` key, which is the name of the field, and a `field_type` key, which is the type of the field. The `type` key can be a [primitive type](#primitive-types) (such as `String`), or another item in the inventory (such as `Message`).
 
 There is a `nullable` key, which is a boolean indicating whether the field can be `null` or not. There is also an `omittable` key, which is a boolean indicating whether the field can be omitted from the object or not.
 
@@ -42,7 +42,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "content",
       "doc": "The message's content.",
-      "field_type": "String",
+      "type": "String",
       "flattened": false,
       "nullable": false,
       "omittable": false
@@ -56,7 +56,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "author",
       "doc": "The message's author.",
-      "field_type": "User",
+      "type": "User",
       "flattened": false,
       "nullable": false,
       "omittable": false
@@ -64,7 +64,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "message",
       "doc": "The message's data.",
-      "field_type": "MessageCreate",
+      "type": "MessageCreate",
       "flattened": true,
       "nullable": false,
       "omittable": false
@@ -78,7 +78,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "status",
       "doc": "The user's new status. This field cannot be more than 150 characters long.",
-      "field_type": "String",
+      "type": "String",
       "flattened": false,
       "nullable": true,
       "omittable": true
@@ -86,7 +86,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "status_type",
       "doc": "The user's new status type. This must be one of `ONLINE`, `OFFLINE`, `IDLE` and `BUSY`.",
-      "field_type": "StatusType",
+      "type": "StatusType",
       "flattened": false,
       "nullable": false,
       "omittable": true
@@ -275,7 +275,7 @@ An object is simply a collection of fields with names and types.
     {
       "name": "content",
       "doc": "...",
-      "field_type": "String",
+      "type": "String",
       "nullable": false,
       "omittable": false,
       "flattened": false
@@ -353,14 +353,14 @@ An enum contains multiple variants. It usually has a "tag" to identify which var
 
 ### Field Info
 
-| Field      | Type    | Description                                                              |
-| ---------- | ------- | ------------------------------------------------------------------------ |
-| name       | String  | The field's name (key).                                                  |
-| doc        | String? | The field's documentation.                                               |
-| field_type | String  | The field's type.                                                        |
-| nullable   | Boolean | Whether the field is nullable.                                           |
-| omittable  | Boolean | Whether the field is omittable (may not exist in the payload).           |
-| flattened  | Boolean | Whether the field's contents are flattened onto the encompassing object. |
+| Field     | Type    | Description                                                              |
+| --------- | ------- | ------------------------------------------------------------------------ |
+| name      | String  | The field's name (key).                                                  |
+| doc       | String? | The field's documentation.                                               |
+| type      | String  | The field's type.                                                        |
+| nullable  | Boolean | Whether the field is nullable.                                           |
+| omittable | Boolean | Whether the field is omittable (may not exist in the payload).           |
+| flattened | Boolean | Whether the field's contents are flattened onto the encompassing object. |
 
 #### Example
 
@@ -368,7 +368,7 @@ An enum contains multiple variants. It usually has a "tag" to identify which var
 {
   "name": "shared",
   "doc": null,
-  "field_type": "SharedErrorData",
+  "type": "SharedErrorData",
   "nullable": false,
   "omittable": false,
   "flattened": true
@@ -440,7 +440,7 @@ An object variant contains other fields as the content, just like an object item
     {
       "name": "wait",
       "doc": "The amount of milliseconds you have to wait before the rate limit ends",
-      "field_type": "u64",
+      "type": "u64",
       "nullable": false,
       "omittable": false,
       "flattened": false

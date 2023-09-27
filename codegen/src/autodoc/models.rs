@@ -23,7 +23,7 @@ pub enum Item {
 pub struct FieldInfo {
     pub name: String,
     pub doc: Option<String>,
-    pub field_type: String,
+    pub r#type: String,
     pub nullable: bool,
     pub omittable: bool,
     pub flattened: bool,

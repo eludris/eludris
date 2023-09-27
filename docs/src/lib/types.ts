@@ -7,7 +7,7 @@ export enum ItemType {
 export interface FieldInfo {
   name: string;
   doc: string | null;
-  field_type: string;
+  type: string;
   flattened: boolean;
   nullable: boolean;
   omittable: boolean;
