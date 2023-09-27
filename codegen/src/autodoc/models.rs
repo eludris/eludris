@@ -66,7 +66,7 @@ pub struct EnumInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ParamInfo {
     pub name: String,
-    pub param_type: String,
+    pub r#type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

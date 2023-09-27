@@ -157,13 +157,13 @@ const displayRoute = (item: RouteInfo): string => {
   if (item.path_params.length) {
     content += '\n\n## Path Params\n\n|Name|Type|\n|---|---|';
     item.path_params.forEach((param) => {
-      content += `\n|${param.name}|${displayType(param.param_type)}|`;
+      content += `\n|${param.name}|${displayType(param.type)}|`;
     });
   }
   if (item.query_params.length) {
     content += '\n\n## Query Params\n\n|Name|Type|\n|---|---|';
     item.query_params.forEach((param) => {
-      content += `\n|${param.name}|${displayType(param.param_type)}|`;
+      content += `\n|${param.name}|${displayType(param.type)}|`;
     });
   }
   if (item.body) {

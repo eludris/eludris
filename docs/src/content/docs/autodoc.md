@@ -177,7 +177,7 @@ A route corresponds to a HTTP `method` and `route`.
 
 The `method` of a route corresponds to the [HTTP method](https://developer.mozilla.org/docs/Web/HTTP/Methods) of the route, and the `route` corresponds to the path.
 
-The `route` may contain `<parameters>` formatted with `<>` around them. The types to fill these in are in the `path_params` field. This is a list of [ParamInfo](#param-info)s that have the `name` and the `param_type` of each named parameter.
+The `route` may contain `<parameters>` formatted with `<>` around them. The types to fill these in are in the `path_params` field. This is a list of [ParamInfo](#param-info)s that have the `name` and the `type` of each named parameter.
 
 The `query_params` field contains the `?query&parameters`. These of course are represented in the URL as strings, but are simply string representations of the parameters. For example, `?intparam=1&boolparam=true`.
 
@@ -195,7 +195,7 @@ The [`response`](#response) field contains information about what the response b
   "path_params": [
     {
       "name": "id",
-      "param_type": "u64"
+      "type": "u64"
     }
   ],
   "query_params": [],
@@ -451,17 +451,17 @@ An object variant contains other fields as the content, just like an object item
 
 ### Param Info
 
-| Field      | Type   | Description           |
-| ---------- | ------ | --------------------- |
-| name       | String | The parameter's name. |
-| param_type | String | The parameter's type. |
+| Field | Type   | Description           |
+| ----- | ------ | --------------------- |
+| name  | String | The parameter's name. |
+| type  | String | The parameter's type. |
 
 #### Example
 
 ```json
 {
   "name": "rate_limits",
-  "param_type": "bool"
+  "type": "bool"
 }
 ```
 

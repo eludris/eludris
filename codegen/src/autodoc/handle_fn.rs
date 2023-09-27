@@ -119,25 +119,25 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn, status_code: u8) -> Result<
         // if it's in the `<name>` format, we want it's type
         if segment.starts_with('<') && segment.ends_with('>') {
             let name = segment[1..segment.len() - 1].to_string();
-            let param_type = params.remove(&name).ok_or_else(|| {
+            let r#type = params.remove(&name).ok_or_else(|| {
                 Error::new(
                     Span::call_site().into(),
                     format!("Cannot find type of path param {}", name),
                 )
             })?;
-            path_params.push(ParamInfo { param_type, name });
+            path_params.push(ParamInfo { r#type, name });
         }
     }
     for param in query.split('&') {
         if param.starts_with('<') && param.ends_with('>') {
             let name = param[1..param.len() - 1].to_string();
-            let param_type = params.remove(&name).ok_or_else(|| {
+            let r#type = params.remove(&name).ok_or_else(|| {
                 Error::new(
                     Span::call_site().into(),
                     format!("Cannot find type of query param {}", name),
                 )
             })?;
-            query_params.push(ParamInfo { param_type, name });
+            query_params.push(ParamInfo { r#type, name });
         }
     }
 

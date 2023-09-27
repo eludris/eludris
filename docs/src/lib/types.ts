@@ -57,12 +57,12 @@ export interface EnumInfo {
 
 export interface PathParamInfo {
   name: string;
-  param_type: string;
+  type: string;
 }
 
 export interface QueryParamInfo {
   name: string;
-  param_type: string;
+  type: string;
 }
 
 export interface Body {
