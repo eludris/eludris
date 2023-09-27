@@ -87,7 +87,6 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn, status_code: u8) -> Result<
                 if let Ok(param_type) = get_type(&param.ty) {
                     params.insert(name, param_type);
                 } else {
-                    println!("{}", &param.ty.to_token_stream());
                     params.insert(name, "Guard".to_string());
                 }
             }
