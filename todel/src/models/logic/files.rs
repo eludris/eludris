@@ -94,7 +94,7 @@ SELECT file_id, content_type, width, height
 FROM files
 WHERE hash = $1
 AND bucket = $2
-                ",
+            ",
             hash,
             bucket,
         )
@@ -107,7 +107,7 @@ AND bucket = $2
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                    ",
+                ",
                 id as i64,
                 file_id as i64,
                 name,
@@ -136,7 +136,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
         } else {
             let file = tokio::task::spawn_blocking(move || {
                 let mime = tree_magic::from_u8(&data);
-                println!("{:?}", mime);
                 let (width, height) = match mime.as_str() {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
@@ -270,7 +269,7 @@ SELECT *
 FROM files
 WHERE id = $1
 AND bucket = $2
-                ",
+            ",
             id as i64,
             bucket,
         )
