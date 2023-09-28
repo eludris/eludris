@@ -365,24 +365,24 @@ pub async fn handle_connection(
             if let Err(err) = cache.srem::<_, _, ()>("sessions", session.user.id).await {
                 log::error!("Failed to remove user from online users: {}", err);
             }
-        }
-        if session.user.status.status_type != StatusType::Offline {
-            if let Err(err) = cache
-                .publish::<_, _, ()>(
-                    "eludris-events",
-                    serde_json::to_string(&ServerPayload::PresenceUpdate {
-                        user_id: session.user.id,
-                        status: Status {
-                            status_type: StatusType::Offline,
-                            text: None,
-                        },
-                    })
-                    .expect("Couldn't serialize PRESENCE_UPDATE event"),
-                )
-                .await
-            {
-                log::error!("Failed to publish PRESENCE_UPDATE: {}", err);
-            };
+            if session.user.status.status_type != StatusType::Offline {
+                if let Err(err) = cache
+                    .publish::<_, _, ()>(
+                        "eludris-events",
+                        serde_json::to_string(&ServerPayload::PresenceUpdate {
+                            user_id: session.user.id,
+                            status: Status {
+                                status_type: StatusType::Offline,
+                                text: None,
+                            },
+                        })
+                        .expect("Couldn't serialize PRESENCE_UPDATE event"),
+                    )
+                    .await
+                {
+                    log::error!("Failed to publish PRESENCE_UPDATE: {}", err);
+                };
+            }
         }
     }
 }
