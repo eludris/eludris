@@ -135,7 +135,7 @@ impl UpdateUserProfile {
             }
         }
         if let Some(Some(banner)) = self.banner {
-            if File::get(banner, "banner", &mut *db).await.is_none() {
+            if File::get(banner, "banners", &mut *db).await.is_none() {
                 return Err(error!(
                     VALIDATION,
                     "banner", "The user's banner must be a valid file that must exist"
