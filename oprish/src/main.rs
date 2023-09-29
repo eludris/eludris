@@ -16,19 +16,20 @@ use std::sync::Once;
 
 use anyhow::Context;
 use argon2::Argon2;
-use cleanup::ScheduledCleanup;
-use database::DatabaseFairing;
-use email::EmailFairing;
 use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::Database;
-use routes::*;
 use todel::{
     http::{Cache, DB},
     ids::IdGenerator,
     Conf,
 };
 use tokio::sync::Mutex;
+
+use cleanup::ScheduledCleanup;
+use database::DatabaseFairing;
+use email::EmailFairing;
+use routes::*;
 
 #[cfg(test)]
 static INIT: Once = Once::new();
@@ -87,7 +88,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .attach(EmailFairing)
         .attach(ScheduledCleanup)
         .mount("/", get_routes())
-        .mount("/messages", messages::get_routes()))
+        .mount("/messages", messages::get_routes())
+        .mount("/users", users::get_routes())
+        .mount("/sessions", sessions::get_routes()))
 }
 
 #[rocket::main]

@@ -10,9 +10,13 @@ which is used to actually customise the behaviour of your instance's outward-fac
 APIs like rate limits and whatnot.
 
 The [eludris/eludris](https://github.com/eludris/eludris) meta repository comes with
-examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `ExampleEludris.toml`,
+examples for both `.env` and `Eludris.toml` in the form of `.env.example` and `Eludris.example.toml`,
 all you have to do is rename them to their respective names and add whatever configuration
 is required in `Eludris.toml`.
+
+Finally and the least required, the `assets/` directory. This contains static assets
+that your instance uses for stuff like emails. The meta repository defaults are more
+than fine for most instances but you can still modify them however you may want to.
 
 ## .env
 
@@ -53,21 +57,32 @@ instance_name = "" # This is required, has to be over 0 characters long.
 # With rate limits, reset_after is the number of seconds between every bucket reset.
 
 [oprish]
-#message_limit = 2048 # The maximum message content length.
 url = "" # This instance's Oprish url
+#message_limit = 2048 # The maximum message content length.
+#bio_limit = 250 # The maximum bio length
 
 #[oprish.rate_limits]
-#get_instance_info = { reset_after = 5, limit = 2}
-#create_message = { reset_after = 5, limit = 10}
+#get_instance_info = { reset_after = 5, limit = 2 }
+#create_message = { reset_after = 5, limit = 10 }
+#create_user = { reset_after = 3600, limit = 1 }
+#verify_user = { reset_after = 600, limit = 10 }
+#get_user = { reset_after = 5, limit = 10 }
+#guest_get_user = { reset_after = 5, limit = 5 }
+#update_user = { reset_after = 3600, limit = 5 }
+#update_profile = { reset_after = 3600, limit = 5 }
+#delete_user = { reset_after = 3600, limit = 1 }
+#create_session = { reset_after = 1800, limit = 5 }
+#get_sessions = { reset_after = 300, limit = 5 }
+#delete_session = { reset_after = 300, limit = 10 }
 
 [pandemonium]
 url = "" # This instance's Pandemonium url
-#rate_limit = { reset_after = 10, limit = 5}
+#rate_limit = { reset_after = 10, limit = 5 }
 
 [effis]
+url = "" # This instance's Effis url
 #file_size = "20MB" # The maximum file size for all the assets
 #attachment_file_size = "100MB" # The maximum file size for the attachment bucket
-url = "" # This instance's Effis url
 
 # Effis rate limits are special, you're not only limited by how many requests per
 # bucket reset, but also by how big the files you upload are, so assuming a rate limit
@@ -78,7 +93,7 @@ url = "" # This instance's Effis url
 #[effis.rate_limits]
 # The rate limit for all buckets besides the attachments one, these buckets are
 # stuff like avatars, guild icons, etc.
-#assets = { reset_after = 60, limit = 5, file_size_limit = "30MB"}
+#assets = { reset_after = 60, limit = 5, file_size_limit = "30MB" }
 #attachments = { reset_after = 180, limit = 20 file_size_limit = "500MB" }
 # This is a normal rate limit
 #fetch_file = { reset_after = 60, limit = 30 }
@@ -101,5 +116,8 @@ address = ""
 # Leaving a subject as an empty string makes the email have no subject.
 #[email.subjects]
 # The subject of your instance's verification email
-#verify = "Your Eludris Verification Code is ${CODE}"
+#verify = "Verify your Eludris account"
+#delete = "Your Eludris account has been successfully deleted"
+#password_reset = "Your Eludris password has been reset"
+#user_updated = "Your Eludris account has been updated"
 ```

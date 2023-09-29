@@ -1,8 +1,8 @@
 use std::ops::Not;
 
 use syn::{
-    spanned::Spanned, Attribute, Error, Field, GenericArgument, Lit, Meta, MetaNameValue,
-    NestedMeta, PathArguments, PathSegment, Type,
+    spanned::Spanned, AngleBracketedGenericArguments, Attribute, Error, Field, GenericArgument,
+    Lit, Meta, MetaNameValue, NestedMeta, PathArguments, PathSegment, Type,
 };
 
 use super::models::FieldInfo;
@@ -79,6 +79,31 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
                     Ok(())
                 }
                 GenericArgument::Lifetime(_) => Ok(()),
+                GenericArgument::Type(Type::Tuple(ty)) => {
+                    let types = ty
+                        .elems
+                        .iter()
+                        .filter_map(|t| {
+                            let ty = get_type(t).ok()?;
+                            if ty == "Status" {
+                                None
+                            } else {
+                                Some(ty)
+                            }
+                        })
+                        .collect::<Vec<_>>();
+
+                    if types.len() > 1 {
+                        return Err(Error::new(
+                            ty.span(),
+                            "Cannot generate documentation for tuple types with more than one non-Status element",
+                        ));
+                    }
+                    if !types.is_empty() {
+                        arg_strings.push(types[0].clone());
+                    }
+                    Ok(())
+                }
                 _ => Err(Error::new(
                     a.span(),
                     "Cannot generate documentation for non-type generics",
@@ -105,7 +130,7 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
 ) -> Result<Vec<FieldInfo>, Error> {
     let mut field_infos = vec![];
     'outer: for field in fields {
-        let name = field
+        let mut name = field
             .ident
             .as_ref()
             .ok_or_else(|| {
@@ -142,8 +167,13 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                                 }
                                 if let Type::Path(ty) = &field.ty {
                                     if ty.path.segments.last().unwrap().ident == "Option" {
-                                        if let Some(qself) = &ty.qself {
-                                            if let Type::Path(ty) = &*qself.ty {
+                                        if let PathArguments::AngleBracketed(
+                                            AngleBracketedGenericArguments { args, .. },
+                                        ) = &ty.path.segments.last().unwrap().arguments
+                                        {
+                                            if let GenericArgument::Type(Type::Path(ty)) =
+                                                args.last().unwrap()
+                                            {
                                                 if ty.path.segments.last().unwrap().ident
                                                     == "Option"
                                                 {
@@ -154,6 +184,10 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                                             }
                                         }
                                     }
+                                }
+                            } else if meta.path.is_ident("rename") {
+                                if let Lit::Str(lit) = meta.lit {
+                                    name = lit.value();
                                 }
                             }
                         }

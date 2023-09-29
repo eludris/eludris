@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 ///   "name": "das_ding.png",
 ///   "bucket": "attachments",
 ///   "metadata": {
-///     "type": "image",
+///     "type": "IMAGE",
 ///     "width": 1600,
 ///     "height": 1600
 ///   }
@@ -51,25 +51,25 @@ fn spoiler_default() -> bool {
 ///
 /// ```json
 /// {
-///   "type": "text"
+///   "type": "TEXT"
 /// }
 /// {
-///   "type": "image",
+///   "type": "IMAGE",
 ///   "width": 5120,
 ///   "height": 1440
 /// }
 /// {
-///   "type": "video",
+///   "type": "VIDEO",
 ///   "width": 1920,
 ///   "height": 1080
 /// }
 /// {
-///   "type": "other"
+///   "type": "OTHER"
 /// }
 /// ```
 #[autodoc(category = "Files")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "UPPERCASE")]
 #[serde(tag = "type")]
 pub enum FileMetadata {
     Text,

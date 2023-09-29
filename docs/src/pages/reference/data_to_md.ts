@@ -222,6 +222,10 @@ const displayInlineDoc = (doc: string | null | undefined): string => {
 };
 
 const displayType = (type: string): string => {
+  if (type.startsWith('Vec<')) {
+    return `Array of ${displayType(type.substring(4, type.length - 1))}`;
+  }
+
   if (/^(u|i)(size|\d{1,2})$/gm.test(type)) {
     return 'Number';
   } else if (type == 'bool') {

@@ -2,12 +2,16 @@ use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
 use redis::aio::Connection;
 use redis::aio::PubSub;
+use redis::AsyncCommands;
+use sqlx::{Pool, Postgres};
 use std::borrow::Cow;
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use todel::models::{ClientPayload, InstanceInfo, ServerPayload};
+use todel::models::{
+    ClientPayload, InstanceInfo, Secret, ServerPayload, Session, Status, StatusType, User,
+};
 use todel::Conf;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -31,6 +35,13 @@ const TIMEOUT: Duration = Duration::from_secs(45);
 /// disconnected.
 const TIMEOUT_DURATION: Duration = Duration::from_secs(48); // TIMEOUT_PADDING
 
+/// Internal pandemonium specific-struct for stored user session-related data.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SessionData {
+    session: Session,
+    user: User,
+}
+
 /// A simple function that check's if a client's last ping was over TIMEOUT_DURATION seconds ago and
 /// closes the gateway connection if so.
 async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
@@ -43,13 +54,16 @@ async fn check_connection(last_ping: Arc<Mutex<Instant>>) {
     }
 }
 
+// TODO: (like really to fucking do): split this into it's own helper functions (and sanify code)
 /// A function that handles one client connecting and disconnecting.
 pub async fn handle_connection(
     stream: TcpStream,
     addr: SocketAddr,
     cache: Arc<Mutex<Connection>>,
     pubsub: PubSub,
+    pool: Arc<Pool<Postgres>>,
     conf: Arc<Conf>,
+    secret: Arc<Secret>,
 ) {
     let mut rl_address = IpAddr::from_str("127.0.0.1").unwrap();
 
@@ -90,7 +104,7 @@ pub async fn handle_connection(
     let last_ping = Arc::new(Mutex::new(Instant::now()));
 
     let mut rate_limiter = RateLimiter::new(
-        cache,
+        Arc::clone(&cache),
         rl_address,
         Duration::from_secs(conf.pandemonium.rate_limit.reset_after as u64),
         conf.pandemonium.rate_limit.limit,
@@ -110,7 +124,10 @@ pub async fn handle_connection(
     )
     .await;
 
+    let session = Arc::new(Mutex::new(None::<SessionData>));
+
     let handle_rx = async {
+        let cache = Arc::clone(&cache);
         while let Some(msg) = rx.next().await {
             log::trace!("New gateway message:\n{:#?}", msg);
             if let Err(wait) = rate_limiter.process_rate_limit().await {
@@ -119,7 +136,7 @@ pub async fn handle_connection(
                         "Disconnected a client: {}, reason: Hit rate_limit",
                         rl_address
                     );
-                    break;
+                    return "Client got ratelimited".to_string();
                 } else {
                     send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
                     rate_limited = true;
@@ -136,32 +153,183 @@ pub async fn handle_connection(
                                 *last_ping = Instant::now();
                                 send_payload(&tx, &ServerPayload::Pong).await;
                             }
+                            Ok(ClientPayload::Authenticate(token)) => {
+                                let mut session = session.lock().await;
+                                if session.is_some() {
+                                    continue;
+                                }
+                                let mut db = match pool.acquire().await {
+                                    Ok(conn) => conn,
+                                    Err(err) => {
+                                        log::error!(
+                                            "Couldn't acquire database connection: {}",
+                                            err
+                                        );
+                                        return "Server failed to authenticate client".to_string();
+                                    }
+                                };
+                                let user_session =
+                                    match Session::validate_token(&token, &secret, &mut db).await {
+                                        Ok(session) => session,
+                                        Err(_) => return "Invalid credentials".to_string(),
+                                    };
+                                let mut cache = cache.lock().await;
+                                let sessions: u32 = match cache
+                                    .incr(format!("session:{}", user_session.user_id), 1)
+                                    .await
+                                {
+                                    Ok(sessions) => sessions,
+                                    Err(err) => {
+                                        log::error!(
+                                            "Failed to increment user active session counter: {}",
+                                            err
+                                        );
+                                        return "Failed to connect user".to_string();
+                                    }
+                                };
+                                if sessions == 1 {
+                                    if let Err(err) = cache
+                                        .sadd::<_, _, ()>("sessions", user_session.user_id)
+                                        .await
+                                    {
+                                        log::error!("Failed to add user to online users: {}", err);
+                                        return "Failed to connect user".to_string();
+                                    }
+                                }
+                                let user = match User::get(
+                                    user_session.user_id,
+                                    Some(user_session.user_id),
+                                    &mut db,
+                                    &mut *cache,
+                                )
+                                .await
+                                {
+                                    Ok(user) => user,
+                                    Err(err) => {
+                                        log::error!("Failed to get user info: {}", err);
+                                        return "Failed to connect user".to_string();
+                                    }
+                                };
+                                if user.status.status_type != StatusType::Offline {
+                                    if let Err(err) = cache
+                                        .publish::<_, _, ()>(
+                                            "eludris-events",
+                                            serde_json::to_string(&ServerPayload::PresenceUpdate {
+                                                user_id: user_session.user_id,
+                                                // I don't like this either
+                                                status: user.status.clone(),
+                                            })
+                                            .expect("Couldn't serialize PRESENCE_UPDATE event"),
+                                        )
+                                        .await
+                                    {
+                                        log::error!("Failed to publish PRESENCE_UPDATE: {}", err);
+                                        return "Failed to connect user".to_string();
+                                    };
+                                }
+                                let users: Vec<User> = match cache
+                                    .smembers::<_, Vec<u64>>("sessions")
+                                    .await
+                                {
+                                    Ok(users) => {
+                                        // TODO: try_join_all (please)
+                                        let mut user_datas = vec![];
+                                        for user_id in users.into_iter().filter(|u| u != &user.id) {
+                                            match User::get(user_id, None, &mut db, &mut *cache)
+                                                .await
+                                            {
+                                                Ok(user) => {
+                                                    if user.status.status_type
+                                                        != StatusType::Offline
+                                                    {
+                                                        user_datas.push(user);
+                                                    }
+                                                }
+                                                Err(err) => {
+                                                    log::error!(
+                                                        "Failed to get online user {}: {}",
+                                                        user_id,
+                                                        err
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        user_datas
+                                    }
+                                    Err(err) => {
+                                        log::error!("Failed to get online users: {}", err);
+                                        return "Failed to connect user".to_string();
+                                    }
+                                };
+                                let payload = ServerPayload::Authenticated { user, users };
+                                send_payload(&tx, &payload).await;
+                                if let ServerPayload::Authenticated { user, .. } = payload {
+                                    *session = Some(SessionData {
+                                        session: user_session,
+                                        user,
+                                    });
+                                }
+                            }
                             _ => log::debug!("Unknown gateway payload: {}", message),
                         }
                     }
                     _ => log::debug!("Unsupported Gateway message type."),
                 },
-                Err(_) => break,
+                Err(_) => return "Server failed to receive payload".to_string(),
             }
         }
+        "Connection unexpectedly died".to_string()
     };
 
     let handle_events = async {
         pubsub
             .into_on_message()
             .for_each(|msg| async {
+                let mut session = session.lock().await;
+                if session.is_none() {
+                    return;
+                }
+                let session = session.as_mut().unwrap();
                 match deserialize_message(msg) {
-                    Ok(msg) => {
-                        if let Err(err) = tx
-                            .lock()
-                            .await
-                            .send(WebSocketMessage::Text(
-                                serde_json::to_string(&msg).expect("Couldn't serialize payload"),
-                            ))
-                            .await
-                        {
-                            log::warn!("Failed to send payload to {}: {}", rl_address, err);
+                    Ok(ServerPayload::PresenceUpdate { user_id, status }) => {
+                        if user_id == session.user.id {
+                            session.user.status = status.clone();
                         }
+                        send_payload(&tx, &ServerPayload::PresenceUpdate { user_id, status }).await;
+                    }
+                    Ok(ServerPayload::UserUpdate(mut user)) => {
+                        if user.id == session.user.id {
+                            session.user = user.clone();
+                        }
+                        if user.id != session.user.id {
+                            let sessions: u32 = match cache
+                                .lock()
+                                .await
+                                .get(format!("session:{}", user.id))
+                                .await
+                            {
+                                Ok(sessions) => sessions,
+                                Err(err) => {
+                                    log::error!(
+                                        "Failed to get user active session counter: {}",
+                                        err
+                                    );
+                                    return;
+                                }
+                            };
+                            if sessions == 0 {
+                                user.status.status_type = StatusType::Offline;
+                            }
+                            if user.status.status_type == StatusType::Offline {
+                                user.status.text = None;
+                            }
+                            user.email = None;
+                            user.verified = None;
+                        }
+                        send_payload(&tx, &ServerPayload::UserUpdate(user)).await;
+                    }
+                    Ok(msg) => {
+                        send_payload(&tx, &msg).await;
                     }
                     Err(err) => log::warn!("Failed to deserialize event payload: {}", err),
                 }
@@ -174,13 +342,49 @@ pub async fn handle_connection(
             log::debug!("Dead connection with client {}", rl_address);
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Client connection dead") }, rl_address).await
         }
-        _ = handle_rx => {
-            close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Client hit rate limit") }, rl_address).await;
+        reason = handle_rx => {
+            close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Owned(reason) }, rl_address).await;
         },
         _ = handle_events => {
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Server Error") }, rl_address).await;
         },
     };
+
+    let mut cache = cache.lock().await;
+    let session = session.lock().await;
+    if session.is_some() {
+        let session = session.as_ref().unwrap();
+        let sessions: u32 = match cache.decr(format!("session:{}", session.user.id), 1).await {
+            Ok(sessions) => sessions,
+            Err(err) => {
+                log::error!("Failed to decrement user active session counter: {}", err);
+                return;
+            }
+        };
+        if sessions == 0 {
+            if let Err(err) = cache.srem::<_, _, ()>("sessions", session.user.id).await {
+                log::error!("Failed to remove user from online users: {}", err);
+            }
+            if session.user.status.status_type != StatusType::Offline {
+                if let Err(err) = cache
+                    .publish::<_, _, ()>(
+                        "eludris-events",
+                        serde_json::to_string(&ServerPayload::PresenceUpdate {
+                            user_id: session.user.id,
+                            status: Status {
+                                status_type: StatusType::Offline,
+                                text: None,
+                            },
+                        })
+                        .expect("Couldn't serialize PRESENCE_UPDATE event"),
+                    )
+                    .await
+                {
+                    log::error!("Failed to publish PRESENCE_UPDATE: {}", err);
+                };
+            }
+        }
+    }
 }
 
 async fn close_socket(

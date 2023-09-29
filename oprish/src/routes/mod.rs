@@ -1,13 +1,16 @@
 pub mod messages;
+pub mod sessions;
+pub mod users;
 
 use rocket::{serde::json::Json, Route, State};
 use rocket_db_pools::Connection;
-use todel::{http::ClientIP, models::InstanceInfo, Conf};
+use todel::{
+    http::{Cache, ClientIP},
+    models::InstanceInfo,
+    Conf,
+};
 
-use crate::{
-    rate_limit::{RateLimitedRouteResponse, RateLimiter},
-    Cache,
-}; // poggers
+use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter}; // poggers
 
 /// Get information about the instance you're sending this request to.
 ///

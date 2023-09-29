@@ -1,15 +1,204 @@
 {
   "db": "PostgreSQL",
-  "1953fa614b990ec237601af7bed777a612f4354cd9a34b75b3e6b507108bc35f": {
+  "11b34c2e3194bb909debefc0bd1a9b8f78a2bfc316e742b37c960b951459d0f2": {
     "describe": {
       "columns": [
         {
-          "name": "verified",
+          "name": "file_id",
           "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "content_type",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "width",
+          "ordinal": 2,
+          "type_info": "Int4"
+        },
+        {
+          "name": "height",
+          "ordinal": 3,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT file_id, content_type, width, height\nFROM files\nWHERE hash = $1\nAND bucket = $2\n            "
+  },
+  "16a0968607be9c4526f98bd89f41770e6a4432543445379584b449d87d1a5982": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "social_credit",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "status_type: StatusType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "ONLINE",
+                  "OFFLINE",
+                  "IDLE",
+                  "BUSY"
+                ]
+              },
+              "name": "status"
+            }
+          }
+        },
+        {
+          "name": "bio",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "avatar",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "banner",
+          "ordinal": 8,
+          "type_info": "Int8"
+        },
+        {
+          "name": "badges",
+          "ordinal": 9,
+          "type_info": "Int8"
+        },
+        {
+          "name": "permissions",
+          "ordinal": 10,
+          "type_info": "Int8"
+        },
+        {
+          "name": "email",
+          "ordinal": 11,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "verified",
+          "ordinal": 12,
           "type_info": "Bool"
         }
       ],
       "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT id, username, display_name, social_credit, status, status_type as \"status_type: StatusType\", bio, avatar, banner, badges, permissions, email, verified\nFROM users\nWHERE username = $1\nAND is_deleted = FALSE\n            "
+  },
+  "1748b03c9ab7e72e3750e4b575f2ed2c55f84a2351e786d06bc2e46b1842ecd9": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nDELETE FROM sessions\nWHERE id = $1\nAND user_id = $2 -- This should be unnecessary but eh\n            "
+  },
+  "18fab9165239d3b3abec22363b1fd730b1ff3d8fd7c6a24eefad87f815f786b9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Bpchar",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nUPDATE users\nSET password = $1\nWHERE email = $2\nreturning username, email\n            "
+  },
+  "26011e3bc1bea695e2156c02209bff07a186ff3b51a13d7e1c2f134f30dd21ac": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
         false
       ],
       "parameters": {
@@ -18,45 +207,157 @@
         ]
       }
     },
-    "query": "\nSELECT verified\nFROM users\nWHERE id = $1\n            "
+    "query": "\nUPDATE users\nSET is_deleted = TRUE\nWHERE id = $1\nRETURNING username, email\n            "
   },
-  "3c2a41ee5fd6e994d02db53c05538cbe83df3f017a89c1db20a5b0663f60ac8f": {
+  "2c6cafdbbbb96b1676f4eb04ed41babc6bcc0810db1fc906edc7e8cc70469773": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "social_credit",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "status_type: StatusType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "ONLINE",
+                  "OFFLINE",
+                  "IDLE",
+                  "BUSY"
+                ]
+              },
+              "name": "status"
+            }
+          }
+        },
+        {
+          "name": "bio",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "avatar",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "banner",
+          "ordinal": 8,
+          "type_info": "Int8"
+        },
+        {
+          "name": "badges",
+          "ordinal": 9,
+          "type_info": "Int8"
+        },
+        {
+          "name": "permissions",
+          "ordinal": 10,
+          "type_info": "Int8"
+        },
+        {
+          "name": "email",
+          "ordinal": 11,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "verified",
+          "ordinal": 12,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
       "parameters": {
         "Left": [
-          "Int8",
-          "Int8",
-          "Varchar",
-          "Varchar",
-          "Inet"
+          "Int8"
         ]
       }
     },
-    "query": "\nINSERT INTO sessions(id, user_id, platform, client, ip)\nVALUES($1, $2, $3, $4, $5)\n            "
+    "query": "\nSELECT id, username, display_name, social_credit, status, status_type as \"status_type: StatusType\", bio, avatar, banner, badges, permissions, email, verified\nFROM users\nWHERE id = $1\nAND is_deleted = FALSE\n            "
   },
-  "479e644b08ab3e00ef3537b11d0f245472718ddc062079ae7dcb8b04ca41cb1b": {
+  "312d26d2f4a167e2b164720ceeffd7172099d743dbfd40b1f1c7f8ea84a1a363": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "platform",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "client",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "ip",
+          "ordinal": 4,
+          "type_info": "Inet"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
       "parameters": {
         "Left": [
-          "Int8",
-          "Int8",
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Bool",
-          "Int4",
-          "Int4"
+          "Int8"
         ]
       }
     },
-    "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)\n                    "
+    "query": "\n        SELECT *\n        FROM sessions\n        WHERE user_id = $1\n                    "
   },
-  "510ade8d7a8cd3334c965eafe46b9f9a4dffa0a36363edc9e83b9465aeb57722": {
+  "31dd64d046c62140b8af91bb50ba785d4a8e518bf7fcd91a00e29d678d08a297": {
     "describe": {
       "columns": [
         {
@@ -99,7 +400,43 @@
         ]
       }
     },
-    "query": "\nSELECT *\nFROM sessions\nWHERE id = $1\nAND user_id = $2\n            "
+    "query": "\nSELECT s.id, s.user_id, s.platform, s.client, s.ip\nFROM sessions s\nLEFT JOIN users u\nON s.user_id = u.id\nWHERE s.id = $1\nAND s.user_id = $2\nAND u.is_deleted = FALSE\n            "
+  },
+  "34d9f175c75aa685a6dff3bbf2deccffed00d1159ca8838e5c048e37a4c13dfb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT username\nFROM users\nWHERE email = $1\n                "
+  },
+  "3c2a41ee5fd6e994d02db53c05538cbe83df3f017a89c1db20a5b0663f60ac8f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Inet"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO sessions(id, user_id, platform, client, ip)\nVALUES($1, $2, $3, $4, $5)\n            "
   },
   "72d1098107fc80bee8cbe8293f18dd96a61471e0c48e8d0c9dea709d959c378f": {
     "describe": {
@@ -113,51 +450,7 @@
     },
     "query": "\nINSERT INTO meta(secret)\nVALUES($1)\n                    "
   },
-  "a511cbeb10ffa0127589db87a0c0860d91eab5da47c3d571766b82e71c0d0712": {
-    "describe": {
-      "columns": [
-        {
-          "name": "secret",
-          "ordinal": 0,
-          "type_info": "Bytea"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT * FROM meta"
-  },
-  "af56cab8b325c60ec1b17cc65533cffa5878106c305e63db53d91c99cb4784d2": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "password",
-          "ordinal": 1,
-          "type_info": "Bpchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "\nSELECT id, password\nFROM users\nWHERE username = $1\nOR email = $1\n            "
-  },
-  "c2b36794cf3b5e2c48d0d198c4034f6a76da00d44185769ba83f631bed486794": {
+  "73fb3e4214efb144a35263d5087645d868343f9b0c5725ac21a8e286b73e7144": {
     "describe": {
       "columns": [
         {
@@ -224,7 +517,111 @@
         ]
       }
     },
-    "query": "\nSELECT *\nFROM files\nWHERE id = $1\nAND bucket = $2\n                "
+    "query": "\nSELECT *\nFROM files\nWHERE id = $1\nAND bucket = $2\n            "
+  },
+  "7696083e5a2b2921c319eb30e9c3e1a9289e8e97323029140a25edadadadfc10": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nDELETE FROM users\nWHERE username = $1\nOR email= $2\n                    "
+  },
+  "7a8e4b7a3761b82961d1f11b60018a9e23d23d3ff7ab23456ec97a87a976121d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "verified",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT verified\nFROM users\nWHERE id = $1\nAND is_deleted = FALSE\n            "
+  },
+  "b4510f779f59e9bc186a1ce02bd7e1c61c837e970fd8dbb10abc3247e4c12330": {
+    "describe": {
+      "columns": [
+        {
+          "name": "password",
+          "ordinal": 0,
+          "type_info": "Bpchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT password\nFROM users\nWHERE id = $1\nAND is_deleted = FALSE\n            "
+  },
+  "bfc1cae49f22d427cacd6221d276ed7945bc5c31bd236c46168306032ea7e060": {
+    "describe": {
+      "columns": [
+        {
+          "name": "secret",
+          "ordinal": 0,
+          "type_info": "Bytea"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT secret FROM meta"
+  },
+  "d26a06693391f7ba0ba0b0369d4d2ce919c44755e3ea457194d7f1292b4e46f0": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "is_deleted",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nSELECT username, email, is_deleted\nFROM users\nWHERE username = $1\nOR email = $2\n            "
   },
   "d4131cfc2246292039d30fdae1849cb13420f140a898353f2abbbc93028f6c55": {
     "describe": {
@@ -254,32 +651,15 @@
     },
     "query": "\nINSERT INTO users(id, username, verified, email, password)\nVALUES($1, $2, $3, $4, $5)\n            "
   },
-  "f2c1e7c3eeeca9c248eef366073bdf551a3de8ed4941ade9bfdc13461316e899": {
+  "e5ccd0d537381e9e6b0c31228c56397d322607f88f95337981a8b55941ce5cdf": {
     "describe": {
-      "columns": [
-        {
-          "name": "username",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "email",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
+      "columns": [],
+      "nullable": [],
       "parameters": {
-        "Left": [
-          "Text",
-          "Text"
-        ]
+        "Left": []
       }
     },
-    "query": "\nSELECT username, email\nFROM users\nWHERE username = $1\nOR email = $2\n            "
+    "query": "\nDELETE FROM users\nWHERE is_deleted = TRUE\n            "
   },
   "fc04fcf2b80dc6ca7cef09a8e149e57845a1fde1f40333d404f720fbe5fd03b3": {
     "describe": {
@@ -313,43 +693,30 @@
     },
     "query": "\nINSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)\nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)\n                "
   },
-  "fd4020070e572bfaede9e48088ece1f98bdf2be28d3acdefec579d782fa81eab": {
+  "fdbff8d8d7d44d7750216f8c53d8eaad3c9fb725cb0d66926c3a9019f3ef402f": {
     "describe": {
       "columns": [
         {
-          "name": "file_id",
+          "name": "id",
           "ordinal": 0,
           "type_info": "Int8"
         },
         {
-          "name": "content_type",
+          "name": "password",
           "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "width",
-          "ordinal": 2,
-          "type_info": "Int4"
-        },
-        {
-          "name": "height",
-          "ordinal": 3,
-          "type_info": "Int4"
+          "type_info": "Bpchar"
         }
       ],
       "nullable": [
         false,
-        false,
-        true,
-        true
+        false
       ],
       "parameters": {
         "Left": [
-          "Text",
           "Text"
         ]
       }
     },
-    "query": "\nSELECT file_id, content_type, width, height\nFROM files\nWHERE hash = $1\nAND bucket = $2\n                "
+    "query": "\nSELECT id, password\nFROM users\nWHERE (username = $1\nOR email = $1)\nAND is_deleted = FALSE\n            "
   }
 }
