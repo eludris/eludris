@@ -47,12 +47,23 @@ async fn main() -> Result<(), anyhow::Error> {
             .context("Couldn't get an async connection to redis")?,
     ));
 
-    cache
-        .lock()
-        .await
-        .del("sessions")
-        .await
-        .context("Couldn't remove the sessions key")?; // wei wei wei wei
+    {
+        let mut cache = cache.lock().await;
+        cache
+            .del("sessions")
+            .await
+            .context("Couldn't remove the sessions key")?; // wei wei wei wei
+        let keys: Vec<String> = cache
+            .keys("session:*")
+            .await
+            .context("Couldn't list session keys")?;
+        for key in keys {
+            cache
+                .del(&key)
+                .await
+                .with_context(|| format!("Couldn't remove the {} key", key))?; // wei wei wei wei
+        }
+    }
 
     // the max connections is to stay consistent with oprish and effis even though postgresql
     // will most likely not support this many connections at once.
