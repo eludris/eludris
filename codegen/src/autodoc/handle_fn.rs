@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use proc_macro::Span;
-use quote::ToTokens;
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Lit, Meta, NestedMeta, Pat, ReturnType, Type};
 
 use super::{
