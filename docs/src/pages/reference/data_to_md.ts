@@ -22,12 +22,11 @@ export default (info: ItemInfo): string => {
   if (info.item.type == ItemType.Route) {
     // Replace angle brackets with HTML character entities
     const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
-    content += `\n\n<span class="method">${
-      info.item.method
-    }</span><span class="route">${route.replace(
-      /&lt;*.+?&gt;/gm,
-      '<span class="special-segment">$&</span>'
-    )}</span>`;
+    content += `\n\n<span class="method">${info.item.method
+      }</span><span class="route">${route.replace(
+        /&lt;*.+?&gt;/gm,
+        '<span class="special-segment">$&</span>'
+      )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -105,9 +104,8 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${
-    field.nullable ? '?' : ''
-  }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
+    }|${displayInlineDoc(field.doc)}|`;
 };
 
 const getTagDescription = (tag: string, model: string): string => {
@@ -176,7 +174,7 @@ const displayRoute = (item: RouteInfo): string => {
   }
   if (item.body_type) {
     content += '\n\n## Request Body';
-    let body_type = item.body_type;
+    let body_type = item.body_type.replace(/Option<(.+?)>/gm, '$1');
     if (body_type.startsWith('Json<')) {
       content += `\n\nA JSON ${displayType(body_type)}`;
     } else if (body_type.startsWith('Form<')) {
@@ -185,6 +183,9 @@ const displayRoute = (item: RouteInfo): string => {
       content += `\n\n${displayType(body_type)}`;
     }
 
+    body_type = body_type
+      .replace(/Json<(.+?)>/gm, '$1')
+      .replace(/Form<(.+?)>/gm, '$1');
     const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
@@ -195,9 +196,17 @@ const displayRoute = (item: RouteInfo): string => {
     content += '\n\n## Response';
     let return_type = item.return_type
       .replace(/Result<(.+?), .+?>/gm, '$1')
-      .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1')
+      .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1');
+    if (return_type.startsWith('Json<')) {
+      content += `\n\nA JSON ${displayType(return_type)}`;
+    } else if (return_type.startsWith('Form<')) {
+      content += `\n\nA \`multipart/form-data\` ${displayType(return_type)}`;
+    } else {
+      content += `\n\n${displayType(return_type)}`;
+    }
+
+    return_type = return_type
       .replace(/Json<(.+?)>/gm, '$1');
-    content += `\n\n${displayType(return_type)}`;
     const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${return_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
