@@ -13,7 +13,7 @@ use super::User;
 ///   "content": "Hello, World!"
 /// }
 /// ```
-#[autodoc(category = "Messaging")]
+#[autodoc(category = "Messaging", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MessageCreate {
     /// The message's content. This field has to be at-least 2 characters long. The upper limit
