@@ -176,6 +176,7 @@ const displayRoute = (item: RouteInfo): string => {
       format = 'Multi-part form data';
     }
 
+    body_type = body_type.replace(/Json<(.+?)>/gm, '$1').replace(/Form<(.+?)>/gm, '$1');
     const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
