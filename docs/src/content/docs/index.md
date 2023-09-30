@@ -15,32 +15,27 @@ order: 0
 
 # What the Heck is an Eludris
 
-Eludris is a [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software)
-[federated](<https://en.wikipedia.org/wiki/Federation_(information_technology)>),
+Eludris is not a [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software), not
+[federated](<https://en.wikipedia.org/wiki/Federation_(information_technology)>), not yet
 [End-To-End-Encrypted](https://en.wikipedia.org/wiki/End-to-end_encryption) Discord
 x Reddit mesh-like social media platform where the priority is for it to be _truly
-yours_.
+mine_ (sharp eyes).
 
-To that extent Eludris aims to be as easily accessible by everyone, even if they
-do not understand or care about the unique privacy-related features Eludris offers.
+Eludris is a user-centric Discord x Reddit mesh-like social media platform that
+values privacy through [End-To-End Encryption](https://en.wikipedia.org/wiki/End-to-end_encryption)
+where you can build a community that feels like your own.
 
-In terms of client Eludris is currently officially providing [Pilfer](https://github.com/eludris/pilfer)
-(a lightweight TUI) and [Pengin](https://github.com/eludris/pengin) (a web-based cross-platform client).
+To use Eludris, you can use the [official web client](https://app.eludris.com).
 
-However the intent has always been and still remains to be for people to make their
-own clients, toolings, bots, API wrappers and so on.
-
-As such Eludris has tried to convey said support via multiple things, namely the
-[Eludris Community organisation](https://github.com/eludris-community) where people
-can add their own creations and the [Eludris Awesome repository](https://github.com/eludris/awesome),
+One advantage that Eludris offers is that it allows and encourages people to make
+their own clients, toolings, bots, API wrappers and so on. Eludris facilitates
+this through the existence of the [Eludris Community organisation](https://github.com/eludris-community)
+where people can add their own creations and the [Eludris Awesome repository](https://github.com/eludris/awesome),
 in addition to these docs.
 
-For more info you can check out our [Official GitHub organisation](htt[s://github.com/eludris)
-or our [website](https://eludris.pages.dev).
-
-And while you're at it, consider joining our [Discord Server](https://discord.gg/amMHHjzwb9)
-since that is currently mainly where we hang out, joke around and work on Eludris
-and Eludris related stuff.
+Consider joining our [Discord Server](https://discord.gg/amMHHjzwb9) since that
+is currently mainly where we hang out, joke around and work on Eludris and Eludris
+related stuff.
 
 ## Reading the Docs
 
