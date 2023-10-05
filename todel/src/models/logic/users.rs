@@ -811,10 +811,10 @@ WHERE email = $1
 UPDATE users
 SET password = $1
 WHERE email = $2
-returning username, email
+RETURNING username, email
             ",
-            reset.email,
-            hash
+            hash,
+            reset.email
         )
         .fetch_one(db)
         .await
