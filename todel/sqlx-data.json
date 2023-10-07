@@ -156,33 +156,6 @@
     },
     "query": "\nDELETE FROM sessions\nWHERE id = $1\nAND user_id = $2 -- This should be unnecessary but eh\n            "
   },
-  "18fab9165239d3b3abec22363b1fd730b1ff3d8fd7c6a24eefad87f815f786b9": {
-    "describe": {
-      "columns": [
-        {
-          "name": "username",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "email",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Bpchar",
-          "Text"
-        ]
-      }
-    },
-    "query": "\nUPDATE users\nSET password = $1\nWHERE email = $2\nreturning username, email\n            "
-  },
   "26011e3bc1bea695e2156c02209bff07a186ff3b51a13d7e1c2f134f30dd21ac": {
     "describe": {
       "columns": [
@@ -660,6 +633,33 @@
       }
     },
     "query": "\nDELETE FROM users\nWHERE is_deleted = TRUE\n            "
+  },
+  "eab2d20e9f6280d34abde465e2bd9909c79260ffd8037f63453061f7783c1ed3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Bpchar",
+          "Text"
+        ]
+      }
+    },
+    "query": "\nUPDATE users\nSET password = $1\nWHERE email = $2\nRETURNING username, email\n            "
   },
   "fc04fcf2b80dc6ca7cef09a8e149e57845a1fde1f40333d404f720fbe5fd03b3": {
     "describe": {
