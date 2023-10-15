@@ -11,6 +11,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Delete your user.
 ///
+/// -- STATUS: 204
 /// -----
 ///
 /// ### Example

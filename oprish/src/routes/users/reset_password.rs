@@ -13,6 +13,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Send a password reset code to your email.
 ///
+/// -- STATUS: 204
 /// -----
 ///
 /// ### Example
@@ -52,6 +53,7 @@ pub async fn create_password_reset_code(
 
 /// Reset your password using the password reset code.
 ///
+/// -- STATUS: 204
 /// -----
 ///
 /// ### Example

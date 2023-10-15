@@ -64,7 +64,6 @@ const briefItem = (item: Item, model: string): string => {
     }
     return displayFields(item.fields);
   } else if (item.type == ItemType.Enum) {
-    console.log(item);
     let content = '';
     item.variants.forEach((variant) => {
       content += `\n- ${uncodeName(variant.name)}\n\n${variant.doc ?? ''}`;
@@ -258,6 +257,8 @@ const uncodeName = (name: string): string => {
       .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
       // Title Case
       .replace(/[A-Z]/gm, ' $&')
+      // Remove any remaining underscores
+      .replace(/_/gm, '')
       .trim()
   );
 };

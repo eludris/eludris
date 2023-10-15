@@ -48,15 +48,26 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
         || segment.ident == "Custom"
     {
         if let PathArguments::AngleBracketed(args) = &segment.arguments {
-            if let Some(GenericArgument::Type(Type::Path(ty))) = args.args.first() {
-                if let Some(segment) = ty.path.segments.last() {
-                    return display_path_segment(segment);
-                } else {
-                    return Err(Error::new(ty.span(), "Cannot extract type from field"));
+            match args.args.first() {
+                Some(GenericArgument::Type(Type::Path(ty))) => {
+                    if let Some(segment) = ty.path.segments.last() {
+                        return display_path_segment(segment);
+                    } else {
+                        return Err(Error::new(ty.span(), "Cannot extract type from field"));
+                    }
                 }
-            } else {
-                return Err(Error::new(segment.span(), "Cannot extract type from field"));
-            }
+                Some(GenericArgument::Type(Type::Tuple(ty))) => {
+                    if let Some(ty) = ty.elems.first() {
+                        return get_type(ty);
+                    } else {
+                        // this is valid
+                        return Ok("()".to_string());
+                    }
+                }
+                _ => {
+                    return Err(Error::new(segment.span(), "Cannot extract type from field"));
+                }
+            };
         } else {
             return Err(Error::new(segment.span(), "Cannot extract type from field"));
         }
