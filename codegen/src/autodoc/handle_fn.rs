@@ -34,8 +34,7 @@ fn route_format(ty: String) -> Result<(String, String), Error> {
         Ok((ty, "raw".to_string()))
     } else if ty == "()" {
         Ok((ty, "none".to_string()))
-    }
-    else {
+    } else {
         return Err(Error::new(
             Span::call_site().into(),
             format!("Could not parse route format: {}", ty),
