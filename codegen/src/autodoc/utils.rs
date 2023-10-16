@@ -75,7 +75,18 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
 
     Ok(match &segment.arguments {
         PathArguments::None => segment.ident.to_string(),
-        PathArguments::AngleBracketed(args) => {
+        PathArguments::AngleBracketed(args) => {   
+            // convert Vec<T> to T[]
+            if segment.ident == "Vec" {
+                if let Some(GenericArgument::Type(Type::Path(ty))) = args.args.first() {
+                    if let Some(segment) = ty.path.segments.last() {
+                        return display_path_segment(segment).map(|s| format!("{}[]", s));
+                    } else {
+                        return Err(Error::new(ty.span(), "Cannot extract type from field"));
+                    }
+                }
+            }
+
             let mut arg_strings = vec![];
 
             args.args.iter().try_for_each(|a| match a {
