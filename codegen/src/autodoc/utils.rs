@@ -168,6 +168,12 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         let mut nullable = false;
         let mut omittable = false;
 
+        if r#type == "String" {
+            r#type = "str".to_string();
+        } else if r#type == "TempFile" {
+            r#type = "file".to_string();
+        }
+
         // I'm sorry, Torvalds
         for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
             if let Ok(Meta::List(meta)) = attr.parse_meta() {

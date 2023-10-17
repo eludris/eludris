@@ -14,15 +14,16 @@ Each item, when fetched with `/autodoc/<path>`, will be an [ItemInfo](#item-info
 
 Items can be an [object](#object), [enum](#enum), or [route](#route).
 
-### Primitive Types
+### 'Primitive' Types
 
 The following are types that do not refer to another item in the inventory.
 
-- `String`
+- `str`
 - `u8`, `u16`, `u32`, `u64`, `u128`, `usize`, `i8`, `i16`, `i32`, `i64`, `i128`, `isize` - these are just integers in languages without sizes
-- `Boolean`
+- `bool`
 - `T[]` - an array of `T`
 - `IpAddr` - a string representation of an IPv4/IPv6 address. This is given as it is useful to convert to a helper type in your language for a smaller memory footprint (integer representation).
+- `file` - a file upload, in a multipart/form-data request.
 
 ### Objects
 
@@ -42,7 +43,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "content",
       "doc": "The message's content.",
-      "type": "String",
+      "type": "str",
       "flattened": false,
       "nullable": false,
       "omittable": false
@@ -78,7 +79,7 @@ A field may also be `flattened`, which means that the field is flattened into th
     {
       "name": "status",
       "doc": "The user's new status. This field cannot be more than 150 characters long.",
-      "type": "String",
+      "type": "str",
       "flattened": false,
       "nullable": true,
       "omittable": true
@@ -167,7 +168,7 @@ enum StatusType {
 }
 ```
 
-A `tuple` variant is a variant where the `content` of the enum is that of `field_type`. This means that if `field_type` is a `String`, the contents of the enum is also a `String`, and if `field_type` is `User`, the contents are the same fields as `User`. For example, in the `AUTHENTICATE` example above, `field_type` is `String`, so the content (`d`) is a string.
+A `tuple` variant is a variant where the `content` of the enum is that of `field_type`. This means that if `field_type` is a `str`, the contents of the enum is also a `String`, and if `field_type` is `User`, the contents are the same fields as `User`. For example, in the `AUTHENTICATE` example above, `field_type` is `str`, so the content (`d`) is a string.
 
 An `object` variant is a variant with the contents of `fields`. This is just like an `object` type, except within a variant of an enum. For example, in the `image` example above, the `fields` are `width` and `height`, making the metadata of an image file.
 
@@ -275,7 +276,7 @@ An object is simply a collection of fields with names and types.
     {
       "name": "content",
       "doc": "...",
-      "type": "String",
+      "type": "str",
       "nullable": false,
       "omittable": false,
       "flattened": false

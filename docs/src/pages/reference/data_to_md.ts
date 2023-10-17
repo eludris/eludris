@@ -232,7 +232,7 @@ const displayType = (type: string): string => {
     return 'Boolean';
   } else if (type == 'str') {
     return 'String';
-  } else if (type == 'TempFile') {
+  } else if (type == 'file') {
     return 'File';
   }
 
