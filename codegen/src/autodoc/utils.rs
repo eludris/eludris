@@ -75,7 +75,7 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
 
     Ok(match &segment.arguments {
         PathArguments::None => segment.ident.to_string(),
-        PathArguments::AngleBracketed(args) => {   
+        PathArguments::AngleBracketed(args) => {
             // convert Vec<T> to T[]
             if segment.ident == "Vec" {
                 if let Some(GenericArgument::Type(Type::Path(ty))) = args.args.first() {
