@@ -14,7 +14,7 @@ pub struct ItemInfo {
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum Item {
-    Struct(StructInfo),
+    Object(ObjectInfo),
     Enum(EnumInfo),
     Route(RouteInfo),
 }
@@ -23,14 +23,14 @@ pub enum Item {
 pub struct FieldInfo {
     pub name: String,
     pub doc: Option<String>,
-    pub field_type: String,
-    pub flattened: bool,
+    pub r#type: String,
     pub nullable: bool,
-    pub ommitable: bool,
+    pub omittable: bool,
+    pub flattened: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct StructInfo {
+pub struct ObjectInfo {
     pub fields: Vec<FieldInfo>,
 }
 
@@ -47,7 +47,7 @@ pub enum EnumVariant {
         doc: Option<String>,
         field_type: String,
     },
-    Struct {
+    Object {
         name: String,
         doc: Option<String>,
         fields: Vec<FieldInfo>,
@@ -60,14 +60,13 @@ pub struct EnumInfo {
     pub tag: Option<String>,
     pub untagged: bool,
     pub content: Option<String>,
-    pub rename_all: Option<String>,
     pub variants: Vec<EnumVariant>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ParamInfo {
     pub name: String,
-    pub param_type: String,
+    pub r#type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -76,7 +75,22 @@ pub struct RouteInfo {
     pub route: String,
     pub path_params: Vec<ParamInfo>,
     pub query_params: Vec<ParamInfo>,
-    pub body_type: Option<String>,
-    pub return_type: Option<String>,
-    pub guards: Vec<String>,
+    pub body: Option<Body>,
+    pub response: Option<Response>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requires_auth: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Body {
+    pub r#type: String,
+    pub format: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Response {
+    pub r#type: String,
+    pub format: String,
+    pub status_code: u8,
+    pub rate_limit: bool,
 }

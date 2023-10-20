@@ -45,7 +45,7 @@ pub struct FetchResponse<'a> {
 ///   https://cdn.eludris.gay/attachments/
 /// ```
 #[cfg(feature = "http")]
-#[autodoc(category = "Files")]
+#[autodoc(category = "Files", hidden = true)]
 #[derive(Debug, FromForm)]
 pub struct FileUpload<'a> {
     pub file: TempFile<'a>,

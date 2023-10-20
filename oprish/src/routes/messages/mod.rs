@@ -10,6 +10,7 @@ use todel::Conf;
 
 /// Post a message to Eludris.
 ///
+/// -- STATUS: 201
 /// -----
 ///
 /// ### Example

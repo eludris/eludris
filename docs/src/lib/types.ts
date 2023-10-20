@@ -1,5 +1,5 @@
 export enum ItemType {
-  Struct = 'struct',
+  Object = 'object',
   Enum = 'enum',
   Route = 'route'
 }
@@ -7,21 +7,21 @@ export enum ItemType {
 export interface FieldInfo {
   name: string;
   doc: string | null;
-  field_type: string;
+  type: string;
   flattened: boolean;
   nullable: boolean;
-  ommitable: boolean;
+  omittable: boolean;
 }
 
-export interface StructInfo {
-  type: ItemType.Struct;
+export interface ObjectInfo {
+  type: ItemType.Object;
   fields: FieldInfo[];
 }
 
 export enum VariantType {
   Unit = 'unit',
   Tuple = 'tuple',
-  Struct = 'struct'
+  Object = 'object'
 }
 
 export interface UnitEnumVariant {
@@ -38,7 +38,7 @@ export interface TupleEnumVariant {
 }
 
 export interface StructEnumVariant {
-  type: VariantType.Struct;
+  type: VariantType.Object;
   name: string;
   doc: string | null;
   fields: FieldInfo[];
@@ -57,12 +57,24 @@ export interface EnumInfo {
 
 export interface PathParamInfo {
   name: string;
-  param_type: string;
+  type: string;
 }
 
 export interface QueryParamInfo {
   name: string;
-  param_type: string;
+  type: string;
+}
+
+export interface Body {
+  type: string;
+  format: string;
+}
+
+export interface Response {
+  type: string;
+  format: string;
+  status_code: number;
+  rate_limits: boolean;
 }
 
 export interface RouteInfo {
@@ -71,12 +83,12 @@ export interface RouteInfo {
   route: string;
   path_params: PathParamInfo[];
   query_params: QueryParamInfo[];
-  body_type: string | null;
-  return_type: string | null;
-  guards: string[];
+  body: Body | null;
+  response: Response | null;
+  requires_auth?: boolean;
 }
 
-export type Item = StructInfo | EnumInfo | RouteInfo;
+export type Item = ObjectInfo | EnumInfo | RouteInfo;
 
 export interface ItemInfo {
   name: string;

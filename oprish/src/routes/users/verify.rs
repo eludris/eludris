@@ -10,6 +10,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Verify your email address.
 ///
+/// -- STATUS: 204
 /// -----
 ///
 /// ### Example

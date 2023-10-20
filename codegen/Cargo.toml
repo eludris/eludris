@@ -16,7 +16,9 @@ keywords = ["eludris"]
 proc-macro = true
 
 [dependencies]
+lazy_static = "1.4.0"
 quote = "1.0.23"
+regex = "1.8.4"
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.94"
 syn = { version = "1.0.107", features = ["full"] }
