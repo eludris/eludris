@@ -411,6 +411,44 @@
     },
     "query": "\nINSERT INTO sessions(id, user_id, platform, client, ip)\nVALUES($1, $2, $3, $4, $5)\n            "
   },
+  "579e6b05021903ecab895ec6ec9aecb695c53e95ed5d9081e3e7f8b93f8d32e3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nSELECT username, email\nFROM users\nWHERE id = $1\n            "
+  },
+  "605a3bd493ca8d3d45fae548b84f977077e7769807a8611911d10bf0d425cb44": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\nDELETE FROM files\nWHERE id = $1\nAND bucket = 'attachments'\n        "
+  },
   "72d1098107fc80bee8cbe8293f18dd96a61471e0c48e8d0c9dea709d959c378f": {
     "describe": {
       "columns": [],
