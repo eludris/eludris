@@ -869,7 +869,7 @@ AND is_deleted = FALSE
         .await
         .map_err(|err| {
             log::error!("Could not fetch user data for verification: {}", err);
-            error!(SERVER, "Couldn't verify user")
+            error!(SERVER, "Couldn't check user verification status")
         })?
         .verified;
         if verified {
@@ -880,7 +880,7 @@ AND is_deleted = FALSE
             .await
             .map_err(|err| {
                 log::error!("Failed to get code from cache: {}", err);
-                error!(SERVER, "Couldn't verify user")
+                error!(SERVER, "Couldn't check user verification status")
             })?;
         let user = sqlx::query!(
             "
@@ -894,7 +894,7 @@ WHERE id = $1
         .await
         .map_err(|err| {
             log::error!("Failed to fetch user email: {}", err);
-            error!(SERVER, "Couldn't verify user")
+            error!(SERVER, "Couldn't check user verification status")
         })?;
 
         if let Some(email) = &conf.email {
