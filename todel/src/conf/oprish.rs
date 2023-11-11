@@ -99,6 +99,9 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`delete_session`] endpoint.
     #[serde(default = "delete_session_default")]
     pub delete_session: RateLimitConf,
+    /// Rate limits for the [`resend_verification`] endpoint.
+    #[serde(default = "resend_verification_default")]
+    pub resend_verification: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -118,6 +121,7 @@ impl Default for OprishRateLimits {
             create_session: create_session_default(),
             get_sessions: get_sessions_default(),
             delete_session: delete_session_default(),
+            resend_verification: resend_verification_default(),
         }
     }
 }
@@ -217,5 +221,12 @@ fn delete_session_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 300,
         limit: 10,
+    }
+}
+
+fn resend_verification_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 60,
+        limit: 1,
     }
 }

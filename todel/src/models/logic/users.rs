@@ -848,6 +848,69 @@ RETURNING username, email
         }
         Ok(())
     }
+
+    pub async fn resend_verification<C: AsyncCommands>(
+        session: Session,
+        mailer: &Emailer,
+        db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
+        conf: &Conf,
+    ) -> Result<(), ErrorResponse> {
+        let verified = sqlx::query!(
+            "
+SELECT verified
+FROM users
+WHERE id = $1
+AND is_deleted = FALSE
+            ",
+            session.user_id as i64
+        )
+        .fetch_one(&mut *db)
+        .await
+        .map_err(|err| {
+            log::error!("Could not fetch user data for verification: {}", err);
+            error!(SERVER, "Couldn't check user verification status")
+        })?
+        .verified;
+        if verified {
+            return Err(error!(VALIDATION, "code", "User is already verified"));
+        }
+        let cache_code: u32 = cache
+            .get(format!("verification:{}", session.user_id))
+            .await
+            .map_err(|err| {
+                log::error!("Failed to get code from cache: {}", err);
+                error!(SERVER, "Couldn't check user verification status")
+            })?;
+        let user = sqlx::query!(
+            "
+SELECT username, email
+FROM users
+WHERE id = $1
+            ",
+            session.user_id as i64
+        )
+        .fetch_one(&mut *db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to fetch user email: {}", err);
+            error!(SERVER, "Couldn't check user verification status")
+        })?;
+
+        if let Some(email) = &conf.email {
+            mailer
+                .send_email(
+                    &format!("{} <{}>", user.username, user.email),
+                    EmailPreset::Verify {
+                        username: &user.username,
+                        code: cache_code,
+                    },
+                    email,
+                )
+                .await?;
+        }
+        Ok(())
+    }
 }
 
 impl User {
