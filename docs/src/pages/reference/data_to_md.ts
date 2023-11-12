@@ -5,16 +5,12 @@ import {
   FieldInfo,
   ItemInfo,
   ItemType,
-  StructInfo,
+  ObjectInfo,
   VariantType,
   RouteInfo,
   Item
 } from '../../lib/types';
 import AUTODOC_ENTRIES from '../../../public/autodoc/index.json';
-
-const TYPE_OVERRIDES: Record<string, string> = {
-  FetchResponse: 'Raw file content.'
-};
 
 export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
@@ -22,11 +18,12 @@ export default (info: ItemInfo): string => {
   if (info.item.type == ItemType.Route) {
     // Replace angle brackets with HTML character entities
     const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
-    content += `\n\n<span class="method">${info.item.method
-      }</span><span class="route">${route.replace(
-        /&lt;*.+?&gt;/gm,
-        '<span class="special-segment">$&</span>'
-      )}</span>`;
+    content += `\n\n<span class="method">${
+      info.item.method
+    }</span><span class="route">${route.replace(
+      /&lt;*.+?&gt;/gm,
+      '<span class="special-segment">$&</span>'
+    )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -34,7 +31,7 @@ export default (info: ItemInfo): string => {
     example = parts.join('-----');
     content += `\n\n${displayDoc(doc)}`;
   }
-  if (info.item.type == ItemType.Struct) {
+  if (info.item.type == ItemType.Object) {
     content += `\n\n${displayFields(info.item.fields)}`;
   } else if (info.item.type == ItemType.Enum) {
     info.item.variants.forEach((variant) => {
@@ -61,13 +58,12 @@ export default (info: ItemInfo): string => {
 };
 
 const briefItem = (item: Item, model: string): string => {
-  if (item.type == ItemType.Struct) {
+  if (item.type == ItemType.Object) {
     if (!item.fields.length) {
       return '';
     }
     return displayFields(item.fields);
   } else if (item.type == ItemType.Enum) {
-    console.log(item);
     let content = '';
     item.variants.forEach((variant) => {
       content += `\n- ${uncodeName(variant.name)}\n\n${variant.doc ?? ''}`;
@@ -92,10 +88,9 @@ const displayFields = (fields: FieldInfo[]): string => {
 
 const displayField = (field: FieldInfo): string => {
   const innerType =
-    field.flattened &&
-    AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.field_type}.json`));
+    field.flattened && AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${field.type}.json`));
   if (innerType) {
-    let innerData: StructInfo = JSON.parse(
+    let innerData: ObjectInfo = JSON.parse(
       readFileSync(`public/autodoc/${innerType}`).toString()
     ).item;
     let fields = '';
@@ -104,8 +99,9 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.ommitable ? '?' : ''}|${displayType(field.field_type)}${field.nullable ? '?' : ''
-    }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.omittable ? '?' : ''}|${displayType(field.type)}${
+    field.nullable ? '?' : ''
+  }|${displayInlineDoc(field.doc)}|`;
 };
 
 const getTagDescription = (tag: string, model: string): string => {
@@ -116,15 +112,13 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
   let content = '';
   if (variant.type == VariantType.Unit) {
     if (item.tag) {
-      let name = switchCase(variant.name, item.rename_all);
       let desc = getTagDescription(item.tag, model);
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${name}"|${desc}`;
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${variant.name}"|${desc}`;
     }
   } else if (variant.type == VariantType.Tuple) {
     if (item.tag) {
-      let name = switchCase(variant.name, item.rename_all);
       let desc = getTagDescription(item.tag, model);
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${name}"|${desc}`;
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${variant.name}"|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
       }
@@ -138,14 +132,13 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
         content += `\n\n${briefItem(data.item, data.name)}`;
       }
     }
-  } else if (variant.type == VariantType.Struct) {
+  } else if (variant.type == VariantType.Object) {
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
-      let name = switchCase(variant.name, item.rename_all);
       let desc = getTagDescription(item.tag, model);
-      content += `\n|${item.tag}|"${name}"|${desc}`;
+      content += `\n|${item.tag}|"${variant.name}"|${desc}`;
       if (item.content) {
-        content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant`;
+        content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant.`;
         content += '\n\nWith the data of this variant being:';
         content += `\n\n${displayFields(variant.fields)}`;
       } else {
@@ -163,54 +156,56 @@ const displayRoute = (item: RouteInfo): string => {
   if (item.path_params.length) {
     content += '\n\n## Path Params\n\n|Name|Type|\n|---|---|';
     item.path_params.forEach((param) => {
-      content += `\n|${param.name}|${displayType(param.param_type)}|`;
+      content += `\n|${param.name}|${displayType(param.type)}|`;
     });
   }
   if (item.query_params.length) {
     content += '\n\n## Query Params\n\n|Name|Type|\n|---|---|';
     item.query_params.forEach((param) => {
-      content += `\n|${param.name}|${displayType(param.param_type)}|`;
+      content += `\n|${param.name}|${displayType(param.type)}|`;
     });
   }
-  if (item.body_type) {
-    content += '\n\n## Request Body';
-    let body_type = item.body_type.replace(/Option<(.+?)>/gm, '$1');
-    if (body_type.startsWith('Json<')) {
-      content += `\n\nA JSON ${displayType(body_type)}`;
-    } else if (body_type.startsWith('Form<')) {
-      content += `\n\nA \`multipart/form-data\` ${displayType(body_type)}`;
-    } else {
-      content += `\n\n${displayType(body_type)}`;
+  if (item.body) {
+    content += '\n\n## Request Body\n\n';
+    let body_type = item.body.type;
+    let format: string | null = null;
+    if (item.body.format == 'application/json') {
+      format = 'JSON';
+    } else if (item.body.format == 'multipart/form-data') {
+      format = 'Multi-part form data';
     }
 
-    body_type = body_type
-      .replace(/Json<(.+?)>/gm, '$1')
-      .replace(/Form<(.+?)>/gm, '$1');
+    body_type = body_type.replace(/Json<(.+?)>/gm, '$1').replace(/Form<(.+?)>/gm, '$1');
     const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${body_type}.json`));
     if (innerType) {
       let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+      if (!data.hidden) {
+        if (format) {
+          content += `A ${format} ${displayType(body_type)}`;
+        } else {
+          content += displayType(body_type);
+        }
+      }
+
       content += `\n\n${briefItem(data.item, data.name)}`;
+    } else {
+      content += displayType(body_type);
     }
   }
-  if (item.return_type) {
-    content += '\n\n## Response';
-    let return_type = item.return_type
-      .replace(/Result<(.+?), .+?>/gm, '$1')
-      .replace(/RateLimitedRouteResponse<(.+?)>/gm, '$1');
-    if (return_type.startsWith('Json<')) {
-      content += `\n\nA JSON ${displayType(return_type)}`;
-    } else if (return_type.startsWith('Form<')) {
-      content += `\n\nA \`multipart/form-data\` ${displayType(return_type)}`;
+  if (item.response) {
+    content += `\n\n## Response\n\n<span class="status">${item.response.status_code}</span>`;
+    let response_type = item.response.type;
+    if (item.response.format == 'raw') {
+      content += 'Raw file content.';
     } else {
-      content += `\n\n${displayType(return_type)}`;
-    }
-
-    return_type = return_type
-      .replace(/Json<(.+?)>/gm, '$1');
-    const innerType = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${return_type}.json`));
-    if (innerType) {
-      let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
-      content += `\n\n${briefItem(data.item, data.name)}`;
+      content += `${displayType(response_type)}`;
+      const innerType = AUTODOC_ENTRIES.items.find((entry) =>
+        entry.endsWith(`/${response_type}.json`)
+      );
+      if (innerType) {
+        let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+        content += `\n\n${briefItem(data.item, data.name)}`;
+      }
     }
   }
   return content.substring(2); // to remove the first double newline
@@ -226,36 +221,19 @@ const displayInlineDoc = (doc: string | null | undefined): string => {
     .replace(/(\S)\n(\S)/gm, '$1 $2');
 };
 
-const switchCase = (content: string, new_case: string | null): string => {
-  if (new_case == 'SCREAMING_SNAKE_CASE') {
-    return content.replace(/(\S)([A-Z])/gm, '$1_$2').toUpperCase();
-  }
-  return content;
-};
-
 const displayType = (type: string): string => {
-  type = type
-    .replace(/Option<(.+)>/gm, '$1')
-    .replace(/Option<(.+)>/gm, '$1')
-    .replace(/Json<(.+)>/gm, '$1')
-    .replace(/Form<(.+)>/gm, '$1')
-    .replace(/Box<(.+)>/gm, '$1')
-    .replace(/</gm, '\\<');
-
-  if (type.startsWith('Vec<')) {
-    return `Array of ${displayType(type.substring(4, type.length - 1))}`;
+  if (type.endsWith('[]')) {
+    return `Array of ${displayType(type.substring(0, type.length - 2))}`;
   }
 
-  if (type == 'u32' || type == 'u64' || type == 'usize' || type == 'i32' || type == 'i64') {
+  if (/^(u|i)(size|\d{1,2})$/gm.test(type)) {
     return 'Number';
   } else if (type == 'bool') {
     return 'Boolean';
   } else if (type == 'str') {
     return 'String';
-  } else if (type == 'TempFile') {
+  } else if (type == 'file') {
     return 'File';
-  } else if (type in TYPE_OVERRIDES) {
-    return TYPE_OVERRIDES[type];
   }
 
   let entry = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${type}.json`))?.split('.')[0];
@@ -263,8 +241,24 @@ const displayType = (type: string): string => {
 };
 
 const uncodeName = (name: string): string => {
-  return name
-    .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
-    .replace(/[A-Z]/gm, ' $&')
-    .trim();
+  return (
+    name
+      // snake_case
+      .replace(
+        /([a-zA-Z]+)_([a-zA-Z]+)/gm,
+        (_, p1: string, p2: string) =>
+          `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}${p2[0].toUpperCase()}${p2
+            .slice(1)
+            .toLowerCase()}`
+      )
+      // UPPER -> lower
+      .replace(/^[A-Z]+$/gm, (p1: string) => p1.toLowerCase())
+      // _underscore
+      .replace(/(?:^|_)([a-z0-9])/gm, (_, p1: string) => p1.toUpperCase())
+      // Title Case
+      .replace(/[A-Z]/gm, ' $&')
+      // Remove any remaining underscores
+      .replace(/_/gm, '')
+      .trim()
+  );
 };

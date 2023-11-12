@@ -4,6 +4,7 @@ mod create;
 mod delete;
 mod get;
 mod profile;
+mod resend_verification;
 mod reset_password;
 mod update;
 mod verify;
@@ -20,5 +21,6 @@ pub fn get_routes() -> Vec<Route> {
         delete::delete_user,
         reset_password::create_password_reset_code,
         reset_password::reset_password,
+        resend_verification::resend_verification,
     ]
 }

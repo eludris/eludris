@@ -124,7 +124,7 @@ impl fmt::Display for User {
 ///   "password": "authentícame por favor" // don't actually use this as a password
 /// }
 /// ```
-#[autodoc(category = "Users")]
+#[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UserCreate {
     /// The user's name.
@@ -152,7 +152,7 @@ pub struct UserCreate {
 ///   "email": "yendli2@yemail.yom"
 /// }
 /// ```
-#[autodoc(category = "Users")]
+#[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UpdateUser {
     /// The user's current password for validation.
@@ -182,7 +182,7 @@ pub struct UpdateUser {
 ///   "bio": "I am very happy!"
 /// }
 /// ```
-#[autodoc(category = "Users")]
+#[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UpdateUserProfile {
     /// The user's new display name. This field has to be between 2 and 32 characters long.
@@ -237,7 +237,7 @@ pub struct UpdateUserProfile {
 ///   "email": "someemail@ma.il"
 /// }
 /// ```
-#[autodoc(category = "Users")]
+#[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CreatePasswordResetCode {
     /// The user's email.

@@ -3083,7 +3083,9 @@ dependencies = [
 name = "todel_codegen"
 version = "0.4.0-alpha1"
 dependencies = [
+ "lazy_static",
  "quote",
+ "regex",
  "serde",
  "serde_json",
  "syn 1.0.109",

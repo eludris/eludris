@@ -62,7 +62,7 @@ const remarkGenerateSearchIndex = () => {
             .replace(/(?:^|_)([a-z0-9])/gm, (_, p1) => p1.toUpperCase())
             .replace(/[A-Z]/gm, ' $&')
             .trim()
-      ).split('.')[0];
+        ).split('.')[0];
       baseRoute = `/reference/${entry}`;
     }
     visit(tree, 'paragraph', (node) => {
@@ -102,10 +102,7 @@ export default defineConfig({
   },
   markdown: {
     syntaxHighlight: 'prism',
-    remarkPlugins: [
-      remarkAutolinkReferenceEntries,
-      remarkGenerateSearchIndex
-    ],
+    remarkPlugins: [remarkAutolinkReferenceEntries, remarkGenerateSearchIndex],
     rehypePlugins: [
       rehypeAccessibleEmojis,
       rehypeSlug,

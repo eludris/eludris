@@ -11,6 +11,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Delete a session.
 ///
+/// -- STATUS: 204
 /// -----
 ///
 /// ### Example

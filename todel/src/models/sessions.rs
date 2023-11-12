@@ -49,7 +49,7 @@ pub struct Session {
 ///   "client": "pilfer"
 /// }
 /// ```
-#[autodoc(category = "Sessions")]
+#[autodoc(category = "Sessions", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SessionCreate {
     /// The session user's identifier. This can be either their email or username.
