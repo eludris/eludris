@@ -19,7 +19,11 @@ impl Fairing for Cors {
             "Access-Control-Allow-Methods",
             "POST, GET, OPTIONS, PATCH, DELETE",
         ));
-        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "Authorization"));
+        response.set_header(Header::new(
+            "Access-Control-Expose-Headers",
+            "X-Ratelimit-Last-Reset, X-Ratelimit-Max, X-Ratelimit-Request-Count, X-Ratelimit-Reset",
+        ));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
 
         if request.method() == Method::Options && response.status() == Status::NotFound {
