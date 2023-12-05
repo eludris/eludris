@@ -98,7 +98,7 @@ AND bucket = $2
             hash,
             bucket,
         )
-        .fetch_one(&mut *db)
+        .fetch_one(&mut **db)
         .await
         .map(|f| (f.file_id, f.content_type, f.width, f.height))
         {
@@ -118,7 +118,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 width as Option<i32>,
                 height as Option<i32>,
             )
-            .execute(&mut *db)
+            .execute(&mut **db)
             .await
             .unwrap();
 
@@ -248,7 +248,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 file.width.map(|s| s as i32),
                 file.height.map(|s| s as i32),
             )
-            .execute(&mut *db)
+            .execute(&mut **db)
             .await
             .unwrap();
 
@@ -273,7 +273,7 @@ AND bucket = $2
             id as i64,
             bucket,
         )
-        .fetch_one(&mut *db)
+        .fetch_one(&mut **db)
         .await
         .map(|r| Self {
             id: r.id as u64,

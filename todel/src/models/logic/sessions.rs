@@ -47,7 +47,7 @@ AND is_deleted = FALSE
             ",
             session.identifier
         )
-        .fetch_optional(&mut *db)
+        .fetch_optional(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Could not fetch the user's password: {}", err);
@@ -75,7 +75,7 @@ VALUES($1, $2, $3, $4, $5)
             session.client,
             IpNetwork::from(ip),
         )
-        .execute(db)
+        .execute(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Failed to store session in database: {}", err);
@@ -122,7 +122,7 @@ AND u.is_deleted = FALSE
             claims.session_id as i64,
             claims.user_id as i64
         )
-        .fetch_optional(db)
+        .fetch_optional(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Could not fetch the user's session: {}", err);
@@ -151,7 +151,7 @@ AND u.is_deleted = FALSE
                     ",
             user as i64
         )
-        .fetch_all(db)
+        .fetch_all(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Couldn't get user sessions: {}", err);
@@ -185,7 +185,7 @@ AND user_id = $2 -- This should be unnecessary but eh
             id as i64,
             user_id as i64,
         )
-        .execute(db)
+        .execute(&mut **db)
         .await
         .map(|rows| {
             if rows.rows_affected() == 0 {

@@ -2,24 +2,22 @@ use std::time::{Duration, SystemTime};
 
 use argon2::{
     password_hash::{rand_core::CryptoRngCore, SaltString},
-    PasswordHash, PasswordHasher, PasswordVerifier,
+    PasswordHasher, PasswordVerifier,
 };
 use lazy_static::lazy_static;
 use rand::Rng;
 use redis::AsyncCommands;
 use regex::Regex;
-use sqlx::{pool::PoolConnection, Database, Decode, Postgres, QueryBuilder, Row};
+use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
     models::{
-        CreatePasswordResetCode, ErrorResponse, File, PasswordDeleteCredentials, ResetPassword,
-        Session, Status, StatusType, UpdateUser, UpdateUserProfile, User, UserCreate,
+        CreatePasswordResetCode, EmailPreset, Emailer, ErrorResponse, PasswordDeleteCredentials,
+        ResetPassword, Session, Status, StatusType, UpdateUser, User, UserCreate,
     },
     Conf,
 };
-
-use super::{EmailPreset, Emailer};
 
 pub fn validate_username(username: &str) -> Result<(), ErrorResponse> {
     lazy_static! {
@@ -81,71 +79,6 @@ impl UserCreate {
     }
 }
 
-impl UpdateUserProfile {
-    pub async fn validate(
-        &self,
-        conf: &Conf,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Result<(), ErrorResponse> {
-        if self.display_name.is_none()
-            && self.bio.is_none()
-            && self.status.is_none()
-            && self.status_type.is_none()
-            && self.avatar.is_none()
-            && self.banner.is_none()
-        {
-            return Err(error!(VALIDATION, "body", "At least one field must exist"));
-        }
-        if let Some(Some(display_name)) = &self.display_name {
-            if display_name.len() < 2 || display_name.len() > 32 {
-                return Err(error!(
-                    VALIDATION,
-                    "display_name",
-                    "The user's display name must be between 2 and 32 characters in length"
-                ));
-            }
-        }
-        if let Some(Some(bio)) = &self.bio {
-            if bio.is_empty() || bio.len() > conf.oprish.bio_limit {
-                return Err(error!(
-                    VALIDATION,
-                    "bio",
-                    format!(
-                        "The user's bio must be between 1 and {} characters in length",
-                        conf.oprish.bio_limit
-                    )
-                ));
-            }
-        }
-        if let Some(Some(status)) = &self.status {
-            if status.is_empty() || status.len() > 150 {
-                return Err(error!(
-                    VALIDATION,
-                    "status",
-                    "The user's status name must be between 1 and 150 characters in length"
-                ));
-            }
-        }
-        if let Some(Some(avatar)) = self.avatar {
-            if File::get(avatar, "avatars", &mut *db).await.is_none() {
-                return Err(error!(
-                    VALIDATION,
-                    "avatar", "The user's avatar must be a valid file that must exist"
-                ));
-            }
-        }
-        if let Some(Some(banner)) = self.banner {
-            if File::get(banner, "banners", &mut *db).await.is_none() {
-                return Err(error!(
-                    VALIDATION,
-                    "banner", "The user's banner must be a valid file that must exist"
-                ));
-            }
-        }
-        Ok(())
-    }
-}
-
 impl UpdateUser {
     pub async fn validate(&self, db: &mut PoolConnection<Postgres>) -> Result<(), ErrorResponse> {
         if self.username.is_none() && self.email.is_none() && self.new_password.is_none() {
@@ -168,7 +101,7 @@ impl UpdateUser {
             if let Some(row) = query
                 .push(") AND is_deleted = FALSE")
                 .build()
-                .fetch_optional(db)
+                .fetch_optional(&mut **db)
                 .await
                 .map_err(|err| {
                     log::error!("Couldn't fetch users from database: {}", err);
@@ -196,18 +129,6 @@ impl ResetPassword {
     }
 }
 
-impl<'r, DB: Database> Decode<'r, DB> for Status
-where
-    &'r str: Decode<'r, DB>,
-{
-    fn decode(
-        value: <DB as sqlx::database::HasValueRef<'r>>::ValueRef,
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        Ok(serde_json::from_str(<&str as Decode<DB>>::decode(value)?)
-            .expect("Couldn't deserialize status type"))
-    }
-}
-
 impl User {
     pub async fn create<H: PasswordHasher, R: CryptoRngCore, C: AsyncCommands>(
         user: UserCreate,
@@ -230,7 +151,7 @@ OR email = $2
             user.username,
             user.email,
         )
-        .fetch_optional(&mut *db)
+        .fetch_optional(&mut **db)
         .await
         .map_err(|err| {
             log::error!(
@@ -249,7 +170,7 @@ OR email= $2
                     user.username,
                     user.email
                 )
-                .execute(&mut *db)
+                .execute(&mut **db)
                 .await
                 .map_err(|err| {
                     log::error!("Failed to clean up pre-existing deleted user: {}", err);
@@ -303,7 +224,7 @@ VALUES($1, $2, $3, $4, $5)
             user.email,
             hash
         )
-        .execute(db)
+        .execute(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Failed to store user in database: {}", err);
@@ -328,39 +249,6 @@ VALUES($1, $2, $3, $4, $5)
         })
     }
 
-    pub async fn validate_password<V: PasswordVerifier>(
-        id: u64,
-        password: &str,
-        verifier: &V,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Result<(), ErrorResponse> {
-        let hash = sqlx::query!(
-            "
-SELECT password
-FROM users
-WHERE id = $1
-AND is_deleted = FALSE
-            ",
-            id as i64
-        )
-        .fetch_one(&mut *db)
-        .await
-        .map_err(|err| {
-            log::error!("Could not fetch the user's password: {}", err);
-            error!(SERVER, "Failed to fetch the user's password")
-        })?
-        .password;
-        verifier
-            .verify_password(
-                password.as_bytes(),
-                &PasswordHash::new(&hash).map_err(|err| {
-                    log::error!("Couldn't parse password hash: {}", err);
-                    error!(SERVER, "Failed to validate the user's password")
-                })?,
-            )
-            .map_err(|_| error!(UNAUTHORIZED))
-    }
-
     pub async fn verify<C: AsyncCommands>(
         code: u32,
         session: Session,
@@ -376,7 +264,7 @@ AND is_deleted = FALSE
             ",
             session.user_id as i64
         )
-        .fetch_one(&mut *db)
+        .fetch_one(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Could not fetch user data for verification: {}", err);
@@ -404,7 +292,7 @@ WHERE id = $1
             ",
             session.user_id as i64
         )
-        .execute(db)
+        .execute(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Failed to set user verification in database: {}", err);
@@ -420,121 +308,67 @@ WHERE id = $1
         Ok(())
     }
 
-    #[allow(clippy::blocks_in_if_conditions)] // it's supposedly bad beacuse of code cleanness but
-                                              // in this case it's cleaner
-    pub async fn get<C: AsyncCommands>(
-        id: u64,
-        requester_id: Option<u64>,
+    pub async fn resend_verification<C: AsyncCommands>(
+        session: Session,
+        mailer: &Emailer,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
-    ) -> Result<Self, ErrorResponse> {
-        sqlx::query!(
-            r#"
-SELECT id, username, display_name, social_credit, status, status_type as "status_type: StatusType", bio, avatar, banner, badges, permissions, email, verified
+        conf: &Conf,
+    ) -> Result<(), ErrorResponse> {
+        let verified = sqlx::query!(
+            "
+SELECT verified
 FROM users
 WHERE id = $1
 AND is_deleted = FALSE
-            "#,
-            id as i64
+            ",
+            session.user_id as i64
         )
-        .fetch_optional(db)
+        .fetch_one(&mut **db)
         .await
         .map_err(|err| {
-            log::error!("Couldn't get user from database: {}", err);
-            error!(SERVER, "Failed to get user data")
+            log::error!("Could not fetch user data for verification: {}", err);
+            error!(SERVER, "Couldn't check user verification status")
         })?
-        .map(|u| async move {
-            Ok(Self {
-                id: u.id as u64,
-                username: u.username,
-                display_name: u.display_name,
-                social_credit: u.social_credit,
-                status: if  Some(id) == requester_id  ||
-                    cache
-                    .sismember::<_, _, bool>("sessions", u.id as u64)
-                    .await
-                    .map_err(|err| {
-                        log::error!("Failed to determine if user is online: {}", err);
-                        error!(SERVER, "Couldn't provide user data")
-                    })? {
-                        Status {
-                        status_type: u.status_type,
-                            text: u.status,
-                        }
-                } else {
-                    Status {
-                        status_type: StatusType::Offline,
-                        text: None,
-                    }
-                },
-                bio: u.bio,
-                avatar: u.avatar.map(|a| a as u64),
-                banner: u.banner.map(|b| b as u64),
-                badges: u.badges as u64,
-                permissions: u.permissions as u64,
-                email: (Some(id) == requester_id).then_some(u.email),
-                verified: (Some(id) == requester_id).then_some(u.verified)
-            })
-        })
-        .ok_or_else(|| error!(NOT_FOUND))?.await
-    }
-
-    #[allow(clippy::blocks_in_if_conditions)]
-    pub async fn get_username<C: AsyncCommands>(
-        username: &str,
-        requester_id: Option<u64>,
-        db: &mut PoolConnection<Postgres>,
-        cache: &mut C,
-    ) -> Result<Self, ErrorResponse> {
-        sqlx::query!(
-            r#"
-SELECT id, username, display_name, social_credit, status, status_type as "status_type: StatusType", bio, avatar, banner, badges, permissions, email, verified
+        .verified;
+        if verified {
+            return Err(error!(VALIDATION, "code", "User is already verified"));
+        }
+        let cache_code: u32 = cache
+            .get(format!("verification:{}", session.user_id))
+            .await
+            .map_err(|err| {
+                log::error!("Failed to get code from cache: {}", err);
+                error!(SERVER, "Couldn't check user verification status")
+            })?;
+        let user = sqlx::query!(
+            "
+SELECT username, email
 FROM users
-WHERE username = $1
-AND is_deleted = FALSE
-            "#,
-            username
+WHERE id = $1
+            ",
+            session.user_id as i64
         )
-        .fetch_optional(db)
+        .fetch_one(&mut **db)
         .await
         .map_err(|err| {
-            log::error!("Couldn't get user from database: {}", err);
-            error!(SERVER, "Failed to get user data")
-        })?
-        .map(|u| async move {
-            Ok(Self {
-                id: u.id as u64,
-                username: u.username,
-                display_name: u.display_name,
-                social_credit: u.social_credit,
-                status: if Some(u.id as u64) == requester_id || cache
-                    .sismember::<_, _, bool>("sessions", u.id as u64)
-                    .await
-                    .map_err(|err| {
-                        log::error!("Failed to determine if user is online: {}", err);
-                        error!(SERVER, "Couldn't provide user data")
-                    })? {
-                    Status {
-                        status_type: u.status_type,
-                        text: u.status,
-                    }
-                } else {
-                    Status {
-                        status_type: StatusType::Offline,
-                        text: None,
-                    }
-                },
-                bio: u.bio,
-                avatar: u.avatar.map(|a| a as u64),
-                banner: u.banner.map(|b| b as u64),
-                badges: u.badges as u64,
-                permissions: u.permissions as u64,
-                email: (Some(u.id as u64) == requester_id).then_some(u.email),
-                verified: (Some(u.id as u64) == requester_id).then_some(u.verified)
-            })
-        })
-        .ok_or_else(|| error!(NOT_FOUND))?
-        .await
+            log::error!("Failed to fetch user email: {}", err);
+            error!(SERVER, "Couldn't check user verification status")
+        })?;
+
+        if let Some(email) = &conf.email {
+            mailer
+                .send_email(
+                    &format!("{} <{}>", user.username, user.email),
+                    EmailPreset::Verify {
+                        username: &user.username,
+                        code: cache_code,
+                    },
+                    email,
+                )
+                .await?;
+        }
+        Ok(())
     }
 
     pub async fn update<H: PasswordHasher, R: CryptoRngCore>(
@@ -569,32 +403,15 @@ AND is_deleted = FALSE
                 .to_string();
             seperated.push("password = ").push_bind_unseparated(hash);
         }
-        let user = query
+        let user: Self = query
             .push(" WHERE id = ")
             .push_bind(id as i64)
             .push(
                 " RETURNING id, username, display_name, social_credit, status, status_type, bio, avatar, banner, badges, permissions, email, verified",
             )
-            .build()
-            .fetch_one(db)
+            .build_query_as()
+            .fetch_one(&mut **db)
             .await
-            .map(|u| Self {
-                id: u.get::<i64, _>("id") as u64,
-                username: u.get("username"),
-                display_name: u.get("display_name"),
-                social_credit: u.get("social_credit"),
-                status: Status {
-                    status_type: u.get("status_type"),
-                    text: u.get("status"),
-                },
-                bio: u.get("bio"),
-                avatar: u.get::<Option<i64>, _>("avatar").map(|a| a as u64),
-                banner: u.get::<Option<i64>, _>("banner").map(|b| b as u64),
-                badges: u.get::<i64, _>("badges") as u64,
-                permissions: u.get::<i64, _>("permissions") as u64,
-                email: Some(u.get("email")),
-                verified: Some(u.get("verified")),
-            })
             .map_err(|err| {
                 log::error!("Couldn't update user profile: {}", err);
                 error!(SERVER, "Failed to update user profile")
@@ -620,111 +437,6 @@ AND is_deleted = FALSE
         Ok(user)
     }
 
-    pub async fn update_profile(
-        id: u64,
-        profile: UpdateUserProfile,
-        conf: &Conf,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Result<Self, ErrorResponse> {
-        profile.validate(conf, &mut *db).await?;
-        let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
-        let mut seperated = query.separated(", ");
-        if let Some(display_name) = profile.display_name {
-            seperated
-                .push("display_name = ")
-                .push_bind_unseparated(display_name);
-        }
-        if let Some(bio) = profile.bio {
-            seperated.push("bio = ").push_bind_unseparated(bio);
-        }
-        if let Some(status) = profile.status {
-            seperated.push("status = ").push_bind_unseparated(status);
-        }
-        if let Some(status_type) = profile.status_type {
-            seperated
-                .push("status_type = ")
-                .push_bind_unseparated(status_type);
-        }
-        if let Some(avatar) = profile.avatar {
-            seperated
-                .push("avatar = ")
-                .push_bind_unseparated(avatar.map(|a| a as i64));
-        }
-        if let Some(banner) = profile.banner {
-            seperated
-                .push("banner = ")
-                .push_bind_unseparated(banner.map(|b| b as i64));
-        }
-        query
-            .push(" WHERE id = ")
-            .push_bind(id as i64)
-            .push(
-                " RETURNING id, username, display_name, social_credit, status, status_type, bio, avatar, banner, badges, permissions, email, verified",
-            )
-            .build()
-            .fetch_one(db)
-            .await
-            .map(|u| Self {
-                id: u.get::<i64, _>("id") as u64,
-                username: u.get("username"),
-                display_name: u.get("display_name"),
-                social_credit: u.get("social_credit"),
-                status: Status {
-                    status_type: u.get("status_type"),
-                    text: u.get("status"),
-                },
-                bio: u.get("bio"),
-                avatar: u.get::<Option<i64>, _>("avatar").map(|a| a as u64),
-                banner: u.get::<Option<i64>, _>("banner").map(|b| b as u64),
-                badges: u.get::<i64, _>("badges") as u64,
-                permissions: u.get::<i64, _>("permissions") as u64,
-                email: Some(u.get("email")),
-                verified: Some(u.get("verified")),
-            })
-            .map_err(|err| {
-                log::error!("Couldn't update user profile: {}", err);
-                error!(SERVER, "Failed to update user profile")
-            })
-    }
-
-    pub async fn delete<V: PasswordVerifier>(
-        id: u64,
-        delete: PasswordDeleteCredentials,
-        verifier: &V,
-        mailer: &Emailer,
-        conf: &Conf,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Result<(), ErrorResponse> {
-        Self::validate_password(id, &delete.password, verifier, db).await?;
-        let user = sqlx::query!(
-            "
-UPDATE users
-SET is_deleted = TRUE
-WHERE id = $1
-RETURNING username, email
-            ",
-            id as i64
-        )
-        .fetch_one(db)
-        .await
-        .map_err(|err| {
-            log::error!("Couldn't mark user as deleted: {}", err);
-            error!(SERVER, "Failed to delete user")
-        })?;
-        if let Some(email) = &conf.email {
-            mailer
-                .send_email(
-                    &format!("{} <{}>", user.username, user.email),
-                    EmailPreset::Delete {
-                        username: &user.username,
-                    },
-                    email,
-                )
-                .await?;
-        }
-        Ok(())
-    }
-
     pub async fn create_password_reset_code<R: CryptoRngCore, C: AsyncCommands>(
         create_code: CreatePasswordResetCode,
         rng: &mut R,
@@ -743,7 +455,7 @@ WHERE email = $1
                 ",
                 create_code.email,
             )
-            .fetch_optional(db)
+            .fetch_optional(&mut **db)
             .await
             .map_err(|err| {
                 log::error!("Failed to fetch user data: {}", err);
@@ -816,7 +528,7 @@ RETURNING username, email
             hash,
             reset.email
         )
-        .fetch_one(db)
+        .fetch_one(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Failed to set user password hash in database: {}", err);
@@ -849,61 +561,36 @@ RETURNING username, email
         Ok(())
     }
 
-    pub async fn resend_verification<C: AsyncCommands>(
-        session: Session,
+    pub async fn delete<V: PasswordVerifier>(
+        id: u64,
+        delete: PasswordDeleteCredentials,
+        verifier: &V,
         mailer: &Emailer,
-        db: &mut PoolConnection<Postgres>,
-        cache: &mut C,
         conf: &Conf,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
-        let verified = sqlx::query!(
-            "
-SELECT verified
-FROM users
-WHERE id = $1
-AND is_deleted = FALSE
-            ",
-            session.user_id as i64
-        )
-        .fetch_one(&mut *db)
-        .await
-        .map_err(|err| {
-            log::error!("Could not fetch user data for verification: {}", err);
-            error!(SERVER, "Couldn't check user verification status")
-        })?
-        .verified;
-        if verified {
-            return Err(error!(VALIDATION, "code", "User is already verified"));
-        }
-        let cache_code: u32 = cache
-            .get(format!("verification:{}", session.user_id))
-            .await
-            .map_err(|err| {
-                log::error!("Failed to get code from cache: {}", err);
-                error!(SERVER, "Couldn't check user verification status")
-            })?;
+        Self::validate_password(id, &delete.password, verifier, db).await?;
         let user = sqlx::query!(
             "
-SELECT username, email
-FROM users
+UPDATE users
+SET is_deleted = TRUE
 WHERE id = $1
+RETURNING username, email
             ",
-            session.user_id as i64
+            id as i64
         )
-        .fetch_one(&mut *db)
+        .fetch_one(&mut **db)
         .await
         .map_err(|err| {
-            log::error!("Failed to fetch user email: {}", err);
-            error!(SERVER, "Couldn't check user verification status")
+            log::error!("Couldn't mark user as deleted: {}", err);
+            error!(SERVER, "Failed to delete user")
         })?;
-
         if let Some(email) = &conf.email {
             mailer
                 .send_email(
                     &format!("{} <{}>", user.username, user.email),
-                    EmailPreset::Verify {
+                    EmailPreset::Delete {
                         username: &user.username,
-                        code: cache_code,
                     },
                     email,
                 )
@@ -926,7 +613,7 @@ AND $1 - (id >> 16) > 604800000 -- seven days
                 .unwrap_or_else(|_| Duration::ZERO)
                 .as_millis() as i64
         )
-        .execute(db)
+        .execute(&mut **db)
         .await?;
         Ok(())
     }
@@ -938,61 +625,8 @@ DELETE FROM users
 WHERE is_deleted = TRUE
             ",
         )
-        .execute(db)
+        .execute(&mut **db)
         .await?;
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::models::UserCreate;
-
-    macro_rules! test_user_create_error {
-        (username: $username:expr) => {
-            let user = UserCreate {
-                username: $username.to_string(),
-                email: "yendri@llamoyendri.io".to_string(),
-                password: "autentícame por favor".to_string(),
-            };
-            assert!(user.validate().is_err());
-        };
-        (email: $email:expr) => {
-            let user = UserCreate {
-                username: "yendri".to_string(),
-                email: $email.to_string(),
-                password: "autentícame por favor".to_string(),
-            };
-            assert!(user.validate().is_err());
-        };
-        (password: $password:expr) => {
-            let user = UserCreate {
-                username: "yendri".to_string(),
-                email: "yendri@llamoyendri.io".to_string(),
-                password: $password.to_string(),
-            };
-            assert!(user.validate().is_err());
-        };
-    }
-
-    #[test]
-    fn validate_user_create() {
-        let user = UserCreate {
-            username: "yendri".to_string(),
-            email: "yendri@llamoyendri.io".to_string(),
-            password: "autentícame por favor".to_string(),
-        };
-
-        assert!(user.validate().is_ok());
-
-        test_user_create_error!(username: "y"); // one character
-        test_user_create_error!(username: "yendri_jesus_sanchez_gonzalez1988"); // too long
-        test_user_create_error!(username: "yendri sanchez"); // spaces
-        test_user_create_error!(username: "sánchez"); // unicode
-        test_user_create_error!(username: "Yendri"); // capital letters
-
-        test_user_create_error!(email: "no"); // invalid email
-
-        test_user_create_error!(password: "1234"); // too short
     }
 }
