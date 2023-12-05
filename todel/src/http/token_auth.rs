@@ -32,9 +32,9 @@ impl<'r> FromRequest<'r> for TokenAuth {
         match request.headers().get_one("Authorization") {
             Some(token) => match Session::validate_token(token, secret, &mut db).await {
                 Ok(session) => Outcome::Success(Self(session)),
-                Err(err) => Outcome::Failure((Status::Unauthorized, err)),
+                Err(err) => Outcome::Error((Status::Unauthorized, err)),
             },
-            None => Outcome::Failure((Status::Unauthorized, error!(UNAUTHORIZED))),
+            None => Outcome::Error((Status::Unauthorized, error!(UNAUTHORIZED))),
         }
     }
 }
