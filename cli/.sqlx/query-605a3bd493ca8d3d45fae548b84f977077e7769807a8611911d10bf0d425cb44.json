@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nDELETE FROM files\nWHERE id = $1\nAND bucket = 'attachments'\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "605a3bd493ca8d3d45fae548b84f977077e7769807a8611911d10bf0d425cb44"
+}
