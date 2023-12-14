@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT *\nFROM files\nWHERE id = $1\nAND bucket = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "file_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "content_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "bucket",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "spoiler",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "width",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "height",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "73fb3e4214efb144a35263d5087645d868343f9b0c5725ac21a8e286b73e7144"
+}
