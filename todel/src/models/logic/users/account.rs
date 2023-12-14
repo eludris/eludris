@@ -384,6 +384,7 @@ WHERE id = $1
         Self::validate_password(id, &update.password, hasher, db).await?;
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
         let mut seperated = query.separated(", ");
+        let username = Self::get_unfiltered(id, &mut *db).await?.username;
         if let Some(username) = &update.username {
             seperated
                 .push("username = ")
@@ -425,8 +426,8 @@ WHERE id = $1
                         user.email.as_ref().expect("Couldn't get user email")
                     ),
                     EmailPreset::UserUpdated {
-                        username: &user.username,
-                        new_username: update.username.as_deref(),
+                        old_username: update.username.as_ref().map(|_| username.as_str()),
+                        username: update.username.as_deref().unwrap_or_else(|| &username),
                         new_email: update.email.as_deref(),
                         password: update.new_password.is_some(),
                     },
@@ -550,7 +551,7 @@ RETURNING username, email
                     &format!("{} <{}>", user.username, user.email),
                     EmailPreset::UserUpdated {
                         username: &user.username,
-                        new_username: None,
+                        old_username: None,
                         new_email: None,
                         password: true,
                     },

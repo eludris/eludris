@@ -38,14 +38,9 @@ pub async fn get_self(
     let mut rate_limiter = RateLimiter::new("get_user", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        User::get(
-            session.0.user_id,
-            Some(session.0.user_id),
-            &mut db,
-            &mut cache.into_inner(),
-        )
-        .await
-        .map_err(|err| rate_limiter.add_headers(err))?,
+        User::get_unfiltered(session.0.user_id, &mut db)
+            .await
+            .map_err(|err| rate_limiter.add_headers(err))?,
     ))
 }
 
