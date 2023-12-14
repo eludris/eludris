@@ -20,20 +20,15 @@ pub enum EmailPreset<'a> {
     },
     UserUpdated {
         username: &'a str,
-        new_username: Option<&'a str>,
+        old_username: Option<&'a str>,
         new_email: Option<&'a str>,
         password: bool,
     },
 }
 
-impl Emailer {
-    pub async fn send_email<'a>(
-        &self,
-        to: &str,
-        preset: EmailPreset<'a>,
-        email: &Email,
-    ) -> Result<(), ErrorResponse> {
-        let (subject, content) = match preset {
+impl<'a> EmailPreset<'a> {
+    pub async fn to_message(self, to: &str, email: &Email) -> Result<Message, ErrorResponse> {
+        let (subject, content) = match self {
             EmailPreset::Verify { username, code } => {
                 let code = code
                     .to_string()
@@ -84,7 +79,7 @@ impl Emailer {
             }
             EmailPreset::UserUpdated {
                 username,
-                new_username,
+                old_username,
                 new_email,
                 password,
             } => {
@@ -95,17 +90,17 @@ impl Emailer {
                         log::error!("Couldn't read user-updated preset: {}", err);
                         error!(SERVER, "Could not send email")
                     })?;
-                if let Some(new_username) = new_username {
+                if let Some(old_username) = old_username {
                     changes.push_str(&format!(
-                        "Your username has changed from {} to {}",
-                        username, new_username
+                        "Your username has been changed from {} to {}",
+                        old_username, username
                     ));
                 }
                 if let Some(new_email) = new_email {
                     if !changes.is_empty() {
                         changes.push('\n');
                     }
-                    changes.push_str(&format!("Your email has changed to {}", new_email));
+                    changes.push_str(&format!("Your email has been changed to {}", new_email));
                 }
                 if password {
                     if !changes.is_empty() {
@@ -136,16 +131,26 @@ impl Emailer {
         if !subject.is_empty() {
             message = message.subject(subject);
         }
-        let message = message
+        message
             .singlepart(SinglePart::html(content))
             .map_err(|err| {
                 log::error!("Failed to build email message: {}", err);
                 error!(SERVER, "Could not send verification email")
-            })?;
+            })
+    }
+}
+
+impl Emailer {
+    pub async fn send_email<'a>(
+        &self,
+        to: &str,
+        preset: EmailPreset<'a>,
+        email: &Email,
+    ) -> Result<(), ErrorResponse> {
         self.0
             .as_ref()
             .unwrap()
-            .send(message)
+            .send(preset.to_message(to, email).await?)
             .await
             .map_err(|err| {
                 log::error!("Failed to send email: {}", err);
