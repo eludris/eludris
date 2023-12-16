@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-
 import { readFileSync, writeFileSync } from 'fs';
 import sitemap from '@astrojs/sitemap';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
@@ -62,7 +61,7 @@ const remarkGenerateSearchIndex = () => {
             .replace(/(?:^|_)([a-z0-9])/gm, (_, p1) => p1.toUpperCase())
             .replace(/[A-Z]/gm, ' $&')
             .trim()
-        ).split('.')[0];
+      ).split('.')[0];
       baseRoute = `/reference/${entry}`;
     }
     visit(tree, 'paragraph', (node) => {

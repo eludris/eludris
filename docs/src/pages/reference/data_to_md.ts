@@ -16,14 +16,18 @@ export default (info: ItemInfo): string => {
   let content = `# ${uncodeName(info.name)}`;
   let example = '';
   if (info.item.type == ItemType.Route) {
+    if (info.item.requires_auth) {
+      content += '\n\n*This route requires a valid `Authorization` header.*';
+    } else if (info.item.requires_auth === false) {
+      content += '\n\n*This route does not require a valid `Authorization` header, however it is preferred to provide it.*';
+    }
     // Replace angle brackets with HTML character entities
     const route = info.item.route.replace('<', '&lt;').replace('>', '&gt;');
-    content += `\n\n<span class="method">${
-      info.item.method
-    }</span><span class="route">${route.replace(
-      /&lt;*.+?&gt;/gm,
-      '<span class="special-segment">$&</span>'
-    )}</span>`;
+    content += `\n\n<span class="method">${info.item.method
+      }</span><span class="route">${route.replace(
+        /&lt;*.+?&gt;/gm,
+        '<span class="special-segment">$&</span>'
+      )}</span>`;
   }
   if (info.doc) {
     const parts = info.doc.split('-----');
@@ -99,9 +103,8 @@ const displayField = (field: FieldInfo): string => {
     });
     return fields.trim();
   }
-  return `|${field.name}${field.omittable ? '?' : ''}|${displayType(field.type)}${
-    field.nullable ? '?' : ''
-  }|${displayInlineDoc(field.doc)}|`;
+  return `|${field.name}${field.omittable ? '?' : ''}|${displayType(field.type)}${field.nullable ? '?' : ''
+    }|${displayInlineDoc(field.doc)}|`;
 };
 
 const getTagDescription = (tag: string, model: string): string => {

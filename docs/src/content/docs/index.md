@@ -15,12 +15,6 @@ order: 0
 
 # What the Heck is an Eludris
 
-Eludris is not a [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software), not
-[federated](<https://en.wikipedia.org/wiki/Federation_(information_technology)>), not yet
-[End-To-End-Encrypted](https://en.wikipedia.org/wiki/End-to-end_encryption) Discord
-x Reddit mesh-like social media platform where the priority is for it to be _truly
-mine_ (sharp eyes).
-
 Eludris is a user-centric Discord x Reddit mesh-like social media platform that
 values privacy through [End-To-End Encryption](https://en.wikipedia.org/wiki/End-to-end_encryption)
 where you can build a community that feels like your own.
