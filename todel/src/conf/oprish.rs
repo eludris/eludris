@@ -49,8 +49,7 @@ fn bio_limit_default() -> usize {
 ///     "reset_after": 5,
 ///     "limit": 10
 ///   },
-///   "create_user": {
-///   },
+///   ...
 /// }
 /// ```
 #[autodoc(category = "Instance")]
@@ -109,14 +108,14 @@ impl Default for OprishRateLimits {
         Self {
             get_instance_info: get_instance_info_default(),
             create_message: create_message_default(),
-            create_user: create_message_default(),
+            create_user: create_user_default(),
             verify_user: verify_user_default(),
             get_user: get_user_default(),
             guest_get_user: guest_get_user_default(),
             update_user: update_user_default(),
             update_profile: update_profile_default(),
             delete_user: delete_user_default(),
-            create_password_reset_code: create_session_default(),
+            create_password_reset_code: create_password_reset_code_default(),
             reset_password: reset_password_default(),
             create_session: create_session_default(),
             get_sessions: get_sessions_default(),
