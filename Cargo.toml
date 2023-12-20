@@ -5,7 +5,6 @@ members = [
   "effis",
   "todel",
   "codegen",
-  "integration-tests",
 ]
 resolver = "2"
 
