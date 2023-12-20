@@ -201,13 +201,18 @@ const displayRoute = (item: RouteInfo): string => {
     if (item.response.format == 'raw') {
       content += 'Raw file content.';
     } else {
-      content += `${displayType(response_type)}`;
-      const innerType = AUTODOC_ENTRIES.items.find((entry) =>
-        entry.endsWith(`/${response_type}.json`)
-      );
-      if (innerType) {
-        let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
-        content += `\n\n${briefItem(data.item, data.name)}`;
+      const type = displayType(response_type);
+      if (type == '()') {
+        content += 'Empty response.'
+      } else {
+        content += type;
+        const innerType = AUTODOC_ENTRIES.items.find((entry) =>
+          entry.endsWith(`/${response_type}.json`)
+        );
+        if (innerType) {
+          let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+          content += `\n\n${briefItem(data.item, data.name)}`;
+        }
       }
     }
   }
