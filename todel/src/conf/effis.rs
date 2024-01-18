@@ -49,15 +49,7 @@ fn attachment_file_size_default() -> u64 {
 ///     "limit": 5,
 ///     "file_size_limit": 30000000
 ///   },
-///   "attachments": {
-///     "reset_after": 180,
-///     "limit": 20,
-///     "file_size_limit": 500000000
-///   },
-///   "fetch_file": {
-///     "reset_after": 60,
-///     "limit": 30
-///   }
+///   ...
 /// }
 /// ```
 #[autodoc(category = "Instance")]
@@ -92,7 +84,7 @@ impl Default for EffisRateLimits {
 ///
 /// ```json
 /// {
-///   "reset_after": 60,
+///   "reset_after": 30,
 ///   "limit": 5,
 ///   "file_size_limit": 30000000
 /// }
@@ -111,7 +103,7 @@ pub struct EffisRateLimitConf {
 
 fn assets_default() -> EffisRateLimitConf {
     EffisRateLimitConf {
-        reset_after: 60,
+        reset_after: 30,
         limit: 5,
         file_size_limit: 30_000_000, // 30MB
     }
@@ -119,15 +111,15 @@ fn assets_default() -> EffisRateLimitConf {
 
 fn attachments_default() -> EffisRateLimitConf {
     EffisRateLimitConf {
-        reset_after: 180,
-        limit: 20,
+        reset_after: 120,
+        limit: 40,
         file_size_limit: 500_000_000, // 500MB
     }
 }
 
 fn fetch_file_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 60,
+        reset_after: 30,
         limit: 30,
     }
 }

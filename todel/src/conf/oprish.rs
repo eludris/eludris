@@ -128,7 +128,7 @@ impl Default for OprishRateLimits {
 fn get_instance_info_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
-        limit: 2,
+        limit: 10,
     }
 }
 
@@ -141,14 +141,14 @@ fn create_message_default() -> RateLimitConf {
 
 fn create_user_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 3600,
+        reset_after: 180,
         limit: 1,
     }
 }
 
 fn verify_user_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 600,
+        reset_after: 180,
         limit: 10,
     }
 }
@@ -169,56 +169,56 @@ fn guest_get_user_default() -> RateLimitConf {
 
 fn update_user_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 3600,
+        reset_after: 180,
         limit: 5,
     }
 }
 
 fn update_profile_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 3600,
+        reset_after: 180,
         limit: 5,
     }
 }
 
 fn delete_user_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 3600,
+        reset_after: 300,
         limit: 1,
     }
 }
 
 fn create_password_reset_code_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 1800,
+        reset_after: 180,
         limit: 2,
     }
 }
 
 fn reset_password_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 1800,
-        limit: 1,
+        reset_after: 60,
+        limit: 5,
     }
 }
 
 fn create_session_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 1800,
+        reset_after: 600,
         limit: 5,
     }
 }
 
 fn get_sessions_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 300,
+        reset_after: 180,
         limit: 5,
     }
 }
 
 fn delete_session_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 300,
+        reset_after: 60,
         limit: 10,
     }
 }
@@ -226,6 +226,6 @@ fn delete_session_default() -> RateLimitConf {
 fn resend_verification_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 60,
-        limit: 1,
+        limit: 5,
     }
 }

@@ -16,23 +16,25 @@ url = "" # This instance's Oprish url
 #bio_limit = 250 # The maximum bio length
 
 #[oprish.rate_limits]
-#get_instance_info = { reset_after = 5, limit = 2 }
+#get_instance_info = { reset_after = 5, limit = 10 }
 #create_message = { reset_after = 5, limit = 10 }
-#create_user = { reset_after = 3600, limit = 1 }
-#verify_user = { reset_after = 600, limit = 10 }
+#create_user = { reset_after = 180, limit = 1 }
+#verify_user = { reset_after = 180, limit = 10 }
 #get_user = { reset_after = 5, limit = 10 }
 #guest_get_user = { reset_after = 5, limit = 5 }
-#update_user = { reset_after = 3600, limit = 5 }
-#update_profile = { reset_after = 3600, limit = 5 }
+#update_user = { reset_after = 180, limit = 5 }
+#update_profile = { reset_after = 180, limit = 5 }
 #delete_user = { reset_after = 3600, limit = 1 }
-#create_session = { reset_after = 1800, limit = 5 }
-#get_sessions = { reset_after = 300, limit = 5 }
-#delete_session = { reset_after = 300, limit = 10 }
-#resend_verification = { reset_after = 60, limit = 1 }
+#create_password_reset_code = { reset_after = 180, limit = 2 }
+#reset_password = { reset_after = 60, limit = 5 }
+#create_session = { reset_after = 600, limit = 5 }
+#get_sessions = { reset_after = 180, limit = 5 }
+#delete_session = { reset_after = 60, limit = 10 }
+#resend_verification = { reset_after = 60, limit = 5 }
 
 [pandemonium]
 url = "" # This instance's Pandemonium url
-#rate_limit = { reset_after = 10, limit = 5 }
+#rate_limit = { reset_after = 5, limit = 10 }
 
 [effis]
 url = "" # This instance's Effis url
@@ -48,10 +50,10 @@ url = "" # This instance's Effis url
 #[effis.rate_limits]
 # The rate limit for all buckets besides the attachments one, these buckets are
 # stuff like avatars, guild icons, etc.
-#assets = { reset_after = 60, limit = 5, file_size_limit = "30MB" }
-#attachments = { reset_after = 180, limit = 20 file_size_limit = "500MB" }
+#assets = { reset_after = 30, limit = 5, file_size_limit = "30MB" }
+#attachments = { reset_after = 120, limit = 40, file_size_limit = "500MB" }
 # This is a normal rate limit
-#fetch_file = { reset_after = 60, limit = 30 }
+#fetch_file = { reset_after = 120, limit = 40 }
 
 # This entire section *is* optional and Eludris *will* function without it. However,
 # using an SMTP relay for your instance is really beneficial as - not only does it
