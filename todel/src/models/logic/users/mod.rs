@@ -7,9 +7,6 @@ use crate::models::{Status, User};
 use sqlx::{postgres::PgRow, Database, Decode, FromRow, Row};
 
 pub use account::*;
-pub use auth::*;
-pub use profile::*;
-pub use social::*;
 
 impl<'r, DB: Database> Decode<'r, DB> for Status
 where
