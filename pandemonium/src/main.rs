@@ -107,7 +107,7 @@ async fn main() -> Result<(), anyhow::Error> {
             Arc::clone(&conf),
             Arc::clone(&secret),
         ));
-        log::trace!("Spawned connection handling task for {}", addr);
+        log::debug!("Spawned connection handling task for {}", addr);
     }
 
     Ok(())

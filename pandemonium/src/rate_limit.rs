@@ -67,10 +67,10 @@ impl RateLimiter {
                     .unwrap();
                 self.last_reset = now;
                 self.request_count = 0;
-                log::debug!("Reset bucket for {}", self.key);
+                log::trace!("Reset bucket for {}", self.key);
             }
             if self.request_count >= self.request_limit {
-                log::debug!("Rate limited bucket {}", self.key);
+                log::trace!("Rate limited bucket {}", self.key);
                 Err(self.last_reset + self.reset_after.as_millis() as u64 - now)
             } else {
                 cache
@@ -81,7 +81,7 @@ impl RateLimiter {
                 Ok(())
             }
         } else {
-            log::debug!("New bucket for {}", self.key);
+            log::trace!("New bucket for {}", self.key);
             cache
                 .hset_multiple::<&str, &str, u64, ()>(
                     &self.key,
