@@ -114,6 +114,7 @@ pub async fn handle_connection(
         send_payload(&tx, &ServerPayload::RateLimit { wait }).await;
         rate_limited = true;
     }
+
     send_payload(
         &tx,
         &ServerPayload::Hello {
@@ -196,13 +197,8 @@ pub async fn handle_connection(
                                         return "Failed to connect user".to_string();
                                     }
                                 }
-                                let user = match User::get(
-                                    user_session.user_id,
-                                    Some(user_session.user_id),
-                                    &mut db,
-                                    &mut *cache,
-                                )
-                                .await
+                                let user = match User::get_unfiltered(user_session.user_id, &mut db)
+                                    .await
                                 {
                                     Ok(user) => user,
                                     Err(err) => {
@@ -302,6 +298,8 @@ pub async fn handle_connection(
                             session.user = user.clone();
                         }
                         if user.id != session.user.id {
+                            user.email = None;
+                            user.verified = None;
                             let sessions: u32 = match cache
                                 .lock()
                                 .await
@@ -323,8 +321,6 @@ pub async fn handle_connection(
                             if user.status.status_type == StatusType::Offline {
                                 user.status.text = None;
                             }
-                            user.email = None;
-                            user.verified = None;
                         }
                         send_payload(&tx, &ServerPayload::UserUpdate(user)).await;
                     }
