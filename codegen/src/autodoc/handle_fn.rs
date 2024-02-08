@@ -30,7 +30,7 @@ fn route_format(ty: String) -> Result<(String, String), Error> {
             ty[5..ty.len() - 1].to_string(),
             "multipart/form-data".to_string(),
         ))
-    } else if ty == "FetchResponse" {
+    } else if ty == "FetchResponse" || ty == "ProxyResponse" {
         Ok((ty, "raw".to_string()))
     } else if ty == "()" {
         Ok((ty, "none".to_string()))

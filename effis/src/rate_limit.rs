@@ -62,6 +62,12 @@ impl RateLimiter {
                 0,
                 0,
             ),
+            "proxy_file" => (
+                &conf.effis.rate_limits.proxy_file.reset_after,
+                &conf.effis.rate_limits.proxy_file.limit,
+                0,
+                0,
+            ),
 
             _ => unreachable!(),
         };

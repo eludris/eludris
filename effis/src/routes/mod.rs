@@ -1,5 +1,6 @@
 mod buckets;
 mod index;
+mod proxy;
 mod static_routes;
 
 use rocket::Route;
@@ -14,6 +15,7 @@ pub fn routes() -> Vec<Route> {
         buckets::get_file,
         buckets::download_file,
         buckets::get_file_data,
+        proxy::proxy,
     ]
 }
 

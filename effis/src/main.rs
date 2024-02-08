@@ -13,6 +13,7 @@ use std::{env, fs, path::Path};
 
 use anyhow::Context;
 
+use reqwest::Client;
 use rocket::{
     data::{Limits, ToByteUnit},
     tokio::sync::Mutex,
@@ -88,6 +89,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     Ok(rocket::custom(config)
         .manage(Mutex::new(IdGenerator::new()))
         .manage(conf)
+        .manage(Client::new())
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)

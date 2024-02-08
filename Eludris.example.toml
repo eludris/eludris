@@ -40,6 +40,7 @@ url = "" # This instance's Pandemonium url
 url = "" # This instance's Effis url
 #file_size = "20MB" # The maximum file size for all the assets
 #attachment_file_size = "100MB" # The maximum file size for the attachment bucket
+#proxy_file_size = "50MB" # The maximum file size for a proxied file
 
 # Effis rate limits are special, you're not only limited by how many requests per
 # bucket reset, but also by how big the files you upload are, so assuming a rate limit
@@ -52,8 +53,9 @@ url = "" # This instance's Effis url
 # stuff like avatars, guild icons, etc.
 #assets = { reset_after = 30, limit = 5, file_size_limit = "30MB" }
 #attachments = { reset_after = 120, limit = 40, file_size_limit = "500MB" }
-# This is a normal rate limit
+# These are normal rate limits
 #fetch_file = { reset_after = 120, limit = 40 }
+#proxy_file = { reset_after = 120, limit = 40 }
 
 # This entire section *is* optional and Eludris *will* function without it. However,
 # using an SMTP relay for your instance is really beneficial as - not only does it
