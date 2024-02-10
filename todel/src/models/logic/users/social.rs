@@ -26,8 +26,8 @@ AND is_deleted = FALSE
         .ok_or_else(|| error!(NOT_FOUND))
     }
 
-    #[allow(clippy::blocks_in_if_conditions)] // it's supposedly bad beacuse of code cleanness but
-                                              // in this case it's cleaner
+    #[allow(clippy::blocks_in_conditions)] // it's supposedly bad beacuse of code cleanness but
+                                           // in this case it's cleaner
     pub async fn get<C: AsyncCommands>(
         id: u64,
         requester_id: Option<u64>,
@@ -55,7 +55,7 @@ AND is_deleted = FALSE
         Ok(user)
     }
 
-    #[allow(clippy::blocks_in_if_conditions)]
+    #[allow(clippy::blocks_in_conditions)]
     pub async fn get_username<C: AsyncCommands>(
         username: &str,
         requester_id: Option<u64>,

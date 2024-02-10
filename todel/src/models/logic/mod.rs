@@ -5,7 +5,9 @@ mod sessions;
 mod users;
 
 pub use email::*;
-pub use files::*;
 pub use meta::*;
 pub use sessions::*;
 pub use users::*;
+
+#[cfg(feature = "http")]
+pub use files::*;

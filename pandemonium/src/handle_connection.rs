@@ -67,7 +67,7 @@ pub async fn handle_connection(
 ) {
     let mut rl_address = IpAddr::from_str("127.0.0.1").unwrap();
 
-    let socket = match accept_hdr_async(stream, |req: &Request, resp: Response| {
+    let res = accept_hdr_async(stream, |req: &Request, resp: Response| {
         let headers = req.headers();
 
         if let Some(ip) = headers.get("X-Real-Ip") {
@@ -86,8 +86,9 @@ pub async fn handle_connection(
 
         Ok(resp)
     })
-    .await
-    {
+    .await;
+
+    let socket = match res {
         Ok(socket) => socket,
         Err(err) => {
             log::error!(
