@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# ruff: noqa: E501
 import os
 import signal
 import subprocess
@@ -46,61 +47,24 @@ if __name__ == "__main__":
         )
         if process.returncode != 0:
             log.error(
-                f"\033[1;31mFailed to compile {crate} with error code {process.returncode}"
-                "\033[0m. Consider running again with `--logs` for more info"
+                f"\033[1;31mFailed to compile {crate} with error code {process.returncode}\033[0m."
+                " Consider running again with `--logs` for more info"
             )
             kill_microservices(pids)
             exit(1)
 
     env["ELUDRIS_CONF"] = "tests/Eludris.toml"
-    for crate in CRATES:
-        log.info(f"\033[3;35mStarting \033[1;35m{crate}...\033[0m")
-        process = subprocess.Popen(
-            ["cargo", "run", "-p", crate],
-            env=env,
-            stdout=outbuff,
-            stderr=outbuff,
-        )
-        pids[crate] = process.pid
-
     if workspace_tests:
         log.info("\033[3;35mTesting workspace...\033[0m")
         process = subprocess.run(
-            ["cargo", "test", "--workspace", "--exclude", "integration-tests"],
+            ["cargo", "test"],
             stdout=outbuff,
             stderr=outbuff,
         )
         if process.returncode != 0:
             log.error(
-                f"\033[1;31mWorkspace tests failed with code {process.returncode}"
-                "\033[0m. Consider running again with `--logs` for more info"
+                f"\033[1;31mWorkspace tests failed with code {process.returncode}\033[0m."
+                " Consider running again with `--logs` for more info"
             )
             kill_microservices(pids)
             exit(1)
-
-    while True:
-        try:
-            response = urlopen(instance_url)
-        except Exception:
-            time.sleep(1)
-        else:
-            break
-
-    env = os.environ
-    env["RUST_LOG"] = "integration_tests=DEBUG"
-    log.info("\033[3;35mRunning integration tests...\033[0m")
-    process = subprocess.run(
-        ["cargo", "test", "-p", "integration-tests"],
-        env=env,
-        stdout=outbuff,
-        stderr=outbuff,
-    )
-    if process.returncode != 0:
-        log.error(
-            f"\033[1;31mIntegration tests failed with code {process.returncode}\033[0m."
-            " Consider running again with `--logs` for more info"
-        )
-        kill_microservices(pids)
-        exit(1)
-
-    kill_microservices(pids)

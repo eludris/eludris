@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-
 import { readFileSync, writeFileSync } from 'fs';
 import sitemap from '@astrojs/sitemap';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
@@ -102,10 +101,7 @@ export default defineConfig({
   },
   markdown: {
     syntaxHighlight: 'prism',
-    remarkPlugins: [
-      remarkAutolinkReferenceEntries,
-      remarkGenerateSearchIndex
-    ],
+    remarkPlugins: [remarkAutolinkReferenceEntries, remarkGenerateSearchIndex],
     rehypePlugins: [
       rehypeAccessibleEmojis,
       rehypeSlug,

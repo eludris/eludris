@@ -18,6 +18,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 ///   "description": "The *almost* official Eludris instance - ooliver.",
 ///   "version": "0.3.2",
 ///   "message_limit": 2000,
+///   "bio_limit": 250,
 ///   "oprish_url": "https://api.eludris.gay",
 ///   "pandemonium_url": "wss://ws.eludris.gay/",
 ///   "effis_url": "https://cdn.eludris.gay",
@@ -74,6 +75,8 @@ pub struct InstanceInfo {
     pub version: String,
     /// The maximum length of a message's content.
     pub message_limit: usize,
+    /// The maximum length of a user's bio.
+    pub bio_limit: usize,
     /// The URL of the instance's Oprish (REST API) endpoint.
     pub oprish_url: String,
     /// The URL of the instance's Pandemonium (WebSocket API) endpoint.
@@ -84,6 +87,9 @@ pub struct InstanceInfo {
     pub file_size: u64,
     /// The maximum file size (in bytes) of an attachment.
     pub attachment_file_size: u64,
+    /// The instance's email address if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email_address: Option<String>,
     /// The rate limits that apply to the connected Eludris instance.
     ///
     /// This is not present if the `rate_limits` query parameter is not set.
@@ -155,11 +161,13 @@ impl InstanceInfo {
             version: VERSION.to_string(),
             description: conf.description.clone(),
             message_limit: conf.oprish.message_limit,
+            bio_limit: conf.oprish.bio_limit,
             oprish_url: conf.oprish.url.clone(),
             pandemonium_url: conf.pandemonium.url.clone(),
             effis_url: conf.effis.url.clone(),
             file_size: conf.effis.file_size,
             attachment_file_size: conf.effis.attachment_file_size,
+            email_address: conf.email.as_ref().map(|e| e.address.clone()),
             rate_limits: rate_limits.then_some(InstanceRateLimits {
                 oprish: conf.oprish.rate_limits.clone(),
                 pandemonium: conf.pandemonium.rate_limit.clone(),

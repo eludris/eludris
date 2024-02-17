@@ -13,6 +13,7 @@ use std::{env, fs, path::Path};
 
 use anyhow::Context;
 
+use reqwest::Client;
 use rocket::{
     data::{Limits, ToByteUnit},
     tokio::sync::Mutex,
@@ -25,7 +26,7 @@ use todel::{
     Conf,
 };
 
-pub const BUCKETS: [&str; 1] = ["attachments"];
+pub const BUCKETS: [&str; 3] = ["attachments", "avatars", "banners"];
 
 #[cfg(test)]
 static INIT: Once = Once::new();
@@ -88,6 +89,7 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     Ok(rocket::custom(config)
         .manage(Mutex::new(IdGenerator::new()))
         .manage(conf)
+        .manage(Client::new())
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)

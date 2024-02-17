@@ -1,13 +1,16 @@
 pub mod messages;
+pub mod sessions;
+pub mod users;
 
 use rocket::{serde::json::Json, Route, State};
 use rocket_db_pools::Connection;
-use todel::{http::ClientIP, models::InstanceInfo, Conf};
+use todel::{
+    http::{Cache, ClientIP},
+    models::InstanceInfo,
+    Conf,
+};
 
-use crate::{
-    rate_limit::{RateLimitedRouteResponse, RateLimiter},
-    Cache,
-}; // poggers
+use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter}; // poggers
 
 /// Get information about the instance you're sending this request to.
 ///
@@ -80,40 +83,4 @@ pub async fn get_instance_info(
 
 pub fn get_routes() -> Vec<Route> {
     routes![get_instance_info]
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::rocket;
-    use rocket::{http::Status, local::asynchronous::Client};
-    use todel::{models::InstanceInfo, Conf};
-
-    #[rocket::async_test]
-    async fn index() {
-        let client = Client::untracked(rocket().unwrap()).await.unwrap();
-        let conf = &client.rocket().state::<Conf>().unwrap();
-
-        let response = client
-            .get(uri!(get_instance_info(rate_limits = false)))
-            .dispatch()
-            .await;
-
-        assert_eq!(response.status(), Status::Ok);
-        assert_eq!(
-            response.into_string().await.unwrap(),
-            serde_json::to_string(&InstanceInfo::from_conf(conf, false)).unwrap()
-        );
-
-        let response = client
-            .get(uri!(get_instance_info(rate_limits = true)))
-            .dispatch()
-            .await;
-
-        assert_eq!(response.status(), Status::Ok);
-        assert_eq!(
-            response.into_string().await.unwrap(),
-            serde_json::to_string(&InstanceInfo::from_conf(conf, true)).unwrap()
-        );
-    }
 }

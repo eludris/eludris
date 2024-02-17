@@ -7,7 +7,9 @@ use std::sync::Once;
 use std::{env, sync::Arc};
 
 use anyhow::Context;
-use todel::Conf;
+use redis::AsyncCommands;
+use sqlx::{pool::PoolOptions, Pool, Postgres};
+use todel::{models::Secret, Conf};
 use tokio::{net::TcpListener, sync::Mutex, task};
 
 #[cfg(test)]
@@ -28,6 +30,8 @@ async fn main() -> Result<(), anyhow::Error> {
         env_logger::init();
     }
 
+    let db_url = env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgresql://root@127.0.0.1:5432/eludris".to_string());
     let redis_url = env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1".to_string());
     let gateway_address = format!(
         "{}:{}",
@@ -42,6 +46,36 @@ async fn main() -> Result<(), anyhow::Error> {
             .await
             .context("Couldn't get an async connection to redis")?,
     ));
+
+    {
+        let mut cache = cache.lock().await;
+        cache
+            .del("sessions")
+            .await
+            .context("Couldn't remove the sessions key")?; // wei wei wei wei
+        let keys: Vec<String> = cache
+            .keys("session:*")
+            .await
+            .context("Couldn't list session keys")?;
+        for key in keys {
+            cache
+                .del(&key)
+                .await
+                .with_context(|| format!("Couldn't remove the {} key", key))?; // wei wei wei wei
+        }
+    }
+
+    // the max connections is to stay consistent with oprish and effis even though postgresql
+    // will most likely not support this many connections at once.
+    let pool: Pool<Postgres> = PoolOptions::new()
+        .max_connections(1024)
+        .connect(&db_url)
+        .await
+        .context("Couldn't establish a database pool")?;
+    let pool = Arc::new(pool);
+    let secret = Arc::new(Secret::try_get(&pool).await.context(
+        "Couldn't get instance secret. Make sure oprish is run atleast once before pandemonium",
+    )?);
 
     let conf = Arc::new(Conf::new_from_env()?);
 
@@ -60,8 +94,8 @@ async fn main() -> Result<(), anyhow::Error> {
                 continue;
             }
         };
-        if let Err(err) = pubsub.subscribe("oprish-events").await {
-            log::warn!("Couldn't subscribe to oprish-events: {:?}", err);
+        if let Err(err) = pubsub.subscribe("eludris-events").await {
+            log::warn!("Couldn't subscribe to eludris-events: {:?}", err);
             continue;
         }
         task::spawn(handle_connection::handle_connection(
@@ -69,9 +103,11 @@ async fn main() -> Result<(), anyhow::Error> {
             addr,
             Arc::clone(&cache),
             pubsub,
+            Arc::clone(&pool),
             Arc::clone(&conf),
+            Arc::clone(&secret),
         ));
-        log::trace!("Spawned connection handling task for {}", addr);
+        log::debug!("Spawned connection handling task for {}", addr);
     }
 
     Ok(())

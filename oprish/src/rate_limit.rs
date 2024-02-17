@@ -34,17 +34,42 @@ pub struct RateLimiter {
     last_reset: u64,
 }
 
+macro_rules! match_buckets {
+    ($bucket:expr, $conf:expr, $($bucket_name:ident),+, $(,)?) => {
+        match $bucket {
+            $(
+                stringify!($bucket_name) => &$conf.oprish.rate_limits.$bucket_name,
+            )+
+            _ => unreachable!()
+        }
+    };
+}
+
 impl RateLimiter {
     /// Creates a new RateLimiter
     pub fn new<I>(bucket: &str, identifier: I, conf: &Conf) -> RateLimiter
     where
         I: Display,
     {
-        let rate_limit = match bucket {
-            "get_instance_info" => &conf.oprish.rate_limits.get_instance_info,
-            "create_message" => &conf.oprish.rate_limits.create_message,
-            _ => unreachable!(),
-        };
+        let rate_limit = match_buckets!(
+            bucket,
+            conf,
+            get_instance_info,
+            create_message,
+            create_user,
+            verify_user,
+            get_user,
+            guest_get_user,
+            update_user,
+            update_profile,
+            delete_user,
+            create_password_reset_code,
+            reset_password,
+            create_session,
+            get_sessions,
+            delete_session,
+            resend_verification,
+        );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),
             reset_after: Duration::from_secs(rate_limit.reset_after as u64),
@@ -88,10 +113,10 @@ impl RateLimiter {
                     .expect("Couldn't query cache");
                 self.last_reset = now;
                 self.request_count = 0;
-                log::debug!("Reset bucket for {}", self.key);
+                log::trace!("Reset bucket for {}", self.key);
             }
             if self.request_count >= self.request_limit {
-                log::info!("Rate limited bucket {}", self.key);
+                log::trace!("Rate limited bucket {}", self.key);
                 return Err(self
                     .wrap_response::<ErrorResponse, ()>(error!(
                         RATE_LIMITED,
@@ -106,7 +131,7 @@ impl RateLimiter {
             self.request_count += 1;
             Ok(())
         } else {
-            log::debug!("New bucket for {}", self.key);
+            log::trace!("New bucket for {}", self.key);
             cache
                 .hset_multiple::<&str, &str, u64, ()>(
                     &self.key,

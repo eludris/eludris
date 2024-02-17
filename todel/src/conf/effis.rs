@@ -13,6 +13,9 @@ pub struct EffisConf {
     #[serde(deserialize_with = "deserialize_file_size")]
     #[serde(default = "attachment_file_size_default")]
     pub attachment_file_size: u64,
+    #[serde(deserialize_with = "deserialize_file_size")]
+    #[serde(default = "proxy_file_size_default")]
+    pub proxy_file_size: u64,
     #[serde(default)]
     pub rate_limits: EffisRateLimits,
 }
@@ -23,6 +26,7 @@ impl Default for EffisConf {
             file_size: file_size_default(),
             url: "https://example.com".to_string(),
             attachment_file_size: attachment_file_size_default(),
+            proxy_file_size: proxy_file_size_default(),
             rate_limits: EffisRateLimits::default(),
         }
     }
@@ -34,6 +38,10 @@ fn file_size_default() -> u64 {
 
 fn attachment_file_size_default() -> u64 {
     100_000_000 // 100MB
+}
+
+fn proxy_file_size_default() -> u64 {
+    50_000_000 // 100MB
 }
 
 /// Rate limits that apply to Effis (The CDN).
@@ -49,15 +57,7 @@ fn attachment_file_size_default() -> u64 {
 ///     "limit": 5,
 ///     "file_size_limit": 30000000
 ///   },
-///   "attachments": {
-///     "reset_after": 180,
-///     "limit": 20,
-///     "file_size_limit": 500000000
-///   },
-///   "fetch_file": {
-///     "reset_after": 60,
-///     "limit": 30
-///   }
+///   ...
 /// }
 /// ```
 #[autodoc(category = "Instance")]
@@ -72,6 +72,9 @@ pub struct EffisRateLimits {
     /// Rate limits for the file fetching endpoints.
     #[serde(default = "fetch_file_default")]
     pub fetch_file: RateLimitConf,
+    /// Rate limits for fetching a file through effis as a proxy.
+    #[serde(default = "proxy_file_default")]
+    pub proxy_file: RateLimitConf,
 }
 
 impl Default for EffisRateLimits {
@@ -80,6 +83,7 @@ impl Default for EffisRateLimits {
             assets: assets_default(),
             attachments: attachments_default(),
             fetch_file: fetch_file_default(),
+            proxy_file: proxy_file_default(),
         }
     }
 }
@@ -92,7 +96,7 @@ impl Default for EffisRateLimits {
 ///
 /// ```json
 /// {
-///   "reset_after": 60,
+///   "reset_after": 30,
 ///   "limit": 5,
 ///   "file_size_limit": 30000000
 /// }
@@ -111,7 +115,7 @@ pub struct EffisRateLimitConf {
 
 fn assets_default() -> EffisRateLimitConf {
     EffisRateLimitConf {
-        reset_after: 60,
+        reset_after: 30,
         limit: 5,
         file_size_limit: 30_000_000, // 30MB
     }
@@ -119,15 +123,22 @@ fn assets_default() -> EffisRateLimitConf {
 
 fn attachments_default() -> EffisRateLimitConf {
     EffisRateLimitConf {
-        reset_after: 180,
-        limit: 20,
+        reset_after: 120,
+        limit: 40,
         file_size_limit: 500_000_000, // 500MB
     }
 }
 
 fn fetch_file_default() -> RateLimitConf {
     RateLimitConf {
-        reset_after: 60,
+        reset_after: 30,
+        limit: 30,
+    }
+}
+
+fn proxy_file_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 30,
         limit: 30,
     }
 }

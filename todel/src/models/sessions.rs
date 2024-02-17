@@ -43,13 +43,13 @@ pub struct Session {
 ///
 /// ```json
 /// {
-///   "indentifier": "yendri",
+///   "identifier": "yendri",
 ///   "password": "authentícame por favor",
 ///   "platform": "linux",
 ///   "client": "pilfer"
 /// }
 /// ```
-#[autodoc(category = "Sessions")]
+#[autodoc(category = "Sessions", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SessionCreate {
     /// The session user's identifier. This can be either their email or username.
