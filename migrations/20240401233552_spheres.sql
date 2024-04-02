@@ -10,23 +10,21 @@ CREATE TABLE IF NOT EXISTS spheres (
   banner BIGINT,
   badges BIGINT NOT NULL DEFAULT 0,
   default_permissions BIGINT NOT NULL DEFAULT 0,
-  system_channel BIGINT,
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
   FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (icon) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE,
-  FOREIGN KEY (banner) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE,
-  FOREIGN KEY (system_channel) REFERENCES channels(id) ON DELETE SET NULL ON UPDATE CASCADE
+  FOREIGN KEY (banner) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TYPE channel_type AS ENUM ('CATEGORY', 'TEXT', 'VOICE', 'GROUP', 'DIRECT');
 
 -- yippee !!!!!!!!!!!!!!!!!!1
 
-CREATE TABLE IF NOT EXISTS channel (
+CREATE TABLE IF NOT EXISTS channels (
   id BIGINT PRIMARY KEY,
   sphere BIGINT,
   owner_id BIGINT,
-  channel_type sphere_type NOT NULL DEFAULT 'TEXT',
+  channel_type channel_type NOT NULL DEFAULT 'TEXT',
   position SMALLINT,
   icon BIGINT,
   name VARCHAR(32) UNIQUE NOT NULL,
