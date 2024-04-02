@@ -1,3 +1,13 @@
+-- # DAMATASE CREATED
+--
+-- This damatabse is really cool
+-- it reminds me of going to school
+-- and when I go home it always feels
+-- like
+--
+--
+-- YIPPEEEEEEEEE
+
 CREATE TYPE sphere_type AS ENUM ('CHAT', 'FORUM', 'HYBRID');
 
 CREATE TABLE IF NOT EXISTS spheres (
@@ -18,12 +28,11 @@ CREATE TABLE IF NOT EXISTS spheres (
 
 CREATE TYPE channel_type AS ENUM ('CATEGORY', 'TEXT', 'VOICE', 'GROUP', 'DIRECT');
 
--- yippee !!!!!!!!!!!!!!!!!!1
-
 CREATE TABLE IF NOT EXISTS channels (
   id BIGINT PRIMARY KEY,
   sphere BIGINT,
   owner_id BIGINT,
+  recipient_id BIGINT,
   channel_type channel_type NOT NULL DEFAULT 'TEXT',
   position SMALLINT,
   icon BIGINT,
@@ -32,19 +41,39 @@ CREATE TABLE IF NOT EXISTS channels (
   default_permissions BIGINT,
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
   FOREIGN KEY (sphere) REFERENCES spheres(id) ON DELETE SET NULL ON UPDATE CASCADE,
-  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS members (
-  id BIGINT,
-  sphere BIGINT,
+  id BIGINT NOT NULL,
+  sphere BIGINT NOT NULL,
+  nickname VARCHAR(32) UNIQUE NOT NULL,
+  server_avatar BIGINT,
   FOREIGN KEY (id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
-  FOREIGN KEY (sphere) REFERENCES spheres(id) ON DELETE SET NULL ON UPDATE CASCADE
+  FOREIGN KEY (sphere) REFERENCES spheres(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (server_avatar) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS channel_members (
-  id BIGINT,
+  id BIGINT NOT NULL,
   channel BIGINT,
   FOREIGN KEY (id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (channel) REFERENCES channels(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id BIGINT PRIMARY KEY,
+  channel BIGINT NOT NULL,
+  content TEXT,
+  reference BIGINT,
+  FOREIGN KEY (channel) REFERENCES channels(id) ON DELETE SET NULL ON UPDATE CASCADE
+  FOREIGN KEY (id) REFERENCES messages(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_attachments (
+  message_id BIGINT,
+  attachment_id BIGINT,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE SET NULL ON UPDATE CASCADE
+  FOREIGN KEY (attachment_id) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
