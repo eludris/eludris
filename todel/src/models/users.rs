@@ -209,14 +209,14 @@ pub struct UpdateUserProfile {
         with = "double_option"
     )]
     pub bio: Option<Option<String>>,
-    /// The user's new avatar. This field has to be a valid file ID in the "avatar" bucket.
+    /// The user's new avatar. This field has to be a valid file ID in the "avatars" bucket.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         with = "double_option"
     )]
     pub avatar: Option<Option<u64>>,
-    /// The user's new banner. This field has to be a valid file ID in the "banner" bucket.
+    /// The user's new banner. This field has to be a valid file ID in the "banners" bucket.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
