@@ -4,8 +4,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SphereType {
+    /// Spheres that only support Discord-like chatrooms.
     Chat,
+    /// Spheres that only support creating posts in forum style.
     Forum,
+    /// Spheres that support both Discord-like chatrooms and form-like posts.
     Hybrid,
 }
 
