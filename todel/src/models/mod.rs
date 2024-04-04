@@ -6,6 +6,7 @@ mod info;
 mod messages;
 mod response;
 mod sessions;
+mod spheres;
 mod users;
 
 pub use files::*;
@@ -14,6 +15,7 @@ pub use info::*;
 pub use messages::*;
 pub use response::*;
 pub use sessions::*;
+pub use spheres::*;
 pub use users::*;
 
 #[cfg(feature = "logic")]
