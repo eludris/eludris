@@ -26,7 +26,7 @@ use todel::{
     Conf,
 };
 
-pub const BUCKETS: [&str; 3] = [
+pub const BUCKETS: [&str; 5] = [
     "attachments",
     "avatars",
     "banners",
