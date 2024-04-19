@@ -39,9 +39,11 @@ export default (info: ItemInfo): string => {
     content += `\n\n${displayFields(info.item.fields)}`;
   } else if (info.item.type == ItemType.Enum) {
     info.item.variants.forEach((variant) => {
-      let name = uncodeName(variant.name);
+      let name = '';
       if (variant.name == variant.name.toUpperCase()) {
-        name = `\`${name.toUpperCase()}\``;
+        name = `\`${variant.name.toUpperCase()}\``;
+      } else {
+        name = uncodeName(variant.name);
       }
       content += `\n## ${name}`;
       let variant_example = '';
@@ -83,11 +85,11 @@ const briefItem = (item: Item, model: string): string => {
   }
 };
 
-const displayFields = (fields: FieldInfo[]): string => {
+const displayFields = (fields: FieldInfo[], header = true): string => {
   if (!fields.length) {
     return '';
   }
-  let content = '|Field|Type|Description|\n|---|---|---|';
+  let content = header ? '|Field|Type|Description|\n|---|---|---|' : '';
   fields.forEach((field) => {
     content += `\n${displayField(field)}`;
   });
@@ -112,7 +114,7 @@ const displayField = (field: FieldInfo): string => {
 };
 
 const getTagDescription = (tag: string, model: string): string => {
-  return `The ${tag} of this ${model} variant.`;
+  return `The ${tag} of this ${uncodeName(model)} variant.`;
 };
 
 const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): string => {
@@ -120,14 +122,24 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
   if (variant.type == VariantType.Unit) {
     if (item.tag) {
       let desc = getTagDescription(item.tag, model);
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${variant.name}"|${desc}`;
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|\`"${variant.name}"\`|${desc}`;
     }
   } else if (variant.type == VariantType.Tuple) {
     if (item.tag) {
       let desc = getTagDescription(item.tag, model);
-      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|"${variant.name}"|${desc}`;
+      content += `\n\n|Field|Type|Description|\n|---|---|---|\n|${item.tag}|\`"${variant.name}"\`|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${displayType(variant.field_type)}|The data of this variant`;
+      } else if (item.content === null) {
+        const innerType = AUTODOC_ENTRIES.items.find((entry) =>
+          entry.endsWith(`/${variant.field_type}.json`)
+        );
+        if (innerType) {
+          let data: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${innerType}`).toString());
+          if (data.item.type == "object") {
+            content += `${displayFields(data.item.fields, false)}`;
+          }
+        }
       }
     } else {
       content += `This variant contains a ${displayType(variant.field_type)}`;
@@ -143,7 +155,7 @@ const displayVariant = (variant: EnumVariant, item: EnumInfo, model: string): st
     content += '\n\n|Field|Type|Description|\n|---|---|---|';
     if (item.tag) {
       let desc = getTagDescription(item.tag, model);
-      content += `\n|${item.tag}|"${variant.name}"|${desc}`;
+      content += `\n|${item.tag}|\`"${variant.name}"\`|${desc}`;
       if (item.content) {
         content += `\n|${item.content}|${uncodeName(variant.name)} Data|The data of this variant.`;
         content += '\n\nWith the data of this variant being:';
