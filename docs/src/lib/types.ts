@@ -51,7 +51,6 @@ export interface EnumInfo {
   tag: string | null;
   untagged: boolean;
   content: string | null;
-  rename_all: string | null;
   variants: EnumVariant[];
 }
 

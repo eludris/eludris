@@ -38,11 +38,10 @@ export default (info: ItemInfo): string => {
   if (info.item.type == ItemType.Object) {
     content += `\n\n${displayFields(info.item.fields)}`;
   } else if (info.item.type == ItemType.Enum) {
-    let rename = info.item.rename_all;
     info.item.variants.forEach((variant) => {
       let name = uncodeName(variant.name);
-      if (variant.type == "unit", rename == "UPPERCASE") {
-        name = `<pre>${name.toUpperCase()}</pre>`;
+      if (variant.type == "unit" || variant.name == variant.name.toUpperCase()) {
+        name = `\`${name.toUpperCase()}\``;
       }
       content += `\n## ${name}`;
       let variant_example = '';
