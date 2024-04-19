@@ -54,6 +54,4 @@ pub struct Sphere {
     pub banner: Option<u64>,
     /// The sphere's badges as a bitfield.
     pub badges: u64,
-    /// The sphere's default permissions as a bitfield.
-    pub default_permissions: u64,
 }
