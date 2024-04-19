@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::SphereChannel;
+
 /// The different types a sphere can be.
 #[autodoc(category = "Spheres")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -28,7 +30,15 @@ pub enum SphereType {
 ///   "description": "Truly the sphere of all time",
 ///   "icon": 4080412852228,
 ///   "badges": 0,
-///   "default_permissions": 0
+///   "channels": [
+///     {
+///       "type": "TEXT",
+///       "id": 4080402038789,
+///       "sphere": 4080402038786,
+///       "position": 1,
+///       "name": "je-mappelle"
+///     }
+///   ]
 /// }
 /// ```
 #[autodoc(category = "Spheres")]
@@ -54,4 +64,6 @@ pub struct Sphere {
     pub banner: Option<u64>,
     /// The sphere's badges as a bitfield.
     pub badges: u64,
+    /// The channels that this sphere contains.
+    pub channels: Vec<SphereChannel>,
 }
