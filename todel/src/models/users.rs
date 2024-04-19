@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
 /// The type of a user's status.
-///
-/// This is a string.
 #[autodoc(category = "Users")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
