@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS channels (
   channel_type channel_type NOT NULL DEFAULT 'TEXT',
   position SMALLINT,
   icon BIGINT,
-  name VARCHAR(32) UNIQUE NOT NULL,
+  name VARCHAR(32),
   topic VARCHAR(4096),
   default_permissions BIGINT,
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
