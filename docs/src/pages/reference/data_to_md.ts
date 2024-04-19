@@ -40,7 +40,7 @@ export default (info: ItemInfo): string => {
   } else if (info.item.type == ItemType.Enum) {
     info.item.variants.forEach((variant) => {
       let name = uncodeName(variant.name);
-      if (variant.type == "unit" || variant.name == variant.name.toUpperCase()) {
+      if (variant.name == variant.name.toUpperCase()) {
         name = `\`${name.toUpperCase()}\``;
       }
       content += `\n## ${name}`;
@@ -235,7 +235,7 @@ const displayInlineDoc = (doc: string | null | undefined): string => {
 
 const displayType = (type: string): string => {
   if (type.endsWith('[]')) {
-    return `Array of ${displayType(type.substring(0, type.length - 2))}`;
+    return `Array of ${displayType(type.substring(0, type.length - 2))}s`;
   }
 
   if (/^(u|i)(size|\d{1,2})$/gm.test(type)) {
