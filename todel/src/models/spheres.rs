@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// The different types a sphere can be.
 #[autodoc(category = "Spheres")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
