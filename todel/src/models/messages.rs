@@ -21,7 +21,7 @@ pub struct MessageCreate {
     /// The message's content. This field has to be at-least 2 characters long. The upper limit
     /// is the instance's [`InstanceInfo`] `message_limit`.
     ///
-    /// The content will be trimmed from leading and trailing whitespace.
+    /// Leading and trailing whitespace will be trimmed off the content.
     pub content: String,
     /// The ID of the message referenced by this message.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -51,6 +51,28 @@ pub struct MessageDisguise {
     pub name: Option<String>,
     /// The URL of the message's disguise.
     pub avatar: Option<String>,
+}
+
+/// The MessageEdit payload. This is used when you want to edit an existing message using the REST
+/// API.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "content": "~~I am smart~~ EDIT: I was wrong."
+/// }
+/// ```
+#[autodoc(category = "Messaging")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MessageEdit {
+    /// The message's updated content. This field has to be at-least 2 characters long. The upper
+    /// limit is the instance's [`InstanceInfo`] `message_limit`.
+    ///
+    /// Leading and trailing whitespace will be trimmed off the content.
+    pub content: String,
 }
 
 /// The Message payload. This is returned when you're provided information about a pre-existing
@@ -87,10 +109,7 @@ pub struct Message {
     pub id: u64,
     /// The message's author.
     pub author: User,
-    /// The message's content. This field has to be at-least 2 characters long. The upper limit
-    /// is the instance's [`InstanceInfo`] `message_limit`.
-    ///
-    /// The content will be trimmed from leading and trailing whitespace.
+    /// The message's content.
     pub content: String,
     /// The message referenced by this message.
     #[serde(skip_serializing_if = "Option::is_none")]
