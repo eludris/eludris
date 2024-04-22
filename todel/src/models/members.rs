@@ -10,7 +10,7 @@ use super::User;
 /// 
 /// ```json
 /// {
-///   "user": /// {
+///   "user": {
 ///     "id": 48615849987333,
 ///     "username": "yendri",
 ///     "display_name": "Nicolas",
