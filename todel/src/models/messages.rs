@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use super::User;
 use super::Channel;
+use super::User;
 
 /// The MessageCreate payload. This is used when you want to create a message using the REST API.
 ///
