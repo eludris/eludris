@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 use super::User;
 
 /// The Member payload. This represents a User in a Sphere.
-/// 
+///
 /// -----
-/// 
+///
 /// ### Example
-/// 
+///
 /// ```json
 /// {
 ///   "user": {
@@ -36,11 +36,11 @@ pub struct Member {
 }
 
 /// The MemberEdit payload.
-/// 
+///
 /// -----
-/// 
+///
 /// ### Example
-/// 
+///
 /// ```json
 /// {
 ///   "nickname": "Nick",
