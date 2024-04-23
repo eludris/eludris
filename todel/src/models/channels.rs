@@ -2,6 +2,19 @@ use serde::{Deserialize, Serialize};
 
 use super::User;
 
+/// Valid Eludris "channel" types.
+#[autodoc(category = "Channels")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum SphereChannelType {
+    /// A sphere category.
+    Category,
+    /// A sphere text channel.
+    Text,
+    /// A sphere voice channel.
+    Voice,
+}
+
 /// The generic definition of the different types an Eludris "channel" can be.
 #[autodoc(category = "Channels")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -185,4 +198,56 @@ pub struct DirectMessageChannel {
     pub owner: User,
     /// The recipient of this direct message channel.
     pub recipient: User,
+}
+
+/// The SphereChannelCreate payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "name": "Canal pour Spehre",
+///   "type": "TEXT",
+///   "topic": "Boy do I love French",
+/// }
+/// ```
+#[autodoc(category = "Channels")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SphereChannelCreate {
+    /// The name of the new channel.
+    pub name: String,
+    /// The type of the new channel.
+    #[serde(rename = "type")]
+    pub channel_type: SphereChannelType,
+    /// The topic of the new channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
+}
+
+/// The SphereChannelEdit payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "name": "Channel for Sphere",
+///   "topic": "Reject French",
+///   "position": 1,
+/// }
+/// ```
+#[autodoc(category = "Channels")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SphereChannelEdit {
+    /// The new name of the channel.
+    pub name: String,
+    /// The new type of the channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
+    /// The new position of the channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub position: Option<u32>,
 }
