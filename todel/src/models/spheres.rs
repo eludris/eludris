@@ -88,6 +88,7 @@ pub struct SphereCreate {
     /// The name of the sphere.
     pub name: String,
     /// The sphere's type.
+    #[serde(rename = "type")]
     pub sphere_type: SphereType,
     /// The sphere's description, can be between 1 and 4096 characters.
     pub description: Option<String>,
@@ -119,6 +120,7 @@ pub struct SphereEdit {
     /// The name of the sphere.
     pub name: String,
     /// The sphere's type.
+    #[serde(rename = "type")]
     pub sphere_type: SphereType, // Non-hybrid -> hybrid?
     /// The sphere's description, can be between 1 and 4096 characters.
     pub description: Option<String>,
