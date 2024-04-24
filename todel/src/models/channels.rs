@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::User;
 
-/// Valid Eludris Sphere "channel" types.
+/// Valid Eludris sphere "channel" types.
 #[autodoc(category = "Channels")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
@@ -186,7 +186,7 @@ pub struct GroupChannel {
 /// {
 ///   "id": 4080402038800,
 ///   "owner": 4080402038776,
-///   "recipient": 4080402038777,
+///   "recipient": 4080402038777
 /// }
 /// ```
 #[autodoc(category = "Channels")]
@@ -210,7 +210,7 @@ pub struct DirectMessageChannel {
 /// {
 ///   "name": "Canal pour Spehre",
 ///   "type": "TEXT",
-///   "topic": "Boy do I love French",
+///   "topic": "Boy do I love French"
 /// }
 /// ```
 #[autodoc(category = "Channels")]
@@ -236,7 +236,7 @@ pub struct SphereChannelCreate {
 /// {
 ///   "name": "Channel for Sphere",
 ///   "topic": "Reject French",
-///   "position": 1,
+///   "position": 1
 /// }
 /// ```
 #[autodoc(category = "Channels")]

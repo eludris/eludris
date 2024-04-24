@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::User;
 
-/// The Member payload. This represents a User in a Sphere.
+/// The Member payload. This represents a User in a sphere.
 ///
 /// -----
 ///
