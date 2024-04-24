@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::User;
 
-/// Valid Eludris "channel" types.
+/// Valid Eludris Sphere "channel" types.
 #[autodoc(category = "Channels")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
