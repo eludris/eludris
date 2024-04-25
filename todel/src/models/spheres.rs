@@ -6,6 +6,9 @@ use super::SphereChannel;
 #[autodoc(category = "Spheres")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[cfg_attr(feature = "logic", derive(sqlx::Type))]
+#[cfg_attr(feature = "logic", sqlx(type_name = "sphere_type"))]
+#[cfg_attr(feature = "logic", sqlx(rename_all = "UPPERCASE"))]
 pub enum SphereType {
     /// Spheres that only support Discord-like chatrooms.
     Chat,
@@ -50,6 +53,8 @@ pub struct Sphere {
     pub owner_id: u64,
     /// The name of the sphere.
     pub name: String,
+    /// The slug of the sphere.
+    pub slug: String,
     /// The sphere's type.
     #[serde(rename = "type")]
     pub sphere_type: SphereType,
@@ -76,21 +81,21 @@ pub struct Sphere {
 ///
 /// ```json
 /// {
-///   "name": "Spehre",
+///   "slug": "frenche",
 ///   "type": "HYBRID",
 ///   "description": "Truly the sphere of all time",
 ///   "icon": 4080412852228,
 /// }
 /// ```
-#[autodoc(category = "Spheres")]
+#[autodoc(category = "Spheres", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereCreate {
-    /// The name of the sphere.
-    pub name: String,
+    /// The slug of the sphere. This field has to be between 1 and 32 characters long.
+    pub slug: String,
     /// The sphere's type.
     #[serde(rename = "type")]
     pub sphere_type: SphereType,
-    /// The sphere's description, can be between 1 and 4096 characters.
+    /// The sphere's description. This field has to be between 1 and 4096 characters.
     pub description: Option<String>,
     /// The sphere's icon. This field has to be a valid file ID in the "sphere-icons" bucket.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -114,7 +119,7 @@ pub struct SphereCreate {
 ///   "icon": 4080412852228,
 /// }
 /// ```
-#[autodoc(category = "Spheres")]
+#[autodoc(category = "Spheres", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereEdit {
     /// The name of the sphere.

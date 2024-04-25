@@ -213,7 +213,7 @@ pub struct DirectMessageChannel {
 ///   "topic": "Boy do I love French"
 /// }
 /// ```
-#[autodoc(category = "Channels")]
+#[autodoc(category = "Channels", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereChannelCreate {
     /// The name of the new channel.
@@ -222,7 +222,6 @@ pub struct SphereChannelCreate {
     #[serde(rename = "type")]
     pub channel_type: SphereChannelType,
     /// The topic of the new channel.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub topic: Option<String>,
 }
 
@@ -239,7 +238,7 @@ pub struct SphereChannelCreate {
 ///   "position": 1
 /// }
 /// ```
-#[autodoc(category = "Channels")]
+#[autodoc(category = "Channels", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereChannelEdit {
     /// The new name of the channel.

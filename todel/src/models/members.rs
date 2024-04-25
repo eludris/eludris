@@ -47,7 +47,7 @@ pub struct Member {
 ///   "server_avatar": 48615849987777
 /// }
 /// ```
-#[autodoc(category = "Members")]
+#[autodoc(category = "Members", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MemberEdit {
     /// The nickname of this member.
