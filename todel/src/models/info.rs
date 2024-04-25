@@ -102,7 +102,7 @@ pub struct InstanceInfo {
 /// -----
 ///
 /// ### Example
-
+///
 /// ```json
 /// {
 ///   "oprish": {
