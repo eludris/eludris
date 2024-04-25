@@ -2,6 +2,19 @@ use serde::{Deserialize, Serialize};
 
 use super::User;
 
+/// Valid Eludris sphere "channel" types.
+#[autodoc(category = "Channels")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum SphereChannelType {
+    /// A sphere category.
+    Category,
+    /// A sphere text channel.
+    Text,
+    /// A sphere voice channel.
+    Voice,
+}
+
 /// The generic definition of the different types an Eludris "channel" can be.
 #[autodoc(category = "Channels")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -58,13 +71,13 @@ pub enum SphereChannel {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Category {
     /// The ID of this category.
-    id: u64,
+    pub id: u64,
     /// The ID of the sphere that this category belongs to.
-    sphere: u64,
+    pub sphere: u64,
     /// The name of this category.
-    name: String,
+    pub name: String,
     /// This category's position inside of its sphere.
-    position: u32,
+    pub position: u32,
 }
 
 /// A Discord-like text channel.
@@ -88,16 +101,16 @@ pub struct Category {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TextChannel {
     /// The ID of this text channel.
-    id: u64,
+    pub id: u64,
     /// The ID of the sphere that this text channel belongs to.
-    sphere: u64,
+    pub sphere: u64,
     /// The name of this text channel.
-    name: String,
+    pub name: String,
     /// The topic of this text channel.
     #[serde(skip_serializing_if = "Option::is_none")]
-    topic: Option<String>,
+    pub topic: Option<String>,
     /// This text channel's position inside of its sphere.
-    position: u32,
+    pub position: u32,
 }
 
 /// A Discord-like voice channel.
@@ -120,13 +133,13 @@ pub struct TextChannel {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VoiceChannel {
     /// The ID of this voice channel.
-    id: u64,
+    pub id: u64,
     /// The ID of the sphere that this voice channel belongs to.
-    sphere: u64,
+    pub sphere: u64,
     /// The name of this voice channel.
-    name: String,
+    pub name: String,
     /// This voice channel's position inside of its sphere.
-    position: u32,
+    pub position: u32,
 }
 
 /// A Discord-like group channel, also known as a group DM.
@@ -148,19 +161,19 @@ pub struct VoiceChannel {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GroupChannel {
     /// The ID of this group channel.
-    id: u64,
+    pub id: u64,
     /// The owner of this group channel.
-    owner: User,
+    pub owner: User,
     /// The name of this group channel.
-    name: String,
+    pub name: String,
     /// The list of members inside this group channel.
-    members: Vec<User>,
+    pub members: Vec<User>,
     /// The file ID of this group channel's icon.
     #[serde(skip_serializing_if = "Option::is_none")]
-    icon: Option<u64>,
+    pub icon: Option<u64>,
     /// The topic of this group channel.
     #[serde(skip_serializing_if = "Option::is_none")]
-    topic: Option<String>,
+    pub topic: Option<String>,
 }
 
 /// A Discord-like private direct message channel.
@@ -173,16 +186,68 @@ pub struct GroupChannel {
 /// {
 ///   "id": 4080402038800,
 ///   "owner": 4080402038776,
-///   "recipient": 4080402038777,
+///   "recipient": 4080402038777
 /// }
 /// ```
 #[autodoc(category = "Channels")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DirectMessageChannel {
     /// The ID of this direct message channel.
-    id: u64,
+    pub id: u64,
     /// The owner of this direct message channel.
-    owner: User,
+    pub owner: User,
     /// The recipient of this direct message channel.
-    recipient: User,
+    pub recipient: User,
+}
+
+/// The SphereChannelCreate payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "name": "Canal pour Spehre",
+///   "type": "TEXT",
+///   "topic": "Boy do I love French"
+/// }
+/// ```
+#[autodoc(category = "Channels")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SphereChannelCreate {
+    /// The name of the new channel.
+    pub name: String,
+    /// The type of the new channel.
+    #[serde(rename = "type")]
+    pub channel_type: SphereChannelType,
+    /// The topic of the new channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
+}
+
+/// The SphereChannelEdit payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "name": "Channel for Sphere",
+///   "topic": "Reject French",
+///   "position": 1
+/// }
+/// ```
+#[autodoc(category = "Channels")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SphereChannelEdit {
+    /// The new name of the channel.
+    pub name: String,
+    /// The new type of the channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
+    /// The new position of the channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub position: Option<u32>,
 }

@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::Channel;
+use super::FileData;
 use super::User;
 
 /// The MessageCreate payload. This is used when you want to create a message using the REST API.
@@ -10,7 +12,8 @@ use super::User;
 ///
 /// ```json
 /// {
-///   "content": "Hello, World!"
+///   "content": "Hello, World!",
+///   "reference": 4080402038782
 /// }
 /// ```
 #[autodoc(category = "Messaging", hidden = true)]
@@ -19,8 +22,11 @@ pub struct MessageCreate {
     /// The message's content. This field has to be at-least 2 characters long. The upper limit
     /// is the instance's [`InstanceInfo`] `message_limit`.
     ///
-    /// The content will be trimmed from leading and trailing whitespace.
+    /// Leading and trailing whitespace will be trimmed off the content.
     pub content: String,
+    /// The ID of the message referenced by this message.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "_disguise")]
     pub disguise: Option<MessageDisguise>,
@@ -48,6 +54,28 @@ pub struct MessageDisguise {
     pub avatar: Option<String>,
 }
 
+/// The MessageEdit payload. This is used when you want to edit an existing message using the REST
+/// API.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "content": "~~I am smart~~ EDIT: I was wrong."
+/// }
+/// ```
+#[autodoc(category = "Messaging")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MessageEdit {
+    /// The message's updated content. This field has to be at-least 2 characters long. The upper
+    /// limit is the instance's [`InstanceInfo`] `message_limit`.
+    ///
+    /// Leading and trailing whitespace will be trimmed off the content.
+    pub content: String,
+}
+
 /// The Message payload. This is returned when you're provided information about a pre-existing
 /// message.
 ///
@@ -57,6 +85,7 @@ pub struct MessageDisguise {
 ///
 /// ```json
 /// {
+///   "id": 4080402038782,
 ///   "author": {
 ///      "id": 48615849987333,
 ///      "username": "mlynar",
@@ -65,14 +94,32 @@ pub struct MessageDisguise {
 ///      "permissions": 8
 ///   }
 ///   "content": "Hello, World!"
+///   "channel": {
+///     "type": "TEXT",
+///     "id": 4080402038789,
+///     "sphere": 4080402038786,
+///     "position": 1,
+///     "name": "je-mappelle"
+///   }
 /// }
 /// ```
 #[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Message {
+    /// The ID of the message.
+    pub id: u64,
     /// The message's author.
     pub author: User,
-    /// There message's data.
-    #[serde(flatten)]
-    pub message: MessageCreate,
+    /// The message's content.
+    pub content: String,
+    /// The message referenced by this message.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<Box<Message>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "_disguise")]
+    pub disguise: Option<MessageDisguise>,
+    /// The channel in which the message is sent.
+    pub channel: Channel,
+    /// The attachments of this message.
+    pub attachments: Vec<FileData>,
 }

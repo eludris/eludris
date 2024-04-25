@@ -5,7 +5,9 @@ use rocket::{Route, State};
 use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 use rocket_db_pools::Connection;
 use todel::http::{ClientIP, TokenAuth, DB};
-use todel::models::{ErrorResponse, Message, MessageCreate, ServerPayload, User};
+use todel::models::{
+    Channel, ErrorResponse, Message, MessageCreate, ServerPayload, TextChannel, User,
+};
 use todel::Conf;
 
 /// Post a message to Eludris.
@@ -67,11 +69,23 @@ pub async fn create_message(
     }
 
     let payload = ServerPayload::MessageCreate(Message {
+        id: 69,
+        channel: Channel::Text(TextChannel {
+            id: 1,
+            sphere: 1,
+            name: "foo".to_string(),
+            topic: None,
+            position: 1,
+        }),
         author: User::get(session.0.user_id, None, &mut db, &mut *cache)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
-        message,
+        attachments: Vec::new(),
+        content: message.content,
+        disguise: message.disguise,
+        reference: None,
     });
+
     cache
         .publish::<&str, String, ()>("eludris-events", serde_json::to_string(&payload).unwrap())
         .await
