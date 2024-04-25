@@ -76,7 +76,7 @@ impl Sphere {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
         sphere.validate(db).await?;
-        let sphere = sqlx::query(
+        let _sphere = sqlx::query(
             r#"
 INSERT INTO spheres(id, owner_id, sphere_type, slug, description, icon, banner)
 VALUES($1, $2, $3, $4, $5, $6, $7)

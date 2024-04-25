@@ -8,7 +8,6 @@ mod users;
 pub use email::*;
 pub use meta::*;
 pub use sessions::*;
-pub use spheres::*;
 pub use users::*;
 
 #[cfg(feature = "http")]
