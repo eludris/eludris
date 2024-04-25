@@ -13,7 +13,8 @@ CREATE TYPE sphere_type AS ENUM ('CHAT', 'FORUM', 'HYBRID');
 CREATE TABLE IF NOT EXISTS spheres (
   id BIGINT PRIMARY KEY,
   owner_id BIGINT NOT NULL,
-  name VARCHAR(32) UNIQUE NOT NULL,
+  name VARCHAR(32),
+  slug VARCHAR(32) UNIQUE NOT NULL,
   sphere_type sphere_type NOT NULL DEFAULT 'HYBRID',
   descriptions VARCHAR(4096),
   icon BIGINT,
