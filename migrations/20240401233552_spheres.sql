@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS spheres (
   name VARCHAR(32),
   slug VARCHAR(32) UNIQUE NOT NULL,
   sphere_type sphere_type NOT NULL DEFAULT 'HYBRID',
-  descriptions VARCHAR(4096),
+  description VARCHAR(4096),
   icon BIGINT,
   banner BIGINT,
   badges BIGINT NOT NULL DEFAULT 0,
