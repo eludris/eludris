@@ -50,7 +50,10 @@ pub async fn proxy<'a>(
     rate_limiter.process_rate_limit(0, &mut cache).await?;
     let resp = http
         .get(url)
-        .header(USER_AGENT, "eludris")
+        .header(
+            USER_AGENT,
+            "Mozilla/5.0 (compatible; eludris/0.4.0-alpha1;)",
+        )
         .send()
         .await
         .map_err(|_| {
