@@ -1,3 +1,4 @@
+mod channels;
 mod email;
 mod files;
 mod meta;

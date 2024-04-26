@@ -22,11 +22,11 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 ///   https://api.eludris.gay/users/profile
 ///
 /// {
-///   "id": 2346806935553
-///   "username": "yendri"
-///   "display_name": "HappyRu"
+///   "id": 2346806935553,
+///   "username": "yendri",
+///   "display_name": "HappyRu",
 ///   "social_credit": 0,
-///   "bio": "I am very happy!"
+///   "bio": "I am very happy!",
 ///   "badges": 0,
 ///   "permissions": 0
 /// }

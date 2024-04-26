@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
-/// Modify your profile.
+/// Create a new sphere.
 ///
 /// -----
 ///
@@ -19,18 +19,22 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// ```sh
 /// curl \
 ///   -H "Authorization: <token>" \
-///   -X PATCH
-///   --json '{"display_name":"HappyRu","bio":"I am very happy!"}'
+///   --json '{"slug":"horse","type":"Hybrid"}'
 ///   https://api.eludris.gay/users/profile
 ///
 /// {
-///   "id": 2346806935553
-///   "username": "yendri"
-///   "display_name": "HappyRu"
-///   "social_credit": 0,
-///   "bio": "I am very happy!"
+///   "id": 4204171493377,
+///   "owner_id": 4203748065281,
+///   "slug": "horse",
+///   "type": "HYBRID",
 ///   "badges": 0,
-///   "permissions": 0
+///   "channels": [{
+///       "type": "TEXT",
+///       "id": 4204171493378,
+///       "sphere": 4204171493377,
+///       "name": "general",
+///       "position": 0
+///     }]
 /// }
 /// ```
 #[autodoc("/spheres", category = "Spheres")]

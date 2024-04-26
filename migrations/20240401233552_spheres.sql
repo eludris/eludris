@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS channels (
   owner_id BIGINT,
   recipient_id BIGINT,
   channel_type channel_type NOT NULL DEFAULT 'TEXT',
-  position SMALLINT,
+  position INT,
   icon BIGINT,
   name VARCHAR(32),
   topic VARCHAR(4096),

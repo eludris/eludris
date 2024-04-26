@@ -70,6 +70,8 @@ impl RateLimiter {
             delete_session,
             resend_verification,
             create_sphere,
+            get_sphere,
+            guest_get_sphere,
         );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),

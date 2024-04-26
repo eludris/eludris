@@ -104,6 +104,13 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`create_sphere`] endpoint.
     #[serde(default = "create_sphere_default")]
     pub create_sphere: RateLimitConf,
+    /// Rate limits for the [`get_sphere`] and [`get_sphere_from_slug`] endpoints.
+    #[serde(default = "get_sphere_default")]
+    pub get_sphere: RateLimitConf,
+    /// Rate limits for the [`get_sphere`] and [`get_sphere_from_slug`] endpoints for
+    /// someone who hasn't made an account.
+    #[serde(default = "guest_get_sphere_default")]
+    pub guest_get_sphere: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -125,6 +132,8 @@ impl Default for OprishRateLimits {
             delete_session: delete_session_default(),
             resend_verification: resend_verification_default(),
             create_sphere: create_sphere_default(),
+            get_sphere: get_sphere_default(),
+            guest_get_sphere: guest_get_sphere_default(),
         }
     }
 }
@@ -238,5 +247,19 @@ fn create_sphere_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 60,
         limit: 5,
+    }
+}
+
+fn get_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 20,
+    }
+}
+
+fn guest_get_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
     }
 }

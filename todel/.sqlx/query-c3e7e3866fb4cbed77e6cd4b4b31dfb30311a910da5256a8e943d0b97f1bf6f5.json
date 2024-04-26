@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nINSERT INTO members(id, sphere)\nVALUES($1, $2)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c3e7e3866fb4cbed77e6cd4b4b31dfb30311a910da5256a8e943d0b97f1bf6f5"
+}

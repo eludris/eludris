@@ -1,9 +1,32 @@
-use sqlx::{pool::PoolConnection, postgres::any::AnyConnectionBackend, Postgres};
+mod get;
+
+use sqlx::{
+    pool::PoolConnection,
+    postgres::{any::AnyConnectionBackend, PgRow},
+    FromRow, Postgres, Row,
+};
 
 use crate::{
     ids::IdGenerator,
     models::{ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate, TextChannel},
 };
+
+impl FromRow<'_, PgRow> for Sphere {
+    fn from_row(row: &PgRow) -> sqlx::Result<Self> {
+        Ok(Self {
+            id: row.get::<i64, _>("id") as u64,
+            owner_id: row.get::<i64, _>("owner_id") as u64,
+            name: row.get("name"),
+            slug: row.get("slug"),
+            sphere_type: row.get("sphere_type"),
+            description: row.get("description"),
+            icon: row.get::<Option<i64>, _>("icon").map(|a| a as u64),
+            banner: row.get::<Option<i64>, _>("banner").map(|a| a as u64),
+            badges: row.get::<i64, _>("badges") as u64,
+            channels: vec![],
+        })
+    }
+}
 
 impl SphereCreate {
     pub async fn validate(&self, db: &mut PoolConnection<Postgres>) -> Result<(), ErrorResponse> {
@@ -118,8 +141,8 @@ VALUES($1, $2)
         let channel_id = id_generator.generate();
         sqlx::query(
             "
-INSERT INTO channels(id, sphere, channel_type, name)
-VALUES($1, $2, $3, $4)
+INSERT INTO channels(id, sphere, channel_type, name, position)
+VALUES($1, $2, $3, $4, 0)
             ",
         )
         .bind(channel_id as i64)

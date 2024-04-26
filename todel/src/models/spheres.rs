@@ -52,6 +52,7 @@ pub struct Sphere {
     /// The ID of the sphere's owner.
     pub owner_id: u64,
     /// The name of the sphere.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// The slug of the sphere.
     pub slug: String,
