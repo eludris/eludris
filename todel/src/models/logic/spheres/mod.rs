@@ -1,8 +1,8 @@
-use sqlx::{pool::PoolConnection, Postgres};
+use sqlx::{pool::PoolConnection, postgres::any::AnyConnectionBackend, Postgres};
 
 use crate::{
     ids::IdGenerator,
-    models::{ErrorResponse, File, Sphere, SphereCreate},
+    models::{ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate, TextChannel},
 };
 
 impl SphereCreate {
@@ -76,22 +76,83 @@ impl Sphere {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
         sphere.validate(db).await?;
-        let _sphere = sqlx::query(
-            r#"
+        let sphere_id = id_generator.generate();
+        db.begin().await.map_err(|err| {
+            log::error!("Couldn't create a new sphere transaction: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
+        sqlx::query(
+            "
 INSERT INTO spheres(id, owner_id, sphere_type, slug, description, icon, banner)
 VALUES($1, $2, $3, $4, $5, $6, $7)
-            "#,
+            ",
         )
-        .bind(id_generator.generate() as i64)
+        .bind(sphere_id as i64)
         .bind(owner_id as i64)
-        .bind(sphere.sphere_type)
-        .bind(sphere.slug)
-        .bind(sphere.description)
+        .bind(&sphere.sphere_type)
+        .bind(&sphere.slug)
+        .bind(&sphere.description)
         .bind(sphere.icon.map(|i| i as i64))
         .bind(sphere.banner.map(|b| b as i64))
         .execute(&mut **db)
         .await
-        .unwrap();
-        todo!()
+        .map_err(|err| {
+            log::error!("Couldn't create a new sphere: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
+        sqlx::query!(
+            "
+INSERT INTO members(id, sphere)
+VALUES($1, $2)
+            ",
+            owner_id as i64,
+            sphere_id as i64
+        )
+        .execute(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't insert owner into new sphere: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
+
+        let channel_id = id_generator.generate();
+        sqlx::query(
+            "
+INSERT INTO channels(id, sphere, channel_type, name)
+VALUES($1, $2, $3, $4)
+            ",
+        )
+        .bind(channel_id as i64)
+        .bind(sphere_id as i64)
+        .bind(ChannelType::Text)
+        .bind("general")
+        .execute(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't create default sphere channel: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
+        db.commit().await.map_err(|err| {
+            log::error!("Couldn't commit new sphere transaction: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
+        Ok(Self {
+            id: sphere_id,
+            owner_id,
+            slug: sphere.slug,
+            name: None,
+            description: sphere.description,
+            icon: sphere.icon,
+            banner: sphere.banner,
+            badges: 0,
+            sphere_type: sphere.sphere_type,
+            channels: vec![SphereChannel::Text(TextChannel {
+                id: channel_id,
+                sphere: sphere_id,
+                name: "general".to_string(),
+                topic: None,
+                position: 0,
+            })],
+        })
     }
 }

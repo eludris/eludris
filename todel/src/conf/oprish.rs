@@ -101,6 +101,9 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`resend_verification`] endpoint.
     #[serde(default = "resend_verification_default")]
     pub resend_verification: RateLimitConf,
+    /// Rate limits for the [`create_sphere`] endpoint.
+    #[serde(default = "create_sphere_default")]
+    pub create_sphere: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -121,6 +124,7 @@ impl Default for OprishRateLimits {
             get_sessions: get_sessions_default(),
             delete_session: delete_session_default(),
             resend_verification: resend_verification_default(),
+            create_sphere: create_sphere_default(),
         }
     }
 }
@@ -224,6 +228,13 @@ fn delete_session_default() -> RateLimitConf {
 }
 
 fn resend_verification_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 60,
+        limit: 5,
+    }
+}
+
+fn create_sphere_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 60,
         limit: 5,

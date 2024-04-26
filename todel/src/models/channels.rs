@@ -2,6 +2,27 @@ use serde::{Deserialize, Serialize};
 
 use super::User;
 
+/// Valid Eludris "channel" types.
+///
+/// This is only internally used.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+#[cfg_attr(feature = "logic", derive(sqlx::Type))]
+#[cfg_attr(feature = "logic", sqlx(type_name = "channel_type"))]
+#[cfg_attr(feature = "logic", sqlx(rename_all = "UPPERCASE"))]
+pub enum ChannelType {
+    /// A sphere category.
+    Category,
+    /// A sphere text channel.
+    Text,
+    /// A sphere voice channel.
+    Voice,
+    /// A group channel.
+    Group,
+    /// A direct message channel.
+    Direct,
+}
+
 /// Valid Eludris sphere "channel" types.
 #[autodoc(category = "Channels")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

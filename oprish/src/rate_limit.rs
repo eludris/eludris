@@ -69,6 +69,7 @@ impl RateLimiter {
             get_sessions,
             delete_session,
             resend_verification,
+            create_sphere,
         );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),
