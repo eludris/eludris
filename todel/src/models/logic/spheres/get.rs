@@ -12,6 +12,7 @@ impl Sphere {
 SELECT *
 FROM channels
 WHERE sphere = $1
+AND is_deleted = FALSE
             ",
         )
         .bind(self.id as i64)
@@ -54,6 +55,7 @@ WHERE id = $1
 SELECT *
 FROM spheres
 WHERE slug = $1
+AND is_deleted = FALSE
             ",
         )
         .bind(&slug)
