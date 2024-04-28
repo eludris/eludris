@@ -99,6 +99,24 @@ impl Sphere {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
         sphere.validate(db).await?;
+        let sphere_count = sqlx::query!(
+            "
+SELECT COUNT(id)
+FROM spheres
+WHERE owner_id = $1
+            ",
+            owner_id as i64
+        )
+        .fetch_one(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't fetch user's sphere count: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?
+        .count;
+        if sphere_count >= Some(100) {
+            return Err(error!(VALIDATION, "spheres", "User exceeded sphere limit"));
+        }
         let sphere_id = id_generator.generate();
         db.begin().await.map_err(|err| {
             log::error!("Couldn't create a new sphere transaction: {}", err);

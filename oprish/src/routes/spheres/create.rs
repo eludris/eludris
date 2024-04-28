@@ -12,6 +12,14 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Create a new sphere.
 ///
+/// A user can only own up to 100 spheres at once, if you, for any reason need
+/// to create more, you'll need to delete some of your spheres.
+///
+/// If you still aren't allowed to create a sphere after doing so, then you will
+/// have to wait for the server to run its scheduled cleanup to actually remove
+/// the old sphere data from the database. This limitation is imposed to avoid
+/// abuse.
+///
 /// -----
 ///
 /// ### Example
