@@ -11,7 +11,7 @@ impl Sphere {
             "
 SELECT *
 FROM channels
-WHERE sphere = $1
+WHERE sphere_id = $1
 AND is_deleted = FALSE
             ",
         )

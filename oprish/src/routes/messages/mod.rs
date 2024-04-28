@@ -72,7 +72,7 @@ pub async fn create_message(
         id: 69,
         channel: Channel::Text(TextChannel {
             id: 1,
-            sphere: 1,
+            sphere_id: 1,
             name: "foo".to_string(),
             topic: None,
             position: 1,

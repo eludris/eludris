@@ -143,7 +143,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
         })?;
         sqlx::query!(
             "
-INSERT INTO members(id, sphere)
+INSERT INTO members(id, sphere_id)
 VALUES($1, $2)
             ",
             owner_id as i64,
@@ -159,7 +159,7 @@ VALUES($1, $2)
         let channel_id = id_generator.generate();
         sqlx::query(
             "
-INSERT INTO channels(id, sphere, channel_type, name, position)
+INSERT INTO channels(id, sphere_id, channel_type, name, position)
 VALUES($1, $2, $3, $4, 0)
             ",
         )
@@ -189,7 +189,7 @@ VALUES($1, $2, $3, $4, 0)
             sphere_type: sphere.sphere_type,
             channels: vec![SphereChannel::Text(TextChannel {
                 id: channel_id,
-                sphere: sphere_id,
+                sphere_id,
                 name: "general".to_string(),
                 topic: None,
                 position: 0,
