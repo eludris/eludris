@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS spheres (
   id BIGINT PRIMARY KEY,
   owner_id BIGINT NOT NULL,
   name VARCHAR(32),
-  slug VARCHAR(32) UNIQUE NOT NULL,
+  slug VARCHAR(32) UNIQUE,
   sphere_type sphere_type NOT NULL DEFAULT 'HYBRID',
   description VARCHAR(4096),
   icon BIGINT,
