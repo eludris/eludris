@@ -10,7 +10,7 @@ use super::User;
 #[cfg_attr(feature = "logic", derive(sqlx::Type))]
 #[cfg_attr(feature = "logic", sqlx(type_name = "channel_type"))]
 #[cfg_attr(feature = "logic", sqlx(rename_all = "UPPERCASE"))]
-pub enum ChannelType {
+pub(crate) enum ChannelType {
     /// A sphere category.
     Category,
     /// A sphere text channel.
@@ -34,6 +34,17 @@ pub enum SphereChannelType {
     Text,
     /// A sphere voice channel.
     Voice,
+}
+
+#[cfg(feature = "logic")]
+impl SphereChannelType {
+    pub(crate) fn get_channel_type(&self) -> ChannelType {
+        match self {
+            Self::Category => ChannelType::Category,
+            Self::Text => ChannelType::Text,
+            Self::Voice => ChannelType::Voice,
+        }
+    }
 }
 
 /// The generic definition of the different types an Eludris "channel" can be.
@@ -83,7 +94,7 @@ pub enum SphereChannel {
 /// ```json
 /// {
 ///   "id": 4080402038798,
-///   "sphere": 4080402038786,
+///   "sphere_id": 4080402038786,
 ///   "name": "channels (shocker)",
 ///   "position": 5
 /// }
@@ -94,7 +105,7 @@ pub struct Category {
     /// The ID of this category.
     pub id: u64,
     /// The ID of the sphere that this category belongs to.
-    pub sphere: u64,
+    pub sphere_id: u64,
     /// The name of this category.
     pub name: String,
     /// This category's position inside of its sphere.
@@ -112,7 +123,7 @@ pub struct Category {
 /// ```json
 /// {
 ///   "id": 4080402038799,
-///   "sphere": 4080402038786,
+///   "sphere_id": 4080402038786,
 ///   "name": "downtown-clowntown",
 ///   "topic": "gacha game channel",
 ///   "position": 3
@@ -124,7 +135,7 @@ pub struct TextChannel {
     /// The ID of this text channel.
     pub id: u64,
     /// The ID of the sphere that this text channel belongs to.
-    pub sphere: u64,
+    pub sphere_id: u64,
     /// The name of this text channel.
     pub name: String,
     /// The topic of this text channel.
@@ -145,7 +156,7 @@ pub struct TextChannel {
 /// ```json
 /// {
 ///   "id": 4080402038800,
-///   "sphere": 4080402038786,
+///   "sphere_id": 4080402038786,
 ///   "name": "serious-chats-only",
 ///   "position": 7
 /// }
@@ -156,7 +167,7 @@ pub struct VoiceChannel {
     /// The ID of this voice channel.
     pub id: u64,
     /// The ID of the sphere that this voice channel belongs to.
-    pub sphere: u64,
+    pub sphere_id: u64,
     /// The name of this voice channel.
     pub name: String,
     /// This voice channel's position inside of its sphere.

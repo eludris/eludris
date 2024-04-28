@@ -16,7 +16,7 @@ use super::User;
 ///     "display_name": "Nicolas",
 ///     ...
 ///   },
-///   "sphere": 4080402038786,
+///   "sphere_id": 4080402038786,
 ///   "nickname": "Nicky"
 /// }
 /// ```
@@ -26,7 +26,7 @@ pub struct Member {
     /// The underlying User for this member.
     pub user: User,
     /// The sphere to which this member belongs.
-    pub sphere: u64,
+    pub sphere_id: u64,
     /// The nickname of this member.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nickname: Option<String>,

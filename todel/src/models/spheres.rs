@@ -37,7 +37,7 @@ pub enum SphereType {
 ///     {
 ///       "type": "TEXT",
 ///       "id": 4080402038789,
-///       "sphere": 4080402038786,
+///       "sphere_id": 4080402038786,
 ///       "position": 1,
 ///       "name": "je-mappelle"
 ///     }
