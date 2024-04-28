@@ -28,7 +28,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// curl \
 ///   -H "Authorization: <token>" \
 ///   --json '{"slug":"horse","type":"Hybrid"}'
-///   https://api.eludris.gay/users/profile
+///   https://api.eludris.gay/spheres
 ///
 /// {
 ///   "id": 4204171493377,
@@ -39,7 +39,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 ///   "channels": [{
 ///       "type": "TEXT",
 ///       "id": 4204171493378,
-///       "sphere": 4204171493377,
+///       "sphere_id": 4204171493377,
 ///       "name": "general",
 ///       "position": 0
 ///     }]

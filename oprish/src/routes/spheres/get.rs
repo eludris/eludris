@@ -28,7 +28,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 ///   "channels": [{
 ///       "type": "TEXT",
 ///       "id": 4204171493378,
-///       "sphere": 4204171493377,
+///       "sphere_id": 4204171493377,
 ///       "name": "general",
 ///       "position": 0
 ///     }]
@@ -78,7 +78,7 @@ pub async fn get_sphere(
 ///   "channels": [{
 ///       "type": "TEXT",
 ///       "id": 4204171493378,
-///       "sphere": 4204171493377,
+///       "sphere_id": 4204171493377,
 ///       "name": "general",
 ///       "position": 0
 ///     }]
