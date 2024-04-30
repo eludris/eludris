@@ -52,7 +52,7 @@ pub async fn get_sphere(
     }
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        Sphere::get(id, &mut db)
+        Sphere::get(id, &mut db, &mut cache.into_inner())
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     ))
@@ -102,7 +102,7 @@ pub async fn get_sphere_from_slug(
     }
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        Sphere::get_slug(slug.to_string(), &mut db)
+        Sphere::get_slug(slug.to_string(), &mut db, &mut cache.into_inner())
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     ))

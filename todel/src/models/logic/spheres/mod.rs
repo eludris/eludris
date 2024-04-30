@@ -8,7 +8,10 @@ use sqlx::{
 
 use crate::{
     ids::IdGenerator,
-    models::{ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate, TextChannel},
+    models::{
+        ChannelType, ErrorResponse, File, Member, Sphere, SphereChannel, SphereCreate, TextChannel,
+        User,
+    },
 };
 
 impl FromRow<'_, PgRow> for Sphere {
@@ -24,6 +27,7 @@ impl FromRow<'_, PgRow> for Sphere {
             banner: row.get::<Option<i64>, _>("banner").map(|a| a as u64),
             badges: row.get::<i64, _>("badges") as u64,
             channels: vec![],
+            members: vec![],
         })
     }
 }
@@ -194,6 +198,12 @@ VALUES($1, $2, $3, $4, 0)
                 topic: None,
                 position: 0,
             })],
+            members: vec![Member {
+                sphere_id,
+                user: User::get_unfiltered(owner_id, db).await?,
+                nickname: None,
+                server_avatar: None,
+            }],
         })
     }
 }

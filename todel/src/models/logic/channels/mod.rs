@@ -64,13 +64,15 @@ impl SphereChannel {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<SphereChannel, ErrorResponse> {
         channel.validate()?;
-        Sphere::get(sphere_id, db).await.map_err(|err| {
-            if let ErrorResponse::NotFound { .. } = err {
-                error!(NOT_FOUND)
-            } else {
-                err
-            }
-        })?;
+        Sphere::get_unpopulated(sphere_id, db)
+            .await
+            .map_err(|err| {
+                if let ErrorResponse::NotFound { .. } = err {
+                    error!(NOT_FOUND)
+                } else {
+                    err
+                }
+            })?;
         let channel_count = sqlx::query!(
             "
 SELECT COUNT(id)
