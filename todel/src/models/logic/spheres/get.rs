@@ -153,4 +153,26 @@ WHERE id = $1
         .ok_or_else(|| error!(NOT_FOUND))?;
         Ok(sphere)
     }
+
+    pub async fn get_unpopulated_slug(
+        slug: String,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<Self, ErrorResponse> {
+        let sphere = sqlx::query_as(
+            "
+SELECT *
+FROM spheres
+WHERE slug = $1
+            ",
+        )
+        .bind(&slug)
+        .fetch_optional(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't fetch {} sphere: {}", slug, err);
+            error!(SERVER, "Failed to get sphere")
+        })?
+        .ok_or_else(|| error!(NOT_FOUND))?;
+        Ok(sphere)
+    }
 }

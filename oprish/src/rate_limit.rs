@@ -73,6 +73,7 @@ impl RateLimiter {
             get_sphere,
             guest_get_sphere,
             create_channel,
+            join_sphere,
         );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),

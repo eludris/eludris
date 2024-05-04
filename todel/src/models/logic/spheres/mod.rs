@@ -1,4 +1,5 @@
 mod get;
+mod join;
 
 use sqlx::{
     pool::PoolConnection,
@@ -8,10 +9,7 @@ use sqlx::{
 
 use crate::{
     ids::IdGenerator,
-    models::{
-        ChannelType, ErrorResponse, File, Member, Sphere, SphereChannel, SphereCreate, TextChannel,
-        User,
-    },
+    models::{ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate, TextChannel},
 };
 
 impl FromRow<'_, PgRow> for Sphere {
@@ -145,20 +143,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
             log::error!("Couldn't create a new sphere: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
-        sqlx::query!(
-            "
-INSERT INTO members(id, sphere_id)
-VALUES($1, $2)
-            ",
-            owner_id as i64,
-            sphere_id as i64
-        )
-        .execute(&mut **db)
-        .await
-        .map_err(|err| {
-            log::error!("Couldn't insert owner into new sphere: {}", err);
-            error!(SERVER, "Failed to create sphere")
-        })?;
 
         let channel_id = id_generator.generate();
         sqlx::query(
@@ -181,6 +165,9 @@ VALUES($1, $2, $3, $4, 0)
             log::error!("Couldn't commit new sphere transaction: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
+
+        let member = Self::join(sphere_id, owner_id, db).await?;
+
         Ok(Self {
             id: sphere_id,
             owner_id,
@@ -198,12 +185,7 @@ VALUES($1, $2, $3, $4, 0)
                 topic: None,
                 position: 0,
             })],
-            members: vec![Member {
-                sphere_id,
-                user: User::get_unfiltered(owner_id, db).await?,
-                nickname: None,
-                server_avatar: None,
-            }],
+            members: vec![member],
         })
     }
 }
