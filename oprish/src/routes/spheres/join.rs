@@ -8,7 +8,7 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
-/// Get a sphere's data using its ID.
+/// Join a sphere using its ID.
 ///
 /// -----
 ///
@@ -17,7 +17,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// ```sh
 /// curl \
 ///   -H "Authorization: <token>" \
-///   https://api.eludris.gay/spheres/4204171493377
+///   https://api.eludris.gay/spheres/4204171493377/join
 ///
 /// {
 ///   "id": 4204171493377,
@@ -55,7 +55,7 @@ pub async fn join_sphere(
     ))
 }
 
-/// Get a sphere's data using its slug.
+/// Join a sphere using its slug.
 ///
 /// -----
 ///
@@ -64,7 +64,7 @@ pub async fn join_sphere(
 /// ```sh
 /// curl \
 ///   -H "Authorization: <token>" \
-///   https://api.eludris.gay/spheres/horse
+///   https://api.eludris.gay/spheres/horse/join
 ///
 /// {
 ///   "id": 4204171493377,
