@@ -3,7 +3,10 @@ use futures::StreamExt;
 use redis::aio::Connection;
 use redis::aio::PubSub;
 use redis::AsyncCommands;
+use sqlx::Pool;
+use sqlx::Postgres;
 use std::sync::Arc;
+use todel::models::Sphere;
 use todel::models::{ServerPayload, StatusType};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -19,6 +22,7 @@ pub async fn handle_pubsub(
     session: Arc<Mutex<Option<SessionData>>>,
     cache: Arc<Mutex<Connection>>,
     tx: Arc<Mutex<SplitSink<WebSocketStream<TcpStream>, WebSocketMessage>>>,
+    pool: Arc<Pool<Postgres>>,
 ) {
     pubsub
         .into_on_message()
@@ -29,7 +33,7 @@ pub async fn handle_pubsub(
             }
             let session = session.as_mut().unwrap();
             match deserialize_message(msg) {
-                Ok(payload) => handle_event(payload, session, &cache, &tx).await,
+                Ok(payload) => handle_event(payload, session, &cache, &tx, &pool).await,
                 Err(err) => log::warn!("Failed to deserialize event payload: {}", err),
             }
         })
@@ -41,6 +45,7 @@ async fn handle_event(
     session: &mut SessionData,
     cache: &Arc<Mutex<Connection>>,
     tx: &Arc<Mutex<SplitSink<WebSocketStream<TcpStream>, WebSocketMessage>>>,
+    pool: &Arc<Pool<Postgres>>,
 ) {
     match payload {
         ServerPayload::PresenceUpdate { user_id, status } => {
@@ -72,6 +77,30 @@ async fn handle_event(
                 }
             }
             send_payload(tx, &ServerPayload::UserUpdate(user)).await;
+        }
+        ServerPayload::SphereMemberJoin { user, sphere_id } => {
+            if user.id == session.user.id {
+                let mut db = match pool.acquire().await {
+                    Ok(conn) => conn,
+                    Err(err) => {
+                        log::error!(
+                            "Couldn't acquire database connection for SphereMemberJoin: {}",
+                            err
+                        );
+                        return;
+                    }
+                };
+                let sphere = match Sphere::get(sphere_id, &mut db, &mut *cache.lock().await).await {
+                    Ok(sphere) => sphere,
+                    Err(err) => {
+                        log::error!("Couldn't fetch sphere data for SphereMemberJoin: {}", err);
+                        return;
+                    }
+                };
+                send_payload(tx, &ServerPayload::SphereJoin(sphere)).await;
+            } else if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::SphereMemberJoin { user, sphere_id }).await;
+            }
         }
         payload => {
             send_payload(tx, &payload).await;

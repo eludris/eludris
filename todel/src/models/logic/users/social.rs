@@ -1,7 +1,7 @@
 use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, Postgres};
 
-use crate::models::{ErrorResponse, Status, StatusType, User};
+use crate::models::{ErrorResponse, Sphere, Status, StatusType, User};
 
 impl User {
     pub async fn get_unfiltered(
@@ -96,5 +96,36 @@ AND is_deleted = FALSE
             }
         }
         Ok(user)
+    }
+
+    // TODO: use async iteration to map over it for optimization
+    pub async fn get_spheres<C: AsyncCommands>(
+        user_id: u64,
+        db: &mut PoolConnection<Postgres>,
+        cache: &mut C,
+    ) -> Result<Vec<Sphere>, ErrorResponse> {
+        let spheres: Vec<Sphere> = sqlx::query_as(
+            "
+SELECT spheres.*
+FROM members
+JOIN spheres
+ON sphere_id = spheres.id
+WHERE members.id = $1
+            ",
+        )
+        .bind(user_id as i64)
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to fetch user {}'s spheres: {}", user_id, err);
+            error!(SERVER, "Couldn't fetch user spheres")
+        })?;
+        let mut populated = vec![];
+        for mut sphere in spheres {
+            sphere.populate_channels(db).await?;
+            sphere.populate_members(db, cache).await?;
+            populated.push(sphere)
+        }
+        Ok(populated)
     }
 }

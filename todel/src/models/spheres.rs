@@ -41,7 +41,8 @@ pub enum SphereType {
 ///       "position": 1,
 ///       "name": "je-mappelle"
 ///     }
-///   ]
+///   ],
+///   "members": [ ... ]
 /// }
 /// ```
 #[autodoc(category = "Spheres")]

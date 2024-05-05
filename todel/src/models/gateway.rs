@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{InstanceInfo, Message, Status, User};
+use super::{InstanceInfo, Message, Sphere, Status, User};
 use crate::conf::RateLimitConf;
 
 /// Pandemonium websocket payloads sent by the server to the client.
@@ -99,21 +99,13 @@ pub enum ServerPayload {
     ///     "badges": 0,
     ///     "permissions": 0
     ///   },
-    ///   "users": [
-    ///     {
-    ///       "id": 48615849987333,
-    ///       "username": "foobar",
-    ///       "social_credit": 42,
-    ///       "badges": 0,
-    ///       "permissions": 0
-    ///     }
-    ///   ],
+    ///   "spheres": [ ... ]
     /// }
     /// ```
     Authenticated {
         user: User,
-        /// The currently online users who are relavent to the connector.
-        users: Vec<User>,
+        /// The spheres that the user is a part of.
+        spheres: Vec<Sphere>,
     },
     /// The payload received when a user updates themselves. This includes both user updates from
     /// the [`update_user`] endpoint and profile updates from the [`update_profile`] endpoint.
@@ -166,6 +158,51 @@ pub enum ServerPayload {
     /// }
     /// ```
     MessageCreate(Message),
+    /// The payload sent when a client joins a sphere.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "SPHERE_JOIN",
+    ///   "d": {
+    ///     "id": 4080402038786,
+    ///     "owner_id": 4080403808259,
+    ///     "name": "Spehre",
+    ///     "type": "HYBRID",
+    ///     "description": "Truly the sphere of all time",
+    ///     "icon": 4080412852228,
+    ///     "badges": 0,
+    ///     "channels": [ ... ],
+    ///     "members": [ ... ]
+    ///   }
+    /// }
+    /// ```
+    SphereJoin(Sphere),
+    /// The payload sent when another user joins a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "SPHERE_MEMBER_JOIN",
+    ///   "d": {
+    ///     "user": {
+    ///       "id": 48615849987333,
+    ///       "username": "foobar",
+    ///       "social_credit": 42,
+    ///       "badges": 0,
+    ///       "permissions": 0
+    ///     },
+    ///     "sphere_id": 48615849987337
+    ///   }
+    /// }
+    /// ```
+    SphereMemberJoin { user: User, sphere_id: u64 },
 }
 
 /// Pandemonium websocket payloads sent by the client to the server.

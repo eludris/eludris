@@ -1,8 +1,8 @@
 use rocket::{serde::json::Json, State};
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::Sphere,
+    models::{ServerPayload, Sphere},
     Conf,
 };
 
@@ -45,14 +45,25 @@ pub async fn join_sphere(
 ) -> RateLimitedRouteResponse<Json<Sphere>> {
     let mut rate_limiter = RateLimiter::new("join_sphere", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
-    Sphere::join(id, session.0.user_id, &mut db)
+    let member = Sphere::join(id, session.0.user_id, &mut db)
         .await
         .map_err(|e| rate_limiter.add_headers(e))?;
-    rate_limiter.wrap_response(Json(
-        Sphere::get(id, &mut db, &mut cache.into_inner())
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+    let mut cache = cache.into_inner();
+    let sphere = Sphere::get(id, &mut db, &mut cache)
+        .await
+        .map_err(|err| rate_limiter.add_headers(err))?;
+    cache
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::SphereMemberJoin {
+                user: member.user,
+                sphere_id: sphere.id,
+            })
+            .unwrap(),
+        )
+        .await
+        .unwrap();
+    rate_limiter.wrap_response(Json(sphere))
 }
 
 /// Join a sphere using its slug.
@@ -92,12 +103,23 @@ pub async fn join_sphere_from_slug(
 ) -> RateLimitedRouteResponse<Json<Sphere>> {
     let mut rate_limiter = RateLimiter::new("join_sphere", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
-    Sphere::join_slug(slug.to_string(), session.0.user_id, &mut db)
+    let member = Sphere::join_slug(slug.to_string(), session.0.user_id, &mut db)
         .await
         .map_err(|e| rate_limiter.add_headers(e))?;
-    rate_limiter.wrap_response(Json(
-        Sphere::get_slug(slug.to_string(), &mut db, &mut cache.into_inner())
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+    let mut cache = cache.into_inner();
+    let sphere = Sphere::get_slug(slug.to_string(), &mut db, &mut cache)
+        .await
+        .map_err(|err| rate_limiter.add_headers(err))?;
+    cache
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::SphereMemberJoin {
+                user: member.user,
+                sphere_id: sphere.id,
+            })
+            .unwrap(),
+        )
+        .await
+        .unwrap();
+    rate_limiter.wrap_response(Json(sphere))
 }

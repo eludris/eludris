@@ -4,7 +4,7 @@ use sqlx::{pool::PoolConnection, FromRow, Postgres, Row};
 use crate::models::{ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User};
 
 impl Sphere {
-    async fn populate_channels(
+    pub(crate) async fn populate_channels(
         &mut self,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
@@ -27,7 +27,7 @@ AND is_deleted = FALSE
         Ok(())
     }
 
-    async fn populate_members<C: AsyncCommands>(
+    pub(crate) async fn populate_members<C: AsyncCommands>(
         &mut self,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
