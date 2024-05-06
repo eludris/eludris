@@ -1,3 +1,5 @@
+mod get;
+
 use sqlx::{pool::PoolConnection, postgres::PgRow, FromRow, Postgres, Row};
 
 use crate::{
@@ -30,7 +32,6 @@ impl FromRow<'_, PgRow> for SphereChannel {
                 name: row.get("name"),
                 position: row.get::<i32, _>("position") as u32,
             })),
-
             _ => unreachable!(),
         }
     }
@@ -68,7 +69,7 @@ impl SphereChannel {
             .await
             .map_err(|err| {
                 if let ErrorResponse::NotFound { .. } = err {
-                    error!(NOT_FOUND)
+                    error!(VALIDATION, "sphere", "Sphere doesn't exist")
                 } else {
                     err
                 }

@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::Channel;
-use super::FileData;
-use super::User;
+use super::{FileData, SphereChannel, User};
 
 /// The MessageCreate payload. This is used when you want to create a message using the REST API.
 ///
@@ -111,7 +109,7 @@ pub struct Message {
     /// The message's author.
     pub author: User,
     /// The message's content.
-    pub content: String,
+    pub content: Option<String>,
     /// The message referenced by this message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<Box<Message>>,
@@ -119,7 +117,7 @@ pub struct Message {
     #[serde(rename = "_disguise")]
     pub disguise: Option<MessageDisguise>,
     /// The channel in which the message is sent.
-    pub channel: Channel,
+    pub channel: SphereChannel,
     /// The attachments of this message.
     pub attachments: Vec<FileData>,
 }

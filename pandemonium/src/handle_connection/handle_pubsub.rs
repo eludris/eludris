@@ -6,8 +6,7 @@ use redis::AsyncCommands;
 use sqlx::Pool;
 use sqlx::Postgres;
 use std::sync::Arc;
-use todel::models::Sphere;
-use todel::models::{ServerPayload, StatusType};
+use todel::models::{ServerPayload, Sphere, SphereChannel, StatusType};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_tungstenite::tungstenite::Message as WebSocketMessage;
@@ -100,6 +99,13 @@ async fn handle_event(
                 send_payload(tx, &ServerPayload::SphereJoin(sphere)).await;
             } else if session.sphere_ids.contains(&sphere_id) {
                 send_payload(tx, &ServerPayload::SphereMemberJoin { user, sphere_id }).await;
+            }
+        }
+        ServerPayload::MessageCreate(message) => {
+            if let SphereChannel::Text(channel) = &message.channel {
+                if session.sphere_ids.contains(&channel.sphere_id) {
+                    send_payload(tx, &ServerPayload::MessageCreate(message)).await;
+                }
             }
         }
         payload => {

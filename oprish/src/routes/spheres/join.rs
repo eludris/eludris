@@ -35,9 +35,9 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// }
 /// ```
 #[autodoc("/spheres", category = "Spheres")]
-#[get("/<id>/join")]
+#[get("/<sphere_id>/join")]
 pub async fn join_sphere(
-    id: u64,
+    sphere_id: u64,
     conf: &State<Conf>,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -45,11 +45,11 @@ pub async fn join_sphere(
 ) -> RateLimitedRouteResponse<Json<Sphere>> {
     let mut rate_limiter = RateLimiter::new("join_sphere", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
-    let member = Sphere::join(id, session.0.user_id, &mut db)
+    let member = Sphere::join(sphere_id, session.0.user_id, &mut db)
         .await
         .map_err(|e| rate_limiter.add_headers(e))?;
     let mut cache = cache.into_inner();
-    let sphere = Sphere::get(id, &mut db, &mut cache)
+    let sphere = Sphere::get(sphere_id, &mut db, &mut cache)
         .await
         .map_err(|err| rate_limiter.add_headers(err))?;
     cache

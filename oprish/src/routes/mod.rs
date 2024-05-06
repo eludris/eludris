@@ -1,4 +1,4 @@
-pub mod messages;
+pub mod channels;
 pub mod sessions;
 pub mod spheres;
 pub mod users;
