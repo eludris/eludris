@@ -5,6 +5,7 @@ use sqlx::{pool::PoolConnection, Postgres};
 use crate::models::{ErrorResponse, Message, SphereChannel, Status, StatusType, User};
 
 impl Message {
+    #[allow(clippy::multiple_bound_locations)] // happens thanks to the `async_recursion` macro
     #[async_recursion]
     pub async fn get<C: AsyncCommands>(
         id: u64,
