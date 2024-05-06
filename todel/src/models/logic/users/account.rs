@@ -19,30 +19,39 @@ use crate::{
     Conf,
 };
 
+const RESERVED_USERNAMES: [&str; 3] = ["deleted-user", "system", "eludris"];
+
 pub fn validate_username(username: &str) -> Result<(), ErrorResponse> {
     lazy_static! {
         static ref USERNAME_REGEX: Regex =
             Regex::new(r"^[a-z0-9_-]+$").expect("Could not compile username regex");
     };
+    if RESERVED_USERNAMES.contains(&username) {
+        return Err(error!(
+            VALIDATION,
+            "username", "This is a reserved username"
+        ));
+    }
     if !USERNAME_REGEX.is_match(username) {
-        Err(error!(
+        return Err(error!(
                 VALIDATION,
                 "username",
                 "The user's username must only consist of lowercase letters, numbers, underscores and dashes"
-            ))
-    } else if username.len() < 2 || username.len() > 32 {
-        Err(error!(
+            ));
+    }
+    if username.len() < 2 || username.len() > 32 {
+        return Err(error!(
             VALIDATION,
             "username", "The user's username must be between 2 and 32 characters in length"
-        ))
-    } else if !username.chars().any(|f| f.is_alphabetic()) {
-        Err(error!(
+        ));
+    }
+    if !username.chars().any(|f| f.is_alphabetic()) {
+        return Err(error!(
             VALIDATION,
             "username", "The user's username must have at least one alphabetical letter"
-        ))
-    } else {
-        Ok(())
+        ));
     }
+    Ok(())
 }
 
 pub fn validate_email(email: &str) -> Result<(), ErrorResponse> {

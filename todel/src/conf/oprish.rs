@@ -124,6 +124,9 @@ pub struct OprishRateLimits {
     /// an account.
     #[serde(default = "guest_get_channel_default")]
     pub guest_get_channel: RateLimitConf,
+    /// Rate limits for the [`get_messages`] endpoint.
+    #[serde(default = "get_messages_default")]
+    pub get_messages: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -151,6 +154,7 @@ impl Default for OprishRateLimits {
             join_sphere: join_sphere_default(),
             get_channel: get_channel_default(),
             guest_get_channel: guest_get_channel_default(),
+            get_messages: get_messages_default(),
         }
     }
 }
@@ -303,6 +307,13 @@ fn get_channel_default() -> RateLimitConf {
 }
 
 fn guest_get_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn get_messages_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,
