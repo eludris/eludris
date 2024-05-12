@@ -15,7 +15,8 @@ use serde::{Deserialize, Serialize};
 ///   "id": 2312155037697,
 ///   "user_id": 2312155693057,
 ///   "platform": "linux",
-///   "client": "pilfer"
+///   "client": "pilfer",
+///   "ip": "127.0.0.1"
 /// }
 /// ```
 #[autodoc(category = "Sessions")]
@@ -72,10 +73,11 @@ pub struct SessionCreate {
 /// {
 ///   "token": "",
 ///   "session": {
-///     "indentifier": "yendri",
-///     "password": "authentícame por favor",
+///     "id": 2312155037697,
+///     "user_id": 2312155693057,
 ///     "platform": "linux",
-///     "client": "pilfer"
+///     "client": "pilfer",
+///     "ip": "127.0.0.1"
 ///   }
 /// }
 /// ```
