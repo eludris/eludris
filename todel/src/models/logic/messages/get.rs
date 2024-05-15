@@ -84,7 +84,7 @@ WHERE id = $1
 SELECT *
 FROM messages
 WHERE channel_id = $1
-ORDER BY id DESC
+ORDER BY id ASC
 LIMIT 1000
             ",
             channel_id as i64
