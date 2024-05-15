@@ -24,7 +24,7 @@ const RESERVED_USERNAMES: [&str; 3] = ["deleted-user", "system", "eludris"];
 pub fn validate_username(username: &str) -> Result<(), ErrorResponse> {
     lazy_static! {
         static ref USERNAME_REGEX: Regex =
-            Regex::new(r"^[a-z0-9_-]+$").expect("Could not compile username regex");
+            Regex::new(r"^[a-z0-9_-]$").expect("Could not compile username regex");
     };
     if RESERVED_USERNAMES.contains(&username) {
         return Err(error!(

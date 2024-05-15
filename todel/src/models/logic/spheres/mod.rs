@@ -1,6 +1,7 @@
 mod get;
 mod join;
 
+use regex::Regex;
 use sqlx::{
     pool::PoolConnection,
     postgres::{any::AnyConnectionBackend, PgRow},
@@ -31,11 +32,31 @@ impl FromRow<'_, PgRow> for Sphere {
 }
 
 impl SphereCreate {
-    pub async fn validate(&self, db: &mut PoolConnection<Postgres>) -> Result<(), ErrorResponse> {
+    pub async fn validate(
+        &mut self,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
+        lazy_static! {
+            static ref SLUG_REGEX: Regex =
+                Regex::new(r"^[a-z0-9_-]+$").expect("Could not compile slug regex");
+        };
+        if !SLUG_REGEX.is_match(&self.slug) {
+            return Err(error!(
+                VALIDATION,
+                "slug",
+                "The spheres's slug must only consist of lowercase letters, numbers, underscores and dashes"
+            ));
+        }
         if self.slug.is_empty() || self.slug.len() > 32 {
             return Err(error!(
                 VALIDATION,
                 "slug", "The sphere's slug must be between 1 and 32 characters long"
+            ));
+        }
+        if !self.slug.chars().any(|f| f.is_alphabetic()) {
+            return Err(error!(
+                VALIDATION,
+                "slug", "The spheres's slug must have at least one alphabetical letter"
             ));
         }
         if let Some(description) = &self.description {
@@ -95,7 +116,7 @@ WHERE slug = $1
 
 impl Sphere {
     pub async fn create(
-        sphere: SphereCreate,
+        mut sphere: SphereCreate,
         owner_id: u64,
         id_generator: &mut IdGenerator,
         db: &mut PoolConnection<Postgres>,
