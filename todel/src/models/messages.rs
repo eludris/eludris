@@ -113,11 +113,11 @@ pub struct Message {
     /// The message referenced by this message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<Box<Message>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     /// The channel in which the message is sent.
     pub channel: SphereChannel,
     /// The attachments of this message.
     pub attachments: Vec<FileData>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "_disguise")]
     pub disguise: Option<MessageDisguise>,
 }
