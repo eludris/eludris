@@ -87,19 +87,15 @@ WHERE id = $1
 SELECT *
 FROM messages
 WHERE channel_id = 
-            "
+            ",
         );
         query.push_bind(channel_id as i64);
 
         if let Some(id) = before {
-            query
-                .push(" AND id < ")
-                .push_bind(id as i64);
+            query.push(" AND id < ").push_bind(id as i64);
         };
         if let Some(id) = after {
-            query
-                .push(" AND id > ")
-                .push_bind(id as i64);
+            query.push(" AND id > ").push_bind(id as i64);
         };
 
         query.push(" ORDER BY id ASC ");
@@ -108,21 +104,20 @@ WHERE channel_id =
         match limit {
             Some(limit) => {
                 if limit > 200 || limit < 1 {
-                    return Err(error!(VALIDATION, "limit", "Limit must be between 1 and 200, inclusive."));
+                    return Err(error!(
+                        VALIDATION,
+                        "limit", "Limit must be between 1 and 200, inclusive."
+                    ));
                 }
                 query.push_bind(limit as i32)
-            },
+            }
             None => query.push_bind(50),
         };
 
-        let rows = query
-            .build()
-            .fetch_all(&mut **db)
-            .await
-            .map_err(|err| {
-                log::error!("Couldn't fetch channel history {}: {}", channel_id, err);
-                error!(SERVER, "Failed to fetch channel history")
-            })?;
+        let rows = query.build().fetch_all(&mut **db).await.map_err(|err| {
+            log::error!("Couldn't fetch channel history {}: {}", channel_id, err);
+            error!(SERVER, "Failed to fetch channel history")
+        })?;
         let mut messages = vec![];
         for row in rows {
             let author = match row.try_get::<i64, _>("author_id") {
