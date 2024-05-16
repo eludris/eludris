@@ -78,10 +78,17 @@ WHERE id = $1
         channel_id: u64,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
+        limit: u32,
         before: Option<u64>,
         after: Option<u64>,
-        limit: Option<u32>,
     ) -> Result<Vec<Self>, ErrorResponse> {
+        if !(1..=200).contains(&limit) {
+            return Err(error!(
+                VALIDATION,
+                "limit", "Limit must be between 1 and 200, inclusive."
+            ));
+        }
+
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
             "
 SELECT *
@@ -98,21 +105,10 @@ WHERE channel_id =
             query.push(" AND id > ").push_bind(id as i64);
         };
 
-        query.push(" ORDER BY id ASC ");
-
-        query.push(" LIMIT ");
-        match limit {
-            Some(limit) => {
-                if limit > 200 || limit < 1 {
-                    return Err(error!(
-                        VALIDATION,
-                        "limit", "Limit must be between 1 and 200, inclusive."
-                    ));
-                }
-                query.push_bind(limit as i32)
-            }
-            None => query.push_bind(50),
-        };
+        query
+            .push(" ORDER BY id ASC ")
+            .push(" LIMIT ")
+            .push_bind(limit as i32);
 
         let rows = query.build().fetch_all(&mut **db).await.map_err(|err| {
             log::error!("Couldn't fetch channel history {}: {}", channel_id, err);

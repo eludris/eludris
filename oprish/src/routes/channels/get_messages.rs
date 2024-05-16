@@ -46,9 +46,9 @@ pub async fn get_messages(
             channel_id,
             &mut db,
             &mut cache.into_inner(),
+            limit.unwrap_or(50),
             before,
             after,
-            limit,
         )
         .await
         .map_err(|err| rate_limiter.add_headers(err))?,
