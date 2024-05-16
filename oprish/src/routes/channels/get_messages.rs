@@ -9,7 +9,7 @@ use todel::{
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Get a channel's data using its ID.
-/// 
+///
 /// This endpoint supports pagination via the `before`/`after`/`limit` query parameters.
 ///
 /// -----
