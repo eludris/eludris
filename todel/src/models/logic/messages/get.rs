@@ -1,6 +1,6 @@
 use async_recursion::async_recursion;
 use redis::AsyncCommands;
-use sqlx::{pool::PoolConnection, Postgres, QueryBuilder};
+use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::models::{ErrorResponse, Message, SphereChannel, Status, StatusType, User};
 
@@ -82,7 +82,7 @@ WHERE id = $1
         after: Option<u64>,
         limit: Option<u32>,
     ) -> Result<Vec<Self>, ErrorResponse> {
-        let query: QueryBuilder<Postgres> = QueryBuilder::new(
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
             "
 SELECT *
 FROM messages
@@ -104,14 +104,19 @@ WHERE channel_id =
 
         query.push(" ORDER BY id ASC ");
 
-        if let Some(limit) = limit {
-            query
-                .push(" LIMIT ")
-                .push_bind(limit as i32);
-        }
+        query.push(" LIMIT ");
+        match limit {
+            Some(limit) => {
+                if limit > 200 || limit < 1 {
+                    return Err(error!(VALIDATION, "limit", "Limit must be between 1 and 200, inclusive."));
+                }
+                query.push_bind(limit as i32)
+            },
+            None => query.push_bind(50),
+        };
 
-        let rows: Vec<Message> = query
-            .build_query_as()
+        let rows = query
+            .build()
             .fetch_all(&mut **db)
             .await
             .map_err(|err| {
@@ -120,9 +125,9 @@ WHERE channel_id =
             })?;
         let mut messages = vec![];
         for row in rows {
-            let author = match row.author_id {
-                Some(id) => User::get(id as u64, None, db, cache).await?,
-                None => User {
+            let author = match row.try_get::<i64, _>("author_id") {
+                Ok(id) => User::get(id as u64, None, db, cache).await?,
+                Err(_) => User {
                     id: 0,
                     username: "deleted-user".to_string(),
                     display_name: Some("Deleted User".to_string()),
@@ -140,8 +145,8 @@ WHERE channel_id =
                     verified: None,
                 },
             };
-            let reference = match row.reference {
-                Some(reference) => match Self::get(reference as u64, db, cache).await {
+            let reference = match row.try_get::<i64, _>("reference") {
+                Ok(reference) => match Self::get(reference as u64, db, cache).await {
                     Ok(message) => Some(Box::new(message)),
                     Err(err) => {
                         if let ErrorResponse::NotFound { .. } = err {
@@ -154,15 +159,15 @@ WHERE channel_id =
                         }
                     }
                 },
-                None => None,
+                Err(_) => None,
             };
             messages.push(Self {
-                id: row.id as u64,
+                id: row.get::<i64, _>("id") as u64,
                 author,
-                content: row.content,
+                content: row.get("content"),
                 reference,
                 disguise: None,
-                channel: SphereChannel::get(row.channel_id as u64, db).await?,
+                channel: SphereChannel::get(row.get::<i64, _>("channel_id") as u64, db).await?,
                 attachments: vec![],
             })
         }
