@@ -28,18 +28,21 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// }
 /// ```
 #[autodoc("/channels", category = "Messaging")]
-#[get("/<channel_id>/messages")]
+#[get("/<channel_id>/messages?<before>&<after>&<limit>")]
 pub async fn get_messages(
     channel_id: u64,
     conf: &State<Conf>,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
     session: TokenAuth,
+    before: Option<u64>,
+    after: Option<u64>,
+    limit: Option<u32>,
 ) -> RateLimitedRouteResponse<Json<Vec<Message>>> {
     let mut rate_limiter = RateLimiter::new("get_messages", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
     rate_limiter.wrap_response(Json(
-        Message::get_history(channel_id, &mut db, &mut cache.into_inner())
+        Message::get_history(channel_id, &mut db, &mut cache.into_inner(), before, after, limit)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     ))

@@ -1,6 +1,6 @@
 use async_recursion::async_recursion;
 use redis::AsyncCommands;
-use sqlx::{pool::PoolConnection, Postgres};
+use sqlx::{pool::PoolConnection, Postgres, QueryBuilder};
 
 use crate::models::{ErrorResponse, Message, SphereChannel, Status, StatusType, User};
 
@@ -78,23 +78,46 @@ WHERE id = $1
         channel_id: u64,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
+        before: Option<u64>,
+        after: Option<u64>,
+        limit: Option<u32>,
     ) -> Result<Vec<Self>, ErrorResponse> {
-        let rows = sqlx::query!(
+        let query: QueryBuilder<Postgres> = QueryBuilder::new(
             "
 SELECT *
 FROM messages
-WHERE channel_id = $1
-ORDER BY id ASC
-LIMIT 1000
-            ",
-            channel_id as i64
-        )
-        .fetch_all(&mut **db)
-        .await
-        .map_err(|err| {
-            log::error!("Couldn't fetch channel history {}: {}", channel_id, err);
-            error!(SERVER, "Failed to fetch channel history")
-        })?;
+WHERE channel_id = 
+            "
+        );
+        query.push_bind(channel_id as i64);
+
+        if let Some(id) = before {
+            query
+                .push(" AND id < ")
+                .push_bind(id as i64);
+        };
+        if let Some(id) = after {
+            query
+                .push(" AND id > ")
+                .push_bind(id as i64);
+        };
+
+        query.push(" ORDER BY id ASC ");
+
+        if let Some(limit) = limit {
+            query
+                .push(" LIMIT ")
+                .push_bind(limit as i32);
+        }
+
+        let rows: Vec<Message> = query
+            .build_query_as()
+            .fetch_all(&mut **db)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch channel history {}: {}", channel_id, err);
+                error!(SERVER, "Failed to fetch channel history")
+            })?;
         let mut messages = vec![];
         for row in rows {
             let author = match row.author_id {
