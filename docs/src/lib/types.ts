@@ -63,6 +63,7 @@ export interface PathParamInfo {
 export interface QueryParamInfo {
   name: string;
   type: string;
+  nullable: boolean;
 }
 
 export interface Body {
