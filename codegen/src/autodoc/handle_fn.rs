@@ -126,19 +126,33 @@ pub fn handle_fn(attrs: &[NestedMeta], item: ItemFn, status_code: u8) -> Result<
                     format!("Cannot find type of path param {}", name),
                 )
             })?;
-            path_params.push(ParamInfo { r#type, name });
+
+            path_params.push(ParamInfo {
+                r#type,
+                name,
+                nullable: false, // path params can't be nullable
+            });
         }
     }
     for param in query.split('&') {
+        let mut nullable = false;
         if param.starts_with('<') && param.ends_with('>') {
             let name = param[1..param.len() - 1].to_string();
-            let r#type = params.remove(&name).ok_or_else(|| {
+            let mut r#type = params.remove(&name).ok_or_else(|| {
                 Error::new(
                     Span::call_site().into(),
                     format!("Cannot find type of query param {}", name),
                 )
             })?;
-            query_params.push(ParamInfo { r#type, name });
+            if r#type.starts_with("Option<") {
+                r#type = r#type[7..r#type.len() - 1].to_string();
+                nullable = true;
+            }
+            query_params.push(ParamInfo {
+                r#type,
+                name,
+                nullable,
+            });
         }
     }
 

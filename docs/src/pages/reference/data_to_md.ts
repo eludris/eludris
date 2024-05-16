@@ -181,7 +181,7 @@ const displayRoute = (item: RouteInfo): string => {
   if (item.query_params.length) {
     content += '\n\n## Query Params\n\n|Name|Type|\n|---|---|';
     item.query_params.forEach((param) => {
-      content += `\n|${param.name}|${displayType(param.type)}|`;
+      content += `\n|${param.name}|${displayType(param.type)}${param.nullable ? '?' : ''}|`;
     });
   }
   if (item.body) {
