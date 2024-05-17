@@ -116,9 +116,9 @@ WHERE channel_id =
         })?;
         let mut messages = vec![];
         for row in rows {
-            let author = match row.try_get::<i64, _>("author_id") {
-                Ok(id) => User::get(id as u64, None, db, cache).await?,
-                Err(_) => User {
+            let author = match row.get::<Option<i64>, _>("author_id") {
+                Some(id) => User::get(id as u64, None, db, cache).await?,
+                None => User {
                     id: 0,
                     username: "deleted-user".to_string(),
                     display_name: Some("Deleted User".to_string()),
@@ -136,8 +136,8 @@ WHERE channel_id =
                     verified: None,
                 },
             };
-            let reference = match row.try_get::<i64, _>("reference") {
-                Ok(reference) => match Self::get(reference as u64, db, cache).await {
+            let reference = match row.get::<Option<i64>, _>("reference") {
+                Some(reference) => match Self::get(reference as u64, db, cache).await {
                     Ok(message) => Some(Box::new(message)),
                     Err(err) => {
                         if let ErrorResponse::NotFound { .. } = err {
@@ -150,7 +150,7 @@ WHERE channel_id =
                         }
                     }
                 },
-                Err(_) => None,
+                None => None,
             };
             messages.push(Self {
                 id: row.get::<i64, _>("id") as u64,
