@@ -135,7 +135,10 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             }
         } else {
             let file = tokio::task::spawn_blocking(move || {
-                let mime = tree_magic::from_u8(&data);
+                let mut mime = tree_magic::from_u8(&data);
+                if mime == "application/x-riff" && name.ends_with(".webp") { // tree magic bug
+                    mime = "image/webp".to_string();
+                }
                 let (width, height) = match mime.as_str() {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
