@@ -2,7 +2,7 @@ use rocket::{serde::json::Json, State};
 use rocket_db_pools::Connection;
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::Message,
+    models::{ErrorResponse, Message, SphereChannel},
     Conf,
 };
 
@@ -40,10 +40,16 @@ pub async fn get_messages(
     before: Option<u64>,
     after: Option<u64>,
     limit: Option<u32>,
-) -> RateLimitedRouteResponse<Json<Vec<Message>>> {
+) -> RateLimitedRouteResponse<Result<Json<Vec<Message>>, ErrorResponse>> {
     let mut rate_limiter = RateLimiter::new("get_messages", session.0.user_id, conf);
+    if !SphereChannel::has_member(channel_id, session.0.user_id, &mut db)
+        .await
+        .map_err(|err| rate_limiter.add_headers(err))?
+    {
+        error!(rate_limiter, UNAUTHORIZED);
+    }
     rate_limiter.process_rate_limit(&mut cache).await?;
-    rate_limiter.wrap_response(Json(
+    rate_limiter.wrap_response(
         Message::get_history(
             channel_id,
             &mut db,
@@ -53,6 +59,6 @@ pub async fn get_messages(
             after,
         )
         .await
-        .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+        .map(Json),
+    )
 }

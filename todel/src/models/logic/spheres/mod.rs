@@ -209,4 +209,33 @@ VALUES($1, $2, $3, $4, 0)
             members: vec![member],
         })
     }
+
+    pub async fn has_member(
+        sphere_id: u64,
+        user_id: u64,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<bool, ErrorResponse> {
+        Ok(sqlx::query!(
+            "
+SELECT id
+FROM members
+WHERE id = $2
+AND sphere_id = $1
+            ",
+            sphere_id as i64,
+            user_id as i64
+        )
+        .fetch_optional(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!(
+                "Couldn't check if user {} is member of sphere {}: {}",
+                sphere_id,
+                user_id,
+                err
+            );
+            error!(SERVER, "Failed to check user membership")
+        })?
+        .is_some())
+    }
 }

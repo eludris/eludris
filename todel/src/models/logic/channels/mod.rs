@@ -134,4 +134,34 @@ VALUES($1, $2, $3, $4, $5, $6)
             }),
         })
     }
+
+    pub async fn has_member(
+        channel_id: u64,
+        user_id: u64,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<bool, ErrorResponse> {
+        Ok(sqlx::query!(
+            "
+SELECT members.id
+FROM members
+JOIN channels ON channels.id = $2
+WHERE members.id = $1
+AND members.sphere_id = channels.sphere_id
+            ",
+            user_id as i64,
+            channel_id as i64
+        )
+        .fetch_optional(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!(
+                "Couldn't check if user {} is member of channel {}'s sphere: {}",
+                channel_id,
+                user_id,
+                err
+            );
+            error!(SERVER, "Failed to check user membership")
+        })?
+        .is_some())
+    }
 }
