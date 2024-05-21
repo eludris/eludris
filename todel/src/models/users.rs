@@ -38,7 +38,7 @@ pub struct Status {
     pub text: Option<String>,
 }
 
-/// The user payload.
+/// The User payload.
 ///
 /// -----
 ///

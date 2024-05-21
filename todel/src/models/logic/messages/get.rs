@@ -1,6 +1,6 @@
 use async_recursion::async_recursion;
 use redis::AsyncCommands;
-use sqlx::{pool::PoolConnection, Postgres};
+use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 
 use crate::models::{ErrorResponse, Message, SphereChannel, Status, StatusType, User};
 
@@ -78,26 +78,45 @@ WHERE id = $1
         channel_id: u64,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
+        limit: u32,
+        before: Option<u64>,
+        after: Option<u64>,
     ) -> Result<Vec<Self>, ErrorResponse> {
-        let rows = sqlx::query!(
+        if !(1..=200).contains(&limit) {
+            return Err(error!(
+                VALIDATION,
+                "limit", "Limit must be between 1 and 200, inclusive."
+            ));
+        }
+
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
             "
 SELECT *
 FROM messages
-WHERE channel_id = $1
-ORDER BY id ASC
-LIMIT 1000
+WHERE channel_id = 
             ",
-            channel_id as i64
-        )
-        .fetch_all(&mut **db)
-        .await
-        .map_err(|err| {
+        );
+        query.push_bind(channel_id as i64);
+
+        if let Some(id) = before {
+            query.push(" AND id < ").push_bind(id as i64);
+        };
+        if let Some(id) = after {
+            query.push(" AND id > ").push_bind(id as i64);
+        };
+
+        query
+            .push(" ORDER BY id ASC ")
+            .push(" LIMIT ")
+            .push_bind(limit as i32);
+
+        let rows = query.build().fetch_all(&mut **db).await.map_err(|err| {
             log::error!("Couldn't fetch channel history {}: {}", channel_id, err);
             error!(SERVER, "Failed to fetch channel history")
         })?;
         let mut messages = vec![];
         for row in rows {
-            let author = match row.author_id {
+            let author = match row.get::<Option<i64>, _>("author_id") {
                 Some(id) => User::get(id as u64, None, db, cache).await?,
                 None => User {
                     id: 0,
@@ -117,7 +136,7 @@ LIMIT 1000
                     verified: None,
                 },
             };
-            let reference = match row.reference {
+            let reference = match row.get::<Option<i64>, _>("reference") {
                 Some(reference) => match Self::get(reference as u64, db, cache).await {
                     Ok(message) => Some(Box::new(message)),
                     Err(err) => {
@@ -134,12 +153,12 @@ LIMIT 1000
                 None => None,
             };
             messages.push(Self {
-                id: row.id as u64,
+                id: row.get::<i64, _>("id") as u64,
                 author,
-                content: row.content,
+                content: row.get("content"),
                 reference,
                 disguise: None,
-                channel: SphereChannel::get(row.channel_id as u64, db).await?,
+                channel: SphereChannel::get(row.get::<i64, _>("channel_id") as u64, db).await?,
                 attachments: vec![],
             })
         }
