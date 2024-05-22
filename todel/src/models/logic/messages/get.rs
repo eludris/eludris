@@ -106,7 +106,7 @@ WHERE channel_id =
         };
 
         query
-            .push(" ORDER BY id ASC ")
+            .push(" ORDER BY id DESC ")
             .push(" LIMIT ")
             .push_bind(limit as i32);
 
@@ -162,6 +162,7 @@ WHERE channel_id =
                 attachments: vec![],
             })
         }
+        messages.reverse();
         Ok(messages)
     }
 }
