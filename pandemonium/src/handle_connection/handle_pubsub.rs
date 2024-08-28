@@ -96,6 +96,7 @@ async fn handle_event(
                         return;
                     }
                 };
+                session.sphere_ids.push(sphere_id);
                 send_payload(tx, &ServerPayload::SphereJoin(sphere)).await;
             } else if session.sphere_ids.contains(&sphere_id) {
                 send_payload(tx, &ServerPayload::SphereMemberJoin { user, sphere_id }).await;
