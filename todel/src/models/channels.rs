@@ -11,8 +11,6 @@ use super::User;
 #[cfg_attr(feature = "logic", sqlx(type_name = "channel_type"))]
 #[cfg_attr(feature = "logic", sqlx(rename_all = "UPPERCASE"))]
 pub(crate) enum ChannelType {
-    /// A sphere category.
-    Category,
     /// A sphere text channel.
     Text,
     /// A sphere voice channel.
@@ -28,8 +26,6 @@ pub(crate) enum ChannelType {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SphereChannelType {
-    /// A sphere category.
-    Category,
     /// A sphere text channel.
     Text,
     /// A sphere voice channel.
@@ -40,7 +36,6 @@ pub enum SphereChannelType {
 impl SphereChannelType {
     pub(crate) fn get_channel_type(&self) -> ChannelType {
         match self {
-            Self::Category => ChannelType::Category,
             Self::Text => ChannelType::Text,
             Self::Voice => ChannelType::Voice,
         }
@@ -53,8 +48,6 @@ impl SphereChannelType {
 #[serde(rename_all = "UPPERCASE")]
 #[serde(tag = "type")]
 pub enum Channel {
-    /// A sphere category.
-    Category(Category),
     /// A sphere text channel.
     Text(TextChannel),
     /// A sphere voice channel.
@@ -72,44 +65,10 @@ pub enum Channel {
 #[serde(rename_all = "UPPERCASE")]
 #[serde(tag = "type")]
 pub enum SphereChannel {
-    /// A category.
-    Category(Category),
     /// A text channel.
     Text(TextChannel),
     /// A voice channel.
     Voice(VoiceChannel),
-}
-
-/// A category "channel".
-///
-/// This type of channel can only exist inside spheres.
-///
-/// Any channel with a position value higher than this one is considered to be a
-/// child of it until another category is found.
-///
-/// -----
-///
-/// ### Example
-///
-/// ```json
-/// {
-///   "id": 4080402038798,
-///   "sphere_id": 4080402038786,
-///   "name": "channels (shocker)",
-///   "position": 5
-/// }
-/// ```
-#[autodoc(category = "Channels")]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Category {
-    /// The ID of this category.
-    pub id: u64,
-    /// The ID of the sphere that this category belongs to.
-    pub sphere_id: u64,
-    /// The name of this category.
-    pub name: String,
-    /// This category's position inside of its sphere.
-    pub position: u32,
 }
 
 /// A Discord-like text channel.

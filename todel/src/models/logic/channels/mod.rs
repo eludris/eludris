@@ -5,7 +5,8 @@ use sqlx::{pool::PoolConnection, postgres::PgRow, FromRow, Postgres, Row};
 use crate::{
     ids::IdGenerator,
     models::{
-        Category, ChannelType, ErrorResponse, Sphere, SphereChannel, SphereChannelCreate,
+        // Category,
+        ChannelType, ErrorResponse, Sphere, SphereChannel, SphereChannelCreate,
         SphereChannelType, TextChannel, VoiceChannel,
     },
 };
@@ -13,12 +14,12 @@ use crate::{
 impl FromRow<'_, PgRow> for SphereChannel {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         match row.get::<ChannelType, _>("channel_type") {
-            ChannelType::Category => Ok(Self::Category(crate::models::Category {
-                id: row.get::<i64, _>("id") as u64,
-                sphere_id: row.get::<i64, _>("sphere_id") as u64,
-                name: row.get("name"),
-                position: row.get::<i32, _>("position") as u32,
-            })),
+            // ChannelType::Category => Ok(Self::Category(crate::models::Category {
+            //     id: row.get::<i64, _>("id") as u64,
+            //     sphere_id: row.get::<i64, _>("sphere_id") as u64,
+            //     name: row.get("name"),
+            //     position: row.get::<i32, _>("position") as u32,
+            // })),
             ChannelType::Text => Ok(Self::Text(crate::models::TextChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
@@ -113,12 +114,12 @@ VALUES($1, $2, $3, $4, $5, $6)
             error!(SERVER, "Failed to create sphere")
         })?;
         Ok(match channel.channel_type {
-            SphereChannelType::Category => Self::Category(Category {
-                id: channel_id,
-                sphere_id,
-                name: channel.name,
-                position: channel_count as u32,
-            }),
+            // SphereChannelType::Category => Self::Category(Category {
+            //     id: channel_id,
+            //     sphere_id,
+            //     name: channel.name,
+            //     position: channel_count as u32,
+            // }),
             SphereChannelType::Text => Self::Text(TextChannel {
                 id: channel_id,
                 sphere_id,
