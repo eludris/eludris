@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM rust:slim-buster as builder
+FROM rust:1.79-slim-bullseye as builder
 
 WORKDIR /oprish
 
@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 RUN --mount=type=cache,target=/target \
     cp /target/release/oprish /usr/local/bin/oprish
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 # Remove docker's default of removing cache after use.
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
