@@ -57,7 +57,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: install
-          args: sqlx-cli
+          args: sqlx-cli --version 0.7.3
 
       - name: Run migrations
         run: sqlx migrate run --database-url postgresql://root:root@127.0.0.1:5432/eludris
@@ -86,17 +86,6 @@ jobs:
           components: clippy
 
       - uses: Swatinem/rust-cache@v2
-
-      - run: docker compose -f tests/docker-compose.yml up -d
-
-      - name: Install sqlx
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: sqlx-cli
-
-      - name: Run migrations
-        run: sqlx migrate run --database-url postgresql://root:root@127.0.0.1:5432/eludris
 
       - uses: actions-rs/cargo@v1
         with:
