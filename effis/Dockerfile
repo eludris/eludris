@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM rust:1.79-slim-bullseye as builder
+FROM rust:1.83-slim-bullseye as builder
 
 WORKDIR /effis
 
