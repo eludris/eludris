@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
 use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, FromRow, Postgres, Row};
 
-use crate::models::{ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User};
+use crate::models::{
+    Category, ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User,
+};
 
 impl Sphere {
     pub(crate) async fn populate_channels(
@@ -23,7 +27,42 @@ AND is_deleted = FALSE
             log::error!("Couldn't fetch channels for {} sphere: {}", self.slug, err);
             error!(SERVER, "Failed to get sphere")
         })?;
-        self.channels = channels;
+
+        let mut categories: HashMap<u64, Category> = sqlx::query_as(
+            "
+SELECT *
+FROM categories
+WHERE sphere_id = $1
+            ",
+        )
+        .bind(self.id as i64)
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!(
+                "Couldn't fetch categories for {} sphere: {}",
+                self.slug,
+                err
+            );
+            error!(SERVER, "Failed to get sphere")
+        })?
+        .into_iter()
+        .map(|category: Category| (category.id, category))
+        .collect();
+
+        for channel in channels {
+            let category_id = match &channel {
+                SphereChannel::Text(category) => &category.category_id,
+                SphereChannel::Voice(category) => &category.category_id,
+            };
+            categories
+                .get_mut(&category_id.unwrap())
+                .unwrap()
+                .channels
+                .push(channel);
+        }
+
+        self.categories = categories.into_values().collect();
         Ok(())
     }
 

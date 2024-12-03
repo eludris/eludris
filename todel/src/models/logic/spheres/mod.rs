@@ -10,7 +10,10 @@ use sqlx::{
 
 use crate::{
     ids::IdGenerator,
-    models::{ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate, TextChannel},
+    models::{
+        Category, ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate,
+        TextChannel,
+    },
 };
 
 impl FromRow<'_, PgRow> for Sphere {
@@ -25,7 +28,7 @@ impl FromRow<'_, PgRow> for Sphere {
             icon: row.get::<Option<i64>, _>("icon").map(|a| a as u64),
             banner: row.get::<Option<i64>, _>("banner").map(|a| a as u64),
             badges: row.get::<i64, _>("badges") as u64,
-            channels: vec![],
+            categories: vec![],
             members: vec![],
         })
     }
@@ -199,14 +202,19 @@ VALUES($1, $2, $3, $4, 0)
             banner: sphere.banner,
             badges: 0,
             sphere_type: sphere.sphere_type,
-            channels: vec![SphereChannel::Text(TextChannel {
-                id: channel_id,
-                sphere_id,
-                name: "general".to_string(),
-                topic: None,
+            categories: vec![Category {
+                id: sphere_id, // Special case: category with sphere id is to be treated as uncategorised.
+                name: "uncategorised".to_string(),
                 position: 0,
-                category_id: None,
-            })],
+                channels: vec![SphereChannel::Text(TextChannel {
+                    id: channel_id,
+                    sphere_id,
+                    name: "general".to_string(),
+                    topic: None,
+                    position: 0,
+                    category_id: None,
+                })],
+            }],
             members: vec![member],
         })
     }

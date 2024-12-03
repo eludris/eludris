@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use super::SphereChannel;
 
 /// A category that contains and orders channels.
 ///
@@ -17,15 +18,33 @@ use serde::{Deserialize, Serialize};
 ///   "position": 5
 /// }
 /// ```
-#[autodoc(category = "Channels")]
+#[autodoc(category = "Categories")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Category {
     /// The ID of this category.
     pub id: u64,
-    /// The ID of the sphere that this category belongs to.
-    pub sphere_id: u64,
     /// The name of this category.
     pub name: String,
     /// This category's position inside of its sphere.
     pub position: u32,
+    /// The channels that belong to this category.
+    pub channels: Vec<SphereChannel>,
+}
+
+/// The CategoryCreate payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "name": "CategoryChannels begone"
+/// }
+/// ```
+#[autodoc(category = "Categories", hidden = true)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CategoryCreate {
+    /// The name of this category.
+    pub name: String,
 }

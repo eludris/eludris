@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{Member, SphereChannel};
+use super::{Category, Member};
 
 /// The different types a sphere can be.
 #[autodoc(category = "Spheres")]
@@ -72,7 +72,7 @@ pub struct Sphere {
     /// The sphere's badges as a bitfield.
     pub badges: u64,
     /// The channels that this sphere contains.
-    pub channels: Vec<SphereChannel>,
+    pub categories: Vec<Category>,
     /// The members that are inside this sphere.
     pub members: Vec<Member>,
 }
