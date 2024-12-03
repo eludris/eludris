@@ -24,7 +24,7 @@ impl CategoryCreate {
             return Err(error!(
                 VALIDATION,
                 "name", "The category's name must be between 1 and 32 characters long"
-            ))
+            ));
         }
         Ok(())
     }
@@ -71,18 +71,18 @@ WHERE sphere_id = $1
             "
 INSERT INTO categories(id, sphere_id, name, position)
 VALUES($1, $2, $3, $4)
-            "
+            ",
         )
-            .bind(category_id as i64)
-            .bind(sphere_id as i64)
-            .bind(&category.name)
-            .bind(category_count)
-            .execute(&mut **db)
-            .await
-            .map_err(|err| {
-                log::error!("Couldn't create category: {}", err);
-                error!(SERVER, "Failed to create category")
-            })?;
+        .bind(category_id as i64)
+        .bind(sphere_id as i64)
+        .bind(&category.name)
+        .bind(category_count)
+        .execute(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't create category: {}", err);
+            error!(SERVER, "Failed to create category")
+        })?;
 
         Ok(Category {
             id: category_id,

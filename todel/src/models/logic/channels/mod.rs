@@ -5,14 +5,8 @@ use sqlx::{pool::PoolConnection, postgres::PgRow, FromRow, Postgres, Row};
 use crate::{
     ids::IdGenerator,
     models::{
-        ChannelType,
-        ErrorResponse,
-        Sphere,
-        SphereChannel,
-        SphereChannelCreate,
-        SphereChannelType,
-        TextChannel,
-        VoiceChannel,
+        ChannelType, ErrorResponse, Sphere, SphereChannel, SphereChannelCreate, SphereChannelType,
+        TextChannel, VoiceChannel,
     },
 };
 
