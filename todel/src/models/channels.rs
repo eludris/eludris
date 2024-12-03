@@ -102,6 +102,8 @@ pub struct TextChannel {
     pub topic: Option<String>,
     /// This text channel's position inside of its sphere.
     pub position: u32,
+    /// The ID of the category this channel belongs to.
+    pub category_id: Option<u64>
 }
 
 /// A Discord-like voice channel.
@@ -131,6 +133,8 @@ pub struct VoiceChannel {
     pub name: String,
     /// This voice channel's position inside of its sphere.
     pub position: u32,
+    /// The ID of the category this channel belongs to.
+    pub category_id: Option<u64>
 }
 
 /// A Discord-like group channel, also known as a group DM.
@@ -214,6 +218,8 @@ pub struct SphereChannelCreate {
     pub channel_type: SphereChannelType,
     /// The topic of the new channel.
     pub topic: Option<String>,
+    /// The category of the new channel.
+    pub category_id: Option<u64>
 }
 
 /// The SphereChannelEdit payload.

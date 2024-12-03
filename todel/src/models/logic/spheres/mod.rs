@@ -205,6 +205,7 @@ VALUES($1, $2, $3, $4, 0)
                 name: "general".to_string(),
                 topic: None,
                 position: 0,
+                category_id: None,
             })],
             members: vec![member],
         })

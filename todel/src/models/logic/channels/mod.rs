@@ -14,24 +14,20 @@ use crate::{
 impl FromRow<'_, PgRow> for SphereChannel {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         match row.get::<ChannelType, _>("channel_type") {
-            // ChannelType::Category => Ok(Self::Category(crate::models::Category {
-            //     id: row.get::<i64, _>("id") as u64,
-            //     sphere_id: row.get::<i64, _>("sphere_id") as u64,
-            //     name: row.get("name"),
-            //     position: row.get::<i32, _>("position") as u32,
-            // })),
             ChannelType::Text => Ok(Self::Text(crate::models::TextChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),
                 topic: row.get("topic"),
                 position: row.get::<i32, _>("position") as u32,
+                category_id: row.get::<Option<i64>, _>("category_id").map(|i| i as u64),
             })),
             ChannelType::Voice => Ok(Self::Voice(crate::models::VoiceChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),
                 position: row.get::<i32, _>("position") as u32,
+                category_id: row.get::<Option<i64>, _>("category_id").map(|i| i as u64),
             })),
             _ => unreachable!(),
         }
@@ -97,8 +93,8 @@ WHERE sphere_id = $1
         let channel_id = id_generator.generate();
         sqlx::query(
             "
-INSERT INTO channels(id, sphere_id, channel_type, name, topic, position)
-VALUES($1, $2, $3, $4, $5, $6)
+INSERT INTO channels(id, sphere_id, channel_type, name, topic, position, category_id)
+VALUES($1, $2, $3, $4, $5, $6, $7)
             ",
         )
         .bind(channel_id as i64)
@@ -107,6 +103,7 @@ VALUES($1, $2, $3, $4, $5, $6)
         .bind(&channel.name)
         .bind(&channel.topic)
         .bind(channel_count)
+        .bind(channel.category_id.map(|i| i as i64))
         .execute(&mut **db)
         .await
         .map_err(|err| {
@@ -114,24 +111,20 @@ VALUES($1, $2, $3, $4, $5, $6)
             error!(SERVER, "Failed to create sphere")
         })?;
         Ok(match channel.channel_type {
-            // SphereChannelType::Category => Self::Category(Category {
-            //     id: channel_id,
-            //     sphere_id,
-            //     name: channel.name,
-            //     position: channel_count as u32,
-            // }),
             SphereChannelType::Text => Self::Text(TextChannel {
                 id: channel_id,
                 sphere_id,
                 name: channel.name,
                 topic: channel.topic,
                 position: channel_count as u32,
+                category_id: channel.category_id,
             }),
             SphereChannelType::Voice => Self::Voice(VoiceChannel {
                 id: channel_id,
                 sphere_id,
                 name: channel.name,
                 position: channel_count as u32,
+                category_id: channel.category_id,
             }),
         })
     }
