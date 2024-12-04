@@ -157,7 +157,7 @@ VALUES($1, $2, $3, $4)
             })?;
 
         let new_name = category.name;
-        let new_position = category.position;
+        let mut new_position = category.position;
 
         if let Some(ref name) = new_name {
             sqlx::query!(
@@ -200,6 +200,7 @@ WHERE sphere_id = $1
 
             if position > category_count {
                 position = category_count;
+                new_position = Some(position);
             }
 
             sqlx::query!(
