@@ -70,13 +70,15 @@ impl SphereChannel {
                     err
                 }
             })?;
+        let category_id = channel.category_id.unwrap_or(sphere_id);
         let channel_count = sqlx::query!(
             "
 SELECT COUNT(id)
 FROM channels
-WHERE sphere_id = $1
+WHERE sphere_id = $1 AND category_id = $2
             ",
-            sphere_id as i64
+            sphere_id as i64,
+            category_id as i64,
         )
         .fetch_one(&mut **db)
         .await
@@ -102,7 +104,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
         .bind(&channel.name)
         .bind(&channel.topic)
         .bind(channel_count)
-        .bind(channel.category_id.map(|i| i as i64))
+        .bind(category_id as i64)
         .execute(&mut **db)
         .await
         .map_err(|err| {
