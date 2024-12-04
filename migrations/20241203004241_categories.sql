@@ -1,6 +1,20 @@
 -- welcom 2 penis databas
 --                                                                      cock
 
+CREATE OR REPLACE FUNCTION handle_edit_position(IN from_pos NUMERIC, IN to_pos NUMERIC, IN cur_pos NUMERIC)
+RETURNS NUMERIC
+AS $$
+  BEGIN
+    IF cur_pos = from_pos THEN
+      RETURN to_pos;
+    ELSIF from_pos > to_pos THEN
+      RETURN cur_pos + (cur_pos BETWEEN to_pos AND from_pos)::int;
+    ELSE
+      RETURN cur_pos - (cur_pos BETWEEN from_pos AND to_pos)::int;
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
 ALTER TYPE channel_type RENAME TO channel_type_old;
 CREATE TYPE channel_type AS ENUM ('TEXT', 'VOICE', 'GROUP', 'DIRECT');
 

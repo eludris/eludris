@@ -3,6 +3,7 @@ use rocket::Route;
 mod create;
 mod create_category;
 mod create_channel;
+mod edit_category;
 mod get;
 mod join;
 
@@ -11,6 +12,7 @@ pub fn get_routes() -> Vec<Route> {
         create_category::create_category,
         create::create_sphere,
         create_channel::create_channel,
+        edit_category::edit_category,
         get::get_sphere,
         get::get_sphere_from_slug,
         join::join_sphere,

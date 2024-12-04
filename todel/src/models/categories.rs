@@ -48,3 +48,23 @@ pub struct CategoryCreate {
     /// The name of this category.
     pub name: String,
 }
+
+/// The CategoryEdit payload.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "name": "CategoryChannels begone",
+///   "position": 42,
+/// }
+/// ```
+#[autodoc(category = "Categories", hidden = true)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CategoryEdit {
+    /// The name of this category.
+    pub name: Option<String>,
+    pub position: Option<u32>,
+}
