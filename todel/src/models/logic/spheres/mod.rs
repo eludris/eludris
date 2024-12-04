@@ -167,12 +167,24 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
             log::error!("Couldn't create a new sphere: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
-
+        sqlx::query(
+            "
+INSERT INTO categories(id, sphere_id, name, position)
+VALUES($1, $1, 'uncategorised', 0)
+            ",
+        )
+        .bind(sphere_id as i64)
+        .execute(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't create default sphere category: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
         let channel_id = id_generator.generate();
         sqlx::query(
             "
-INSERT INTO channels(id, sphere_id, channel_type, name, position)
-VALUES($1, $2, $3, $4, 0)
+INSERT INTO channels(id, sphere_id, category_id, channel_type, name, position)
+VALUES($1, $2, $2, $3, $4, 0)
             ",
         )
         .bind(channel_id as i64)
