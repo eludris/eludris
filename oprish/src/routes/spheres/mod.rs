@@ -1,12 +1,14 @@
 use rocket::Route;
 
 mod create;
+mod create_category;
 mod create_channel;
 mod get;
 mod join;
 
 pub fn get_routes() -> Vec<Route> {
     routes![
+        create_category::create_category,
         create::create_sphere,
         create_channel::create_channel,
         get::get_sphere,
