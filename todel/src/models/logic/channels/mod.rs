@@ -118,14 +118,14 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
                 name: channel.name,
                 topic: channel.topic,
                 position: channel_count as u32,
-                category_id: channel.category_id,
+                category_id: Some(category_id),
             }),
             SphereChannelType::Voice => Self::Voice(VoiceChannel {
                 id: channel_id,
                 sphere_id,
                 name: channel.name,
                 position: channel_count as u32,
-                category_id: channel.category_id,
+                category_id: Some(category_id),
             }),
         })
     }
