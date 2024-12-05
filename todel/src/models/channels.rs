@@ -71,6 +71,17 @@ pub enum SphereChannel {
     Voice(VoiceChannel),
 }
 
+#[cfg(feature = "logic")]
+impl SphereChannel {
+    pub fn get_category_id(&self) -> u64 {
+        match self {
+            // category_id is always set for sphere channels.
+            SphereChannel::Text(channel) => channel.category_id.unwrap(),
+            SphereChannel::Voice(channel) => channel.category_id.unwrap(),
+        }
+    }
+}
+
 /// A Discord-like text channel.
 ///
 /// This type of channel can only exist inside spheres.

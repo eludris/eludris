@@ -16,8 +16,8 @@ impl Sphere {
             "
 SELECT *
 FROM channels
-WHERE sphere_id = $1
-AND is_deleted = FALSE
+WHERE sphere_id = $1 AND is_deleted = FALSE
+ORDER BY position
             ",
         )
         .bind(self.id as i64)
@@ -33,6 +33,7 @@ AND is_deleted = FALSE
 SELECT *
 FROM categories
 WHERE sphere_id = $1
+ORDER BY position
             ",
         )
         .bind(self.id as i64)
@@ -51,18 +52,21 @@ WHERE sphere_id = $1
         .collect();
 
         for channel in channels {
-            let category_id = match &channel {
-                SphereChannel::Text(category) => &category.category_id,
-                SphereChannel::Voice(category) => &category.category_id,
-            };
-            categories
-                .get_mut(&category_id.unwrap())
-                .unwrap()
-                .channels
-                .push(channel);
+            match categories.get_mut(&channel.get_category_id()) {
+                Some(category) => category.channels.push(channel),
+                None => {
+                    log::error!(
+                        "Found channel with nonexistent category_id {} for sphere {}",
+                        channel.get_category_id(),
+                        self.slug,
+                    );
+                    return Err(error!(SERVER, "Failed to get sphere"));
+                }
+            }
         }
 
-        self.categories = categories.into_values().collect();
+        self.categories = categories.into_values().collect::<Vec<Category>>();
+        self.categories.sort_by(|a, b| a.position.cmp(&b.position));
         Ok(())
     }
 
