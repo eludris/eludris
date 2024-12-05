@@ -199,8 +199,9 @@ WHERE sphere_id = $1
                 error!(SERVER, "Failed to edit category")
             })? as u32;
 
-            if position > category_count {
-                position = category_count;
+            if position >= category_count {
+                // If there's 6 categories, the max possible position is 5 (0 through 5 are set).
+                position = category_count - 1;
                 new_position = Some(position);
             }
 
