@@ -160,6 +160,11 @@ VALUES($1, $2, $3, $4)
         let new_name = category.name;
         let mut new_position = category.position;
 
+        let mut transaction = db.begin().await.map_err(|err| {
+            log::error!("Couldn't start category edit transaction: {}", err);
+            error!(SERVER, "Failed to edit category")
+        })?;
+
         if let Some(ref name) = new_name {
             sqlx::query!(
                 "
@@ -170,7 +175,7 @@ WHERE id = $2
                 name,
                 category_id as i64,
             )
-            .execute(&mut **db)
+            .execute(&mut *transaction)
             .await
             .map_err(|err| {
                 log::error!("Couldn't update category name: {}", err);
@@ -187,7 +192,7 @@ WHERE sphere_id = $1
                 ",
                 sphere_id as i64
             )
-            .fetch_one(&mut **db)
+            .fetch_one(&mut *transaction)
             .await
             .map_err(|err| {
                 log::error!("Couldn't fetch sphere's channel count: {}", err);
@@ -215,13 +220,18 @@ WHERE sphere_id = $3
                 position as i64,
                 sphere_id as i64,
             )
-            .execute(&mut **db)
+            .execute(&mut *transaction)
             .await
             .map_err(|err| {
                 log::error!("Couldn't update category position: {}", err);
                 error!(SERVER, "Failed to edit category")
             })?;
         }
+
+        transaction.commit().await.map_err(|err| {
+            log::error!("Couldn't commit category edit transaction: {}", err);
+            error!(SERVER, "Failed to edit category")
+        })?;
 
         Ok(Category {
             id: category_id,
