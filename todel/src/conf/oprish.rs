@@ -114,9 +114,12 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`create_category`] endpoint.
     #[serde(default = "create_category_default")]
     pub create_category: RateLimitConf,
-    /// Rate limits for the [`create_channel`] endpoint.
+    /// Rate limits for the [`edit_category`] endpoint.
     #[serde(default = "edit_category_default")]
     pub edit_category: RateLimitConf,
+    /// Rate limits for the [`delete_category`] endpoint.    
+    #[serde(default = "delete_category_default")]
+    pub delete_category: RateLimitConf,
     /// Rate limits for the [`create_channel`] endpoint.    
     #[serde(default = "create_channel_default")]
     pub create_channel: RateLimitConf,
@@ -158,6 +161,7 @@ impl Default for OprishRateLimits {
             guest_get_sphere: guest_get_sphere_default(),
             create_category: create_category_default(),
             edit_category: edit_category_default(),
+            delete_category: delete_category_default(),
             create_channel: create_channel_default(),
             join_sphere: join_sphere_default(),
             get_channel: get_channel_default(),
@@ -294,6 +298,13 @@ fn guest_get_sphere_default() -> RateLimitConf {
 }
 
 fn edit_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn delete_category_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 10,
         limit: 5,
