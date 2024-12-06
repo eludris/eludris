@@ -1,9 +1,9 @@
 use rocket::{serde::json::Json, State};
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
     ids::IdGenerator,
-    models::{SphereChannel, SphereChannelCreate},
+    models::{ServerPayload, SphereChannel, SphereChannelCreate},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -43,23 +43,25 @@ pub async fn create_channel(
 ) -> RateLimitedRouteResponse<Json<SphereChannel>> {
     let mut rate_limiter = RateLimiter::new("create_channel", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
-    rate_limiter.wrap_response(Json(
-        SphereChannel::create(
-            channel.into_inner(),
-            sphere_id,
-            &mut *id_generator.lock().await,
-            &mut db,
+    let channel = SphereChannel::create(
+        channel.into_inner(),
+        sphere_id,
+        &mut *id_generator.lock().await,
+        &mut db,
+    )
+    .await
+    .map_err(|err| rate_limiter.add_headers(err))?;
+    cache
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::SphereChannelCreate {
+                channel: channel.clone(),
+                sphere_id,
+            })
+            .unwrap(),
         )
         .await
-        .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
-    // cache
-    // .publish::<&str, String, ()>("eludris-events", serde_json::to_string(&payload).unwrap())
-    // .await
-    // .unwrap();
-    // if let ServerPayload::UserUpdate(user) = payload {
-    // rate_limiter.wrap_response(Json(user))
-    // } else {
-    // unreachable!()
-    // }
+        .unwrap();
+
+    rate_limiter.wrap_response(Json(channel))
 }

@@ -1,8 +1,8 @@
 use rocket::{serde::json::Json, State};
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::{Category, CategoryEdit},
+    models::{Category, CategoryEdit, ServerPayload},
     Conf,
 };
 
@@ -34,8 +34,23 @@ pub async fn edit_category(
 ) -> RateLimitedRouteResponse<Json<Category>> {
     let mut rate_limiter = RateLimiter::new("edit_category", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
+    let category = category.into_inner();
+
+    cache
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::CategoryEdit {
+                data: category.clone(),
+                category_id,
+                sphere_id,
+            })
+            .unwrap(),
+        )
+        .await
+        .unwrap();
+
     rate_limiter.wrap_response(Json(
-        Category::edit(category.into_inner(), sphere_id, category_id, &mut db)
+        Category::edit(category, sphere_id, category_id, &mut db)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     ))

@@ -257,6 +257,7 @@ pub struct SphereChannelCreate {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereChannelEdit {
     /// The new name of the channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// The new type of the channel.
     #[serde(skip_serializing_if = "Option::is_none")]

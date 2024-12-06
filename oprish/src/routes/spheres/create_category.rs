@@ -1,9 +1,9 @@
 use rocket::{serde::json::Json, State};
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
     ids::IdGenerator,
-    models::{Category, CategoryCreate},
+    models::{Category, CategoryCreate, ServerPayload},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -21,7 +21,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// curl \
 ///   -H "Authorization: <token>" \
 ///   --json '{"name":"Bean"}' \
-///   https://api.eludris.gay/spheres/1234/
+///   https://api.eludris.gay/spheres/1234/categories
 /// ```
 #[autodoc("/spheres", category = "Spheres")]
 #[post("/<sphere_id>/categories", data = "<category>")]
@@ -36,14 +36,26 @@ pub async fn create_category(
 ) -> RateLimitedRouteResponse<Json<Category>> {
     let mut rate_limiter = RateLimiter::new("create_category", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
-    rate_limiter.wrap_response(Json(
-        Category::create(
-            category.into_inner(),
-            sphere_id,
-            &mut *id_generator.lock().await,
-            &mut db,
+    let category = Category::create(
+        category.into_inner(),
+        sphere_id,
+        &mut *id_generator.lock().await,
+        &mut db,
+    )
+    .await
+    .map_err(|err| rate_limiter.add_headers(err))?;
+
+    cache
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::CategoryCreate {
+                category: category.clone(),
+                sphere_id,
+            })
+            .unwrap(),
         )
         .await
-        .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+        .unwrap();
+
+    rate_limiter.wrap_response(Json(category))
 }

@@ -50,27 +50,25 @@ pub async fn create_message(
     }
 
     let mut cache = cache.into_inner();
-    let payload = ServerPayload::MessageCreate(
-        Message::create(
-            message.into_inner(),
-            channel_id,
-            session.0.user_id,
-            &mut *id_generator.lock().await,
-            &mut db,
-            conf,
-            &mut cache,
-        )
-        .await
-        .map_err(|err| rate_limiter.add_headers(err))?,
-    );
+    let message = Message::create(
+        message.into_inner(),
+        channel_id,
+        session.0.user_id,
+        &mut *id_generator.lock().await,
+        &mut db,
+        conf,
+        &mut cache,
+    )
+    .await
+    .map_err(|err| rate_limiter.add_headers(err))?;
 
     cache
-        .publish::<&str, String, ()>("eludris-events", serde_json::to_string(&payload).unwrap())
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::MessageCreate(message.clone())).unwrap(),
+        )
         .await
         .unwrap();
-    if let ServerPayload::MessageCreate(message) = payload {
-        rate_limiter.wrap_response(Ok(Json(message)))
-    } else {
-        unreachable!()
-    }
+
+    rate_limiter.wrap_response(Ok(Json(message)))
 }
