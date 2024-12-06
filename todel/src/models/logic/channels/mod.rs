@@ -54,7 +54,12 @@ impl SphereChannelCreate {
 }
 
 impl SphereChannelEdit {
-    pub fn validate(&self) -> Result<(), ErrorResponse> {
+    pub async fn validate(
+        &self,
+        sphere_id: u64,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
+        // Position is guaranteed to be >0 as it's a u32, so we don't need to validate it here.
         if self.name.is_none()
             && self.topic.is_none()
             && self.position.is_none()
@@ -82,13 +87,37 @@ impl SphereChannelEdit {
                 ));
             }
         }
-        if let Some(_category_id) = &self.category_id {
+        if let Some(category_id) = &self.category_id {
             if self.position.is_none() {
+                // Arbitrary, but seems more sane than just assuming a new position.
                 return Err(error!(
                     VALIDATION,
                     "body", "Since 'category_id' is provided, 'position' must also be provided."
                 ));
             }
+
+            // Verify  that the category actually exists.
+            sqlx::query!(
+                "
+SELECT *
+FROM categories
+WHERE id = $1 AND sphere_id = $2
+                ",
+                *category_id as i64,
+                sphere_id as i64,
+            )
+            .fetch_optional(&mut **db)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch {} category: {}", category_id, err);
+                error!(SERVER, "Failed to edit channel")
+            })?
+            .ok_or_else(|| {
+                error!(
+                    VALIDATION,
+                    "category_id", "Category does not exist in the requested sphere."
+                )
+            })?;
         }
         Ok(())
     }
@@ -101,7 +130,6 @@ impl SphereChannel {
         id_generator: &mut IdGenerator,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<SphereChannel, ErrorResponse> {
-        channel.validate()?;
         Sphere::get_unpopulated(sphere_id, db)
             .await
             .map_err(|err| {
@@ -111,6 +139,8 @@ impl SphereChannel {
                     err
                 }
             })?;
+        channel.validate()?;
+
         let category_id = channel.category_id.unwrap_or(sphere_id);
         let channel_count = sqlx::query!(
             "
@@ -177,7 +207,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
         channel_id: u64,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<SphereChannel, ErrorResponse> {
-        channel.validate()?;
         Sphere::get_unpopulated(sphere_id, db)
             .await
             .map_err(|err| {
@@ -187,6 +216,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
                     err
                 }
             })?;
+        channel.validate(sphere_id, db).await?;
 
         let current_channel = SphereChannel::get(channel_id, db).await?;
 
@@ -203,8 +233,8 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
         if new_name.is_some() || new_topic.is_some() {
             let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
                 "
-    UPDATE channels
-    SET
+UPDATE channels
+SET
                 ",
             );
 
@@ -281,24 +311,6 @@ WHERE category_id = $3
             // Move between different categories
             let position = new_position.unwrap(); // Guaranteed to exist in SphereChannelEdit::validate
 
-            // Verify target category exists...
-            sqlx::query!(
-                "
-SELECT *
-FROM categories
-WHERE id = $1
-                ",
-                category_id as i64
-            )
-            .fetch_optional(&mut *transaction)
-            .await
-            .map_err(|err| {
-                log::error!("Couldn't fetch {} category: {}", category_id, err);
-                error!(SERVER, "Failed to update category")
-            })?
-            .ok_or_else(|| error!(NOT_FOUND))?; // TODO: is this ok?  // TODO2: move to validation???
-
-            // Update
             sqlx::query!(
                 "
 UPDATE channels
