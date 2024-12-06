@@ -80,6 +80,13 @@ impl SphereChannel {
             SphereChannel::Voice(channel) => channel.category_id.unwrap(),
         }
     }
+
+    pub fn get_position(&self) -> u32 {
+        match self {
+            SphereChannel::Text(channel) => channel.position,
+            SphereChannel::Voice(channel) => channel.position,
+        }
+    }
 }
 
 /// A Discord-like text channel.
@@ -250,11 +257,14 @@ pub struct SphereChannelCreate {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereChannelEdit {
     /// The new name of the channel.
-    pub name: String,
+    pub name: Option<String>,
     /// The new type of the channel.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub topic: Option<String>,
     /// The new position of the channel.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<u32>,
+    /// The id of the new category of the channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category_id: Option<u64>,
 }

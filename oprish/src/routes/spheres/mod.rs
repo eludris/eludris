@@ -5,6 +5,7 @@ mod create_category;
 mod create_channel;
 mod delete_category;
 mod edit_category;
+mod edit_channel;
 mod get;
 mod join;
 
@@ -15,6 +16,7 @@ pub fn get_routes() -> Vec<Route> {
         create_channel::create_channel,
         delete_category::delete_category,
         edit_category::edit_category,
+        edit_channel::edit_channel,
         get::get_sphere,
         get::get_sphere_from_slug,
         join::join_sphere,
