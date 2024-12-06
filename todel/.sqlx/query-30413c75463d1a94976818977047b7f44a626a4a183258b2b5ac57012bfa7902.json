@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nUPDATE categories\nSET position = position - 1\nWHERE sphere_id = $1 AND position > $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "30413c75463d1a94976818977047b7f44a626a4a183258b2b5ac57012bfa7902"
+}
