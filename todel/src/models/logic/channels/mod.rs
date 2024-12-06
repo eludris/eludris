@@ -261,35 +261,61 @@ SET
                 })?;
         }
 
-        if new_category.is_none_or(|cat| cat == current_channel.get_category_id()) {
-            if let Some(mut position) = new_position {
-                // Move within the same category
-                let channel_count = sqlx::query!(
-                    "
+        if let Some(mut position) = new_position {
+            let destination_category =
+                new_category.unwrap_or_else(|| current_channel.get_category_id());
+
+            let channel_count = sqlx::query!(
+                "
 SELECT COUNT(id)
 FROM channels
 WHERE category_id = $1
+                ",
+                destination_category as i64
+            )
+            .fetch_one(&mut *transaction)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch sphere's channel count: {}", err);
+                error!(SERVER, "Failed to edit category")
+            })?
+            .count
+            .ok_or_else(|| {
+                log::error!("Couldn't fetch sphere's channel count",);
+                error!(SERVER, "Failed to edit category")
+            })? as u32;
+
+            if position >= channel_count {
+                // If there's 6 channels, the max possible position is 5 (0 through 5 are set).
+                position = channel_count - 1;
+                new_position = Some(position);
+            }
+
+            if destination_category != current_channel.get_category_id() {
+                // Move between different categories
+                let category_id = new_category.unwrap(); // Guaranteed to exist by above check
+                let position = new_position.unwrap(); // Guaranteed to exist in SphereChannelEdit::validate
+                sqlx::query!(
+                    "
+UPDATE channels
+SET
+    category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
+    position    = edit_channel_position($1, $2, position, $3, $4, category_id)
+WHERE category_id = $3 OR category_id = $4;
                     ",
-                    current_channel.get_category_id() as i64
+                    current_channel.get_position() as i32,
+                    position as i32,
+                    current_channel.get_category_id() as i64,
+                    category_id as i64,
                 )
-                .fetch_one(&mut *transaction)
+                .execute(&mut *transaction)
                 .await
                 .map_err(|err| {
-                    log::error!("Couldn't fetch sphere's channel count: {}", err);
-                    error!(SERVER, "Failed to edit category")
-                })?
-                .count
-                .ok_or_else(|| {
-                    log::error!("Couldn't fetch sphere's channel count",);
-                    error!(SERVER, "Failed to edit category")
-                })? as u32;
-
-                if position >= channel_count {
-                    // If there's 6 channels, the max possible position is 5 (0 through 5 are set).
-                    position = channel_count - 1;
-                    new_position = Some(position);
-                }
-
+                    log::error!("Couldn't update {} category: {}", category_id, err);
+                    error!(SERVER, "Failed to update category")
+                })?;
+            } else {
+                // Move within the same category
                 sqlx::query!(
                     "
 UPDATE channels
@@ -307,29 +333,6 @@ WHERE category_id = $3
                     error!(SERVER, "Failed to edit channel")
                 })?;
             }
-        } else if let Some(category_id) = new_category {
-            // Move between different categories
-            let position = new_position.unwrap(); // Guaranteed to exist in SphereChannelEdit::validate
-
-            sqlx::query!(
-                "
-UPDATE channels
-SET
-    category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
-    position    = edit_channel_position($1, $2, position, $3, $4, category_id)
-WHERE category_id = $3 OR category_id = $4;
-                ",
-                current_channel.get_position() as i32,
-                position as i32,
-                current_channel.get_category_id() as i64,
-                category_id as i64,
-            )
-            .execute(&mut *transaction)
-            .await
-            .map_err(|err| {
-                log::error!("Couldn't update {} category: {}", category_id, err);
-                error!(SERVER, "Failed to update category")
-            })?;
         }
 
         transaction.commit().await.map_err(|err| {

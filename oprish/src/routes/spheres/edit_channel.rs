@@ -8,7 +8,7 @@ use todel::{
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
-/// Edit a category.
+/// Edit a channel.
 ///
 /// -- STATUS: 201
 /// -----
@@ -18,8 +18,8 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// ```sh
 /// curl --request PATCH \
 ///   -H "Authorization: <token>" \
-///   --json '{"name":"Bean","position":42}' \
-///   https://api.eludris.gay/spheres/1234/categories/5678
+///   --json '{"name":"Bean","position":42,"category_id":1337}' \
+///   https://api.eludris.gay/spheres/1234/channels/5678
 /// ```
 #[autodoc("/spheres", category = "Spheres")]
 #[patch("/<sphere_id>/channels/<channel_id>", data = "<channel>")]
