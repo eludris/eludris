@@ -267,14 +267,11 @@ const displayType = (type: string): string => {
 const uncodeName = (name: string): string => {
   return (
     name
+      // The sky will burn so bright
+      .replace(/([A-Z])([a-z])/gm, '_$1$2')
       // snake_case
       .replace(
         /(?:^|_)([a-zA-Z]+)/gm,
-        (_, p1: string) =>
-          `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}`
-      )
-      .replace(
-        /([a-zA-Z]+)(?:$|_)/gm,
         (_, p1: string) =>
           `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}`
       )
