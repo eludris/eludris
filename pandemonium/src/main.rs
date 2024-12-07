@@ -50,7 +50,7 @@ async fn main() -> Result<(), anyhow::Error> {
     {
         let mut cache = cache.lock().await;
         cache
-            .del("sessions")
+            .del::<_, ()>("sessions")
             .await
             .context("Couldn't remove the sessions key")?; // wei wei wei wei
         let keys: Vec<String> = cache
@@ -59,7 +59,7 @@ async fn main() -> Result<(), anyhow::Error> {
             .context("Couldn't list session keys")?;
         for key in keys {
             cache
-                .del(&key)
+                .del::<_, ()>(&key)
                 .await
                 .with_context(|| format!("Couldn't remove the {} key", key))?; // wei wei wei wei
         }
