@@ -319,7 +319,7 @@ WHERE category_id = $3 OR category_id = $4;
                 sqlx::query!(
                     "
 UPDATE channels
-SET position = handle_edit_position($1, $2, position)
+SET position = edit_position($1, $2, position)
 WHERE category_id = $3
                     ",
                     current_channel.get_position() as i32,

@@ -213,7 +213,7 @@ WHERE sphere_id = $1
             sqlx::query!(
                 "
 UPDATE categories
-SET position = handle_edit_position($1, $2, position)
+SET position = edit_position($1, $2, position)
 WHERE sphere_id = $3
                 ",
                 current_category.position as i64,
