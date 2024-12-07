@@ -269,11 +269,14 @@ const uncodeName = (name: string): string => {
     name
       // snake_case
       .replace(
-        /([a-zA-Z]+)_([a-zA-Z]+)/gm,
-        (_, p1: string, p2: string) =>
-          `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}${p2[0].toUpperCase()}${p2
-            .slice(1)
-            .toLowerCase()}`
+        /(?:^|_)([a-zA-Z]+)/gm,
+        (_, p1: string) =>
+          `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}`
+      )
+      .replace(
+        /([a-zA-Z]+)(?:$|_)/gm,
+        (_, p1: string) =>
+          `${p1[0].toUpperCase()}${p1.slice(1).toLowerCase()}`
       )
       // UPPER -> lower
       .replace(/^[A-Z]+$/gm, (p1: string) => p1.toLowerCase())
