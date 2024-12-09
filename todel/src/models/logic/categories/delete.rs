@@ -43,8 +43,8 @@ impl Category {
 
         sqlx::query!(
             "
-    DELETE FROM categories
-    WHERE id = $1 AND sphere_id = $2
+DELETE FROM categories
+WHERE id = $1 AND sphere_id = $2
             ",
             category_id as i64,
             sphere_id as i64,
@@ -58,9 +58,9 @@ impl Category {
 
         sqlx::query!(
             "
-    UPDATE categories
-    SET position = position - 1
-    WHERE sphere_id = $1 AND position > $2
+UPDATE categories
+SET position = position - 1
+WHERE sphere_id = $1 AND position > $2
             ",
             sphere_id as i64,
             current_position as i32,

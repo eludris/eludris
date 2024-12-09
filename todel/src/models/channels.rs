@@ -87,6 +87,20 @@ impl SphereChannel {
             SphereChannel::Voice(channel) => channel.position,
         }
     }
+
+    pub fn get_name(&self) -> &String {
+        match self {
+            SphereChannel::Text(channel) => &channel.name,
+            SphereChannel::Voice(channel) => &channel.name,
+        }
+    }
+
+    pub fn get_topic(&self) -> Option<&String> {
+        match self {
+            SphereChannel::Text(channel) => channel.topic.as_ref(),
+            SphereChannel::Voice(..) => None,
+        }
+    }
 }
 
 /// A Discord-like text channel.

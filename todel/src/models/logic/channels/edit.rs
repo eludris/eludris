@@ -100,35 +100,44 @@ impl SphereChannel {
             error!(SERVER, "Failed to edit category")
         })?;
 
-        if channel.name.is_some() || channel.topic.is_some() {
-            let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
-                "
-UPDATE channels
-SET
-                ",
-            );
-
-            if let Some(ref name) = channel.name {
-                query.push(" name = ").push_bind(name);
-            }
-
-            if let Some(ref topic) = channel.topic {
-                if channel.name.is_some() {
-                    query.push(", ");
-                }
-                query.push(" topic = ").push_bind(topic);
-            }
-
-            query
-                .push(" WHERE id = ")
-                .push_bind(channel_id as i64)
-                .build()
+        if let Some(ref name) = channel.name {
+            if name != current_channel.get_name() {
+                sqlx::query!(
+                    "
+    UPDATE channels
+    SET name = $1
+    WHERE id = $2
+                    ",
+                    name,
+                    channel_id as i64,
+                )
                 .execute(&mut *transaction)
                 .await
                 .map_err(|err| {
                     log::error!("Couldn't edit channel: {}", err);
                     error!(SERVER, "Failed to edit channel")
                 })?;
+            }
+        }
+
+        if let Some(ref topic) = channel.topic {
+            if Some(topic) != current_channel.get_topic() {
+                sqlx::query!(
+                    "
+    UPDATE channels
+    SET topic = $1
+    WHERE id = $2
+                    ",
+                    topic,
+                    channel_id as i64,
+                )
+                .execute(&mut *transaction)
+                .await
+                .map_err(|err| {
+                    log::error!("Couldn't edit channel: {}", err);
+                    error!(SERVER, "Failed to edit channel")
+                })?;
+            }
         }
 
         if let Some(mut position) = channel.position {
@@ -142,9 +151,9 @@ SET
                 // At least one of category and position changed, execute edit.
                 let channel_count = sqlx::query!(
                     "
-    SELECT COUNT(id)
-    FROM channels
-    WHERE category_id = $1
+SELECT COUNT(id)
+FROM channels
+WHERE category_id = $1
                     ",
                     destination_category as i64
                 )
@@ -172,11 +181,11 @@ SET
 
                     sqlx::query!(
                         "
-    UPDATE channels
-    SET
-        category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
-        position    = edit_channel_position($1, $2, position, $3, $4, category_id)
-    WHERE category_id = $3 OR category_id = $4;
+UPDATE channels
+SET
+    category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
+    position    = edit_channel_position($1, $2, position, $3, $4, category_id)
+WHERE category_id = $3 OR category_id = $4;
                         ",
                         current_channel.get_position() as i32,
                         position as i32,
@@ -199,9 +208,9 @@ SET
                     // Move within the same category
                     sqlx::query!(
                         "
-    UPDATE channels
-    SET position = edit_position($1, $2, position)
-    WHERE category_id = $3
+UPDATE channels
+SET position = edit_position($1, $2, position)
+WHERE category_id = $3
                         ",
                         current_channel.get_position() as i32,
                         position as i32,
