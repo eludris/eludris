@@ -76,8 +76,8 @@ impl SphereChannel {
     pub fn get_category_id(&self) -> u64 {
         match self {
             // category_id is always set for sphere channels.
-            SphereChannel::Text(channel) => channel.category_id.unwrap(),
-            SphereChannel::Voice(channel) => channel.category_id.unwrap(),
+            SphereChannel::Text(channel) => channel.category_id,
+            SphereChannel::Voice(channel) => channel.category_id,
         }
     }
 
@@ -121,7 +121,7 @@ pub struct TextChannel {
     /// This text channel's position inside of its sphere.
     pub position: u32,
     /// The ID of the category this channel belongs to.
-    pub category_id: Option<u64>,
+    pub category_id: u64,
 }
 
 /// A Discord-like voice channel.
@@ -152,7 +152,7 @@ pub struct VoiceChannel {
     /// This voice channel's position inside of its sphere.
     pub position: u32,
     /// The ID of the category this channel belongs to.
-    pub category_id: Option<u64>,
+    pub category_id: u64,
 }
 
 /// A Discord-like group channel, also known as a group DM.

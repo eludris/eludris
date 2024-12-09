@@ -224,7 +224,7 @@ VALUES($1, $2, $2, $3, $4, 0)
                     name: "general".to_string(),
                     topic: None,
                     position: 0,
-                    category_id: None,
+                    category_id: sphere_id,
                 })],
             }],
             members: vec![member],

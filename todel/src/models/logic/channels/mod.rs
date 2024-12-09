@@ -19,14 +19,14 @@ impl FromRow<'_, PgRow> for SphereChannel {
                 name: row.get("name"),
                 topic: row.get("topic"),
                 position: row.get::<i32, _>("position") as u32,
-                category_id: row.get::<Option<i64>, _>("category_id").map(|i| i as u64),
+                category_id: row.get::<i64, _>("category_id") as u64,
             })),
             ChannelType::Voice => Ok(Self::Voice(crate::models::VoiceChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),
                 position: row.get::<i32, _>("position") as u32,
-                category_id: row.get::<Option<i64>, _>("category_id").map(|i| i as u64),
+                category_id: row.get::<i64, _>("category_id") as u64,
             })),
             _ => unreachable!(),
         }
@@ -189,14 +189,14 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
                 name: channel.name,
                 topic: channel.topic,
                 position: channel_count as u32,
-                category_id: Some(category_id),
+                category_id,
             }),
             SphereChannelType::Voice => Self::Voice(VoiceChannel {
                 id: channel_id,
                 sphere_id,
                 name: channel.name,
                 position: channel_count as u32,
-                category_id: Some(category_id),
+                category_id,
             }),
         })
     }
@@ -343,7 +343,7 @@ WHERE category_id = $3
         Ok(match current_channel {
             SphereChannel::Text(channel) => SphereChannel::Text(TextChannel {
                 id: channel.id,
-                category_id: new_category.or(channel.category_id),
+                category_id: new_category.unwrap_or(channel.category_id),
                 name: new_name.unwrap_or(channel.name),
                 position: new_position.unwrap_or(channel.position),
                 sphere_id: channel.sphere_id,
@@ -351,7 +351,7 @@ WHERE category_id = $3
             }),
             SphereChannel::Voice(channel) => SphereChannel::Voice(VoiceChannel {
                 id: channel.id,
-                category_id: new_category.or(channel.category_id),
+                category_id: new_category.unwrap_or(channel.category_id),
                 name: new_name.unwrap_or(channel.name),
                 position: new_position.unwrap_or(channel.position),
                 sphere_id: channel.sphere_id,
