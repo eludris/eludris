@@ -14,7 +14,7 @@ pub enum SphereType {
     Chat,
     /// Spheres that only support creating posts in forum style.
     Forum,
-    /// Spheres that support both Discord-like chatrooms and form-like posts.
+    /// Spheres that support both Discord-like chatrooms and forum-like posts.
     Hybrid,
 }
 
@@ -71,7 +71,7 @@ pub struct Sphere {
     pub banner: Option<u64>,
     /// The sphere's badges as a bitfield.
     pub badges: u64,
-    /// The channels that this sphere contains.
+    /// The categories that this sphere contains.
     pub categories: Vec<Category>,
     /// The members that are inside this sphere.
     pub members: Vec<Member>,

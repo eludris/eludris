@@ -244,8 +244,11 @@ pub enum ServerPayload {
     /// }
     /// ```
     CategoryEdit {
+        /// An object containing the validated changes to the category.
         data: CategoryEdit,
+        /// The id of the category that was changed.
         category_id: u64,
+        /// The id of the guild in which the category was changed.
         sphere_id: u64,
     },
     /// The payload sent when a category is deleted in a sphere the client is in.
@@ -263,7 +266,12 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    CategoryDelete { category_id: u64, sphere_id: u64 },
+    CategoryDelete {
+        /// The id of the category that was deleted.
+        category_id: u64,
+        /// The id of the sphere from which the category was deleted.
+        sphere_id: u64,
+    },
     /// The payload sent when a channel is created in a sphere the client is in.
     ///
     /// -----
@@ -288,7 +296,9 @@ pub enum ServerPayload {
     /// }
     /// ```
     SphereChannelCreate {
+        /// The channel that was created.
         channel: SphereChannel,
+        /// The id of the sphere in which the channel was created.
         sphere_id: u64,
     },
     /// The payload sent when a channel is edited in a sphere the client is in.
@@ -313,12 +323,34 @@ pub enum ServerPayload {
     /// }
     /// ```
     SphereChannelEdit {
+        /// An object containing the validated changes to the channel.
         data: SphereChannelEdit,
+        /// The id of the channel that was edited.
         channel_id: u64,
+        /// The id of the sphere in which the channel was edited.
         sphere_id: u64,
     },
-    /// wtf is this?????
-    SphereChannelDelete { channel_id: u64, sphere_id: u64 },
+    /// The payload sent when a channel is deleted in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "SPHERE_CHANNEL_DELETE",
+    ///   "d": {
+    ///     "channel_id": 5461813690375,
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    SphereChannelDelete {
+        /// The id of the channel that was deleted.
+        channel_id: u64,
+        /// The id of the guild from which the channel was deleted.
+        sphere_id: u64,
+    },
 }
 
 /// Pandemonium websocket payloads sent by the client to the server.
