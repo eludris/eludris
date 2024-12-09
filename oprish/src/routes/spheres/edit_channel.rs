@@ -2,7 +2,7 @@ use rocket::{serde::json::Json, State};
 use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::{ServerPayload, SphereChannel, SphereChannelEdit},
+    models::{ErrorResponse, ServerPayload, Sphere, SphereChannel, SphereChannelEdit},
     Conf,
 };
 
@@ -34,6 +34,21 @@ pub async fn edit_channel(
 ) -> RateLimitedRouteResponse<Json<SphereChannel>> {
     let mut rate_limiter = RateLimiter::new("edit_category", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
+
+    let sphere = Sphere::get_unpopulated(sphere_id, &mut db)
+        .await
+        .map_err(|err| {
+            rate_limiter.add_headers(if let ErrorResponse::NotFound { .. } = err {
+                error!(VALIDATION, "sphere", "Sphere doesn't exist")
+            } else {
+                err
+            })
+        })?;
+
+    if sphere.owner_id != session.0.user_id {
+        return Err(rate_limiter.add_headers(error!(FORBIDDEN)));
+    }
+
     let channel = channel.into_inner();
 
     cache

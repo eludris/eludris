@@ -3,7 +3,7 @@ use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
     ids::IdGenerator,
-    models::{ServerPayload, SphereChannel, SphereChannelCreate},
+    models::{ErrorResponse, ServerPayload, Sphere, SphereChannel, SphereChannelCreate},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -43,6 +43,21 @@ pub async fn create_channel(
 ) -> RateLimitedRouteResponse<Json<SphereChannel>> {
     let mut rate_limiter = RateLimiter::new("create_channel", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
+
+    let sphere = Sphere::get_unpopulated(sphere_id, &mut db)
+        .await
+        .map_err(|err| {
+            rate_limiter.add_headers(if let ErrorResponse::NotFound { .. } = err {
+                error!(VALIDATION, "sphere", "Sphere doesn't exist")
+            } else {
+                err
+            })
+        })?;
+
+    if sphere.owner_id != session.0.user_id {
+        return Err(rate_limiter.add_headers(error!(FORBIDDEN)));
+    }
+
     let channel = SphereChannel::create(
         channel.into_inner(),
         sphere_id,
