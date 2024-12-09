@@ -12,7 +12,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Create a category for channels inside a sphere.
 ///
-/// -- STATUS: 201
+/// -- STATUS: 200
 /// -----
 ///
 /// ### Example

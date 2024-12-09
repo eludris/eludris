@@ -1,4 +1,4 @@
-use sqlx::{pool::PoolConnection, Acquire, Postgres, QueryBuilder};
+use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
 use crate::models::{
     ErrorResponse, Sphere, SphereChannel, SphereChannelEdit, TextChannel, VoiceChannel,

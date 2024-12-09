@@ -9,6 +9,10 @@ use todel::{
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Edit a channel.
+/// Name must be less than or equal to 32 characters long if provided.
+/// Topic must be less than or equal to 4096 characters long if provided.
+/// Position must be greater than or equal to 0. It is automatically upper-bounded to the number of channels in the category.
+/// If category_id is provided, position *must* also be provided.
 ///
 /// -- STATUS: 201
 /// -----
