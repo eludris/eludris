@@ -40,6 +40,7 @@ impl Category {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Category, ErrorResponse> {
         category.validate()?;
+
         Sphere::get_unpopulated(sphere_id, db)
             .await
             .map_err(|err| {

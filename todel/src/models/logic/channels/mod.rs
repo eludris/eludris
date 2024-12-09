@@ -61,6 +61,8 @@ impl SphereChannel {
         id_generator: &mut IdGenerator,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<SphereChannel, ErrorResponse> {
+        channel.validate()?;
+
         Sphere::get_unpopulated(sphere_id, db)
             .await
             .map_err(|err| {
@@ -70,7 +72,6 @@ impl SphereChannel {
                     err
                 }
             })?;
-        channel.validate()?;
 
         let category_id = channel.category_id.unwrap_or(sphere_id);
         let channel_count = sqlx::query!(
