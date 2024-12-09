@@ -49,13 +49,16 @@ pub async fn edit_channel(
         return Err(rate_limiter.add_headers(error!(FORBIDDEN)));
     }
 
-    let channel = channel.into_inner();
+    let (channel, channel_edit) =
+        SphereChannel::edit(channel.into_inner(), sphere_id, channel_id, &mut db)
+            .await
+            .map_err(|err| rate_limiter.add_headers(err))?;
 
     cache
         .publish::<&str, String, ()>(
             "eludris-events",
             serde_json::to_string(&ServerPayload::SphereChannelEdit {
-                data: channel.clone(),
+                data: channel_edit,
                 channel_id,
                 sphere_id,
             })
@@ -64,9 +67,5 @@ pub async fn edit_channel(
         .await
         .unwrap();
 
-    rate_limiter.wrap_response(Json(
-        SphereChannel::edit(channel, sphere_id, channel_id, &mut db)
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+    rate_limiter.wrap_response(Json(channel))
 }

@@ -49,13 +49,16 @@ pub async fn edit_category(
         return Err(rate_limiter.add_headers(error!(FORBIDDEN)));
     }
 
-    let category = category.into_inner();
+    let (category, category_edit) =
+        Category::edit(category.into_inner(), sphere_id, category_id, &mut db)
+            .await
+            .map_err(|err| rate_limiter.add_headers(err))?;
 
     cache
         .publish::<&str, String, ()>(
             "eludris-events",
             serde_json::to_string(&ServerPayload::CategoryEdit {
-                data: category.clone(),
+                data: category_edit,
                 category_id,
                 sphere_id,
             })
@@ -64,9 +67,5 @@ pub async fn edit_category(
         .await
         .unwrap();
 
-    rate_limiter.wrap_response(Json(
-        Category::edit(category, sphere_id, category_id, &mut db)
-            .await
-            .map_err(|err| rate_limiter.add_headers(err))?,
-    ))
+    rate_limiter.wrap_response(Json(category))
 }
