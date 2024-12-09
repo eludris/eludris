@@ -137,7 +137,7 @@ WHERE id = $1 AND sphere_id = $2
                         )
                     })?;
                     category_id
-                },
+                }
                 None => current_channel.get_category_id(),
             };
 
