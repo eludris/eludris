@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT COUNT(id)\nFROM channels\nWHERE category_id = $1\n                ",
+  "query": "\nSELECT COUNT(id)\nFROM channels\nWHERE category_id = $1\n                    ",
   "describe": {
     "columns": [
       {
@@ -18,5 +18,5 @@
       null
     ]
   },
-  "hash": "bbe66fdbd662f692ce31e661d41af261b696cbbcedaa5223eef477a70482eb6b"
+  "hash": "76a7da113faaeccd87cf22c3b2a19f8e0576e6d1802a8a8003e3356f5435a9f9"
 }

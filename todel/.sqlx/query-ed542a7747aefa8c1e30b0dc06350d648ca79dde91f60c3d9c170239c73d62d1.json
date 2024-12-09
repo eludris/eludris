@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nUPDATE channels\nSET\n    category_id = edit_channel_category($1, $2, position, $3, $4, category_id),\n    position    = edit_channel_position($1, $2, position, $3, $4, category_id)\nWHERE category_id = $3 OR category_id = $4;\n                        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric",
+        "Numeric",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ed542a7747aefa8c1e30b0dc06350d648ca79dde91f60c3d9c170239c73d62d1"
+}
