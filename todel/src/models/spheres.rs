@@ -28,21 +28,46 @@ pub enum SphereType {
 /// {
 ///   "id": 4080402038786,
 ///   "owner_id": 4080403808259,
+///   "slug": "spehre",
 ///   "name": "Spehre",
 ///   "type": "HYBRID",
 ///   "description": "Truly the sphere of all time",
 ///   "icon": 4080412852228,
 ///   "badges": 0,
-///   "channels": [
+///   "categories": [
 ///     {
-///       "type": "TEXT",
-///       "id": 4080402038789,
-///       "sphere_id": 4080402038786,
-///       "position": 1,
-///       "name": "je-mappelle"
+///       "id":5490083823619,
+///       "name":"uncategorised",
+///       "position":0,
+///       "channels": [
+///         {
+///           "type":"TEXT",
+///           "id":5490083823620,
+///           "sphere_id":5490083823619,
+///           "name":"general",
+///           "position":0,
+///           "category_id":5490083823619
+///         }
+///       ]
 ///     }
 ///   ],
-///   "members": [ ... ]
+///   "members": [
+///     {
+///       "user": {
+///         "id": 5490049220609,
+///         "username": "John-Mahjong",
+///         "social_credit": 0,
+///         "status": {
+///           "type": "ONLINE"
+///         },
+///         "badges": 0,
+///         "permissions": 0,
+///         "email": "john.mahjong@example.com",
+///         "verified": false
+///       },
+///       "sphere_id": 5490083823619
+///     }
+///   ]
 /// }
 /// ```
 #[autodoc(category = "Spheres")]
