@@ -73,9 +73,15 @@ pub enum SphereChannel {
 
 #[cfg(feature = "logic")]
 impl SphereChannel {
+    pub fn get_id(&self) -> u64 {
+        match self {
+            SphereChannel::Text(channel) => channel.id,
+            SphereChannel::Voice(channel) => channel.id,
+        }
+    }
+
     pub fn get_category_id(&self) -> u64 {
         match self {
-            // category_id is always set for sphere channels.
             SphereChannel::Text(channel) => channel.category_id,
             SphereChannel::Voice(channel) => channel.category_id,
         }

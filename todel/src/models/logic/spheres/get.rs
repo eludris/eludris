@@ -58,11 +58,18 @@ ORDER BY position
                 Some(category) => category.channels.push(channel),
                 None => {
                     log::error!(
-                        "Found channel with nonexistent category_id {} for sphere {}",
+                        "Found channel {} with nonexistent category_id {} in sphere {}",
+                        channel.get_id(),
                         channel.get_category_id(),
                         self.slug,
                     );
-                    return Err(error!(SERVER, "Failed to get sphere"));
+                    // Add to default category; sadly comes with some fuckery in channel position.
+                    // TODO: Maybe do something else with this, like returning a new "incomplete" channel type.
+                    categories
+                        .get_mut(&self.id)
+                        .unwrap()  // Should always exist.
+                        .channels
+                        .push(channel);
                 }
             }
         }
