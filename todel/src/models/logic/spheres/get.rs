@@ -67,7 +67,7 @@ ORDER BY position
                     // TODO: Maybe do something else with this, like returning a new "incomplete" channel type.
                     categories
                         .get_mut(&self.id)
-                        .unwrap()  // Should always exist.
+                        .unwrap() // Should always exist.
                         .channels
                         .push(channel);
                 }
