@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT *\nFROM categories\nWHERE id = $1 AND sphere_id = $2\n                ",
+  "query": "\nSELECT *\nFROM categories\nWHERE id = $1\n    AND sphere_id = $2\n    AND is_deleted = FALSE\n                        ",
   "describe": {
     "columns": [
       {
@@ -22,6 +22,11 @@
         "ordinal": 3,
         "name": "position",
         "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "is_deleted",
+        "type_info": "Bool"
       }
     ],
     "parameters": {
@@ -34,8 +39,9 @@
       false,
       false,
       true,
+      true,
       true
     ]
   },
-  "hash": "0b777b0c29764df5e73b73053922c54ac93fb8985c1a916f62edb53424ec9fde"
+  "hash": "75e90658828663faed097763fa6c9ecab327f4d82f95baf71ad4523c208b9d18"
 }

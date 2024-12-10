@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT COUNT(id)\nFROM categories\nWHERE sphere_id = $1\n            ",
+  "query": "\nSELECT COUNT(id)\nFROM categories\nWHERE sphere_id = $1\n    AND is_deleted = FALSE\n            ",
   "describe": {
     "columns": [
       {
@@ -18,5 +18,5 @@
       null
     ]
   },
-  "hash": "b3ed3e082fea0fbd00029d19af1cf1f40a4a15fb39aeb20e641ba1f74184978a"
+  "hash": "b193d9937495d6e17e9d2eab0c60fa22a2a35adc91af94d20d6d6a746884b0ed"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n    UPDATE channels\n    SET topic = $1\n    WHERE id = $2\n                    ",
+  "query": "\nUPDATE channels\nSET name = $1\nWHERE id = $2\n                    ",
   "describe": {
     "columns": [],
     "parameters": {
@@ -11,5 +11,5 @@
     },
     "nullable": []
   },
-  "hash": "397bdd22d166884d46a6f7804dbb02f51814a8f53dbeed2afa9d1ee511f50410"
+  "hash": "fb82883394d06efee15030bb49efa9a1b10afddd23e8a296eb50c7f7b142e8da"
 }
