@@ -12,6 +12,7 @@ impl Category {
 SELECT *
 FROM categories
 WHERE id = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(id as i64)

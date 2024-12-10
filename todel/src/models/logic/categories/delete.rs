@@ -1,4 +1,4 @@
-use sqlx::{pool::PoolConnection, Acquire, Postgres};
+use sqlx::{pool::PoolConnection, Postgres};
 
 use crate::models::{Category, ErrorResponse, Sphere};
 
@@ -36,44 +36,26 @@ impl Category {
             })?
             .position;
 
-        let mut transaction = db.begin().await.map_err(|err| {
-            log::error!("Couldn't start category delete transaction: {}", err);
-            error!(SERVER, "Failed to delete category")
-        })?;
-
-        sqlx::query!(
-            "
-DELETE FROM categories
-WHERE id = $1 AND sphere_id = $2
-            ",
-            category_id as i64,
-            sphere_id as i64,
-        )
-        .execute(&mut *transaction)
-        .await
-        .map_err(|err| {
-            log::error!("Couldn't delete category: {}", err);
-            error!(SERVER, "Failed to delete category")
-        })?;
-
         sqlx::query!(
             "
 UPDATE categories
-SET position = position - 1
-WHERE sphere_id = $1 AND position > $2
+SET
+    position = CASE
+        WHEN (position = $2) THEN -1
+        ELSE position - 1
+        END,
+    is_deleted = (position = $2)
+WHERE sphere_id = $1
+    AND position >= $2
+    AND is_deleted = FALSE
             ",
             sphere_id as i64,
             current_position as i32,
         )
-        .execute(&mut *transaction)
+        .execute(&mut **db)
         .await
         .map_err(|err| {
             log::error!("Couldn't update category positions after deletion: {}", err);
-            error!(SERVER, "Failed to delete category")
-        })?;
-
-        transaction.commit().await.map_err(|err| {
-            log::error!("Couldn't commit category delete transaction: {}", err);
             error!(SERVER, "Failed to delete category")
         })?;
 

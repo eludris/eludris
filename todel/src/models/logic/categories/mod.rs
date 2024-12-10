@@ -56,6 +56,7 @@ impl Category {
 SELECT COUNT(id)
 FROM categories
 WHERE sphere_id = $1
+    AND is_deleted = FALSE
             ",
             sphere_id as i64
         )

@@ -73,6 +73,7 @@ impl Category {
 
         if let Some(ref name) = category.name {
             sqlx::query!(
+                // Guaranteed to not be deleted by get_unpopulated
                 "
 UPDATE categories
 SET name = $1
@@ -95,6 +96,7 @@ WHERE id = $2
 SELECT COUNT(id)
 FROM categories
 WHERE sphere_id = $1
+    AND is_deleted = FALSE
                 ",
                 sphere_id as i64
             )
@@ -121,6 +123,7 @@ WHERE sphere_id = $1
 UPDATE categories
 SET position = edit_position($1, $2, position)
 WHERE sphere_id = $3
+    AND is_deleted=FALSE
                 ",
                 current_category.position as i64,
                 position as i64,

@@ -15,7 +15,7 @@ impl SphereChannelEdit {
             return Err(error!(
                 VALIDATION,
                 "body",
-                "You must provide at least one of 'name', 'topic', 'position' or 'category_id'"
+                "At least one of 'name', 'topic', 'position' or 'category_id' must be provided."
             ));
         }
         if let Some(name) = &self.name {
@@ -74,6 +74,7 @@ impl SphereChannel {
         if let Some(ref name) = channel.name {
             if name != current_channel.get_name() {
                 sqlx::query!(
+                    // Guaranteed to not be deleted by get_unpopulated
                     "
 UPDATE channels
 SET name = $1
@@ -94,6 +95,7 @@ WHERE id = $2
         if let Some(ref topic) = channel.topic {
             if Some(topic) != current_channel.get_topic() {
                 sqlx::query!(
+                    // Guaranteed to not be deleted by get_unpopulated
                     "
 UPDATE channels
 SET topic = $1
@@ -119,8 +121,10 @@ WHERE id = $2
                         "
 SELECT *
 FROM categories
-WHERE id = $1 AND sphere_id = $2
-                        ", // TODO: add AND is_deleted = FALSE
+WHERE id = $1
+    AND sphere_id = $2
+    AND is_deleted = FALSE
+                        ",
                         category_id as i64,
                         sphere_id as i64,
                     )
@@ -149,7 +153,8 @@ WHERE id = $1 AND sphere_id = $2
                     "
 SELECT COUNT(id)
 FROM channels
-WHERE category_id = $1 AND is_deleted = FALSE
+WHERE category_id = $1
+    AND is_deleted = FALSE
                     ",
                     destination_category as i64
                 )
@@ -181,7 +186,8 @@ UPDATE channels
 SET
     category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
     position    = edit_channel_position($1, $2, position, $3, $4, category_id)
-WHERE (category_id = $3 OR category_id = $4) AND is_deleted = FALSE;
+WHERE (category_id = $3 OR category_id = $4)
+    AND is_deleted = FALSE;
                         ",
                         current_channel.get_position() as i32,
                         position as i32,
@@ -206,7 +212,8 @@ WHERE (category_id = $3 OR category_id = $4) AND is_deleted = FALSE;
                         "
 UPDATE channels
 SET position = edit_position($1, $2, position)
-WHERE category_id = $3 AND is_deleted = FALSE
+WHERE category_id = $3
+    AND is_deleted = FALSE
                         ",
                         current_channel.get_position() as i32,
                         position as i32,

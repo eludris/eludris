@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS categories (
     sphere_id BIGINT NOT NULL,
     name VARCHAR(32),
     position INT,
+    is_deleted BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (sphere_id) REFERENCES spheres(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 

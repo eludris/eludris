@@ -29,7 +29,9 @@ SET
         ELSE position - 1
         END,
     is_deleted = (position = $2)
-WHERE category_id = $1 AND position >= $2 AND is_deleted = FALSE
+WHERE category_id = $1
+    AND position >= $2
+    AND is_deleted = FALSE
             ",
             current_channel.get_category_id() as i64,
             current_channel.get_position() as i32,

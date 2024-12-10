@@ -16,7 +16,8 @@ impl Sphere {
             "
 SELECT *
 FROM channels
-WHERE sphere_id = $1 AND is_deleted = FALSE
+WHERE sphere_id = $1
+    AND is_deleted = FALSE
 ORDER BY position
             ",
         )
@@ -33,6 +34,7 @@ ORDER BY position
 SELECT *
 FROM categories
 WHERE sphere_id = $1
+    AND is_deleted = FALSE
 ORDER BY position
             ",
         )
@@ -81,8 +83,8 @@ SELECT *
 FROM members
 JOIN users ON members.id = users.id
 WHERE sphere_id = $1
-AND members.is_deleted = FALSE
-AND users.is_deleted = FALSE
+    AND members.is_deleted = FALSE
+    AND users.is_deleted = FALSE
             ",
         )
         .bind(self.id as i64)
@@ -134,6 +136,7 @@ AND users.is_deleted = FALSE
 SELECT *
 FROM spheres
 WHERE id = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(id as i64)
@@ -159,7 +162,7 @@ WHERE id = $1
 SELECT *
 FROM spheres
 WHERE slug = $1
-AND is_deleted = FALSE
+    AND is_deleted = FALSE
             ",
         )
         .bind(&slug)
@@ -184,6 +187,7 @@ AND is_deleted = FALSE
 SELECT *
 FROM spheres
 WHERE id = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(id as i64)
@@ -206,6 +210,7 @@ WHERE id = $1
 SELECT *
 FROM spheres
 WHERE slug = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(&slug)
