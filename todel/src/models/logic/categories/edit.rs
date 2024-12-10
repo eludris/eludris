@@ -121,7 +121,11 @@ WHERE sphere_id = $1
             sqlx::query!(
                 "
 UPDATE categories
-SET position = edit_position($1, $2, position)
+SET position = CASE
+    WHEN (position = $1) THEN $2
+    WHEN ($1 > $2)       THEN position + (position BETWEEN $2 AND $1)::int
+    ELSE                      position - (position BETWEEN $1 AND $2)::int
+    END
 WHERE sphere_id = $3
     AND is_deleted=FALSE
                 ",

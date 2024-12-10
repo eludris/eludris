@@ -184,8 +184,16 @@ WHERE category_id = $1
                         "
 UPDATE channels
 SET
-    category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
-    position    = edit_channel_position($1, $2, position, $3, $4, category_id)
+    category_id = CASE
+        WHEN (category_id = $3 AND position = $1)  THEN $4
+        ELSE                                            category_id
+        END,
+    position = CASE
+        WHEN (category_id = $3 AND position = $1)  THEN $2
+        WHEN (category_id = $3 AND position > $1)  THEN position - 1
+        WHEN (category_id = $4 AND position >= $2) THEN position + 1
+        ELSE                                            position
+        END
 WHERE (category_id = $3 OR category_id = $4)
     AND is_deleted = FALSE;
                         ",
@@ -211,7 +219,11 @@ WHERE (category_id = $3 OR category_id = $4)
                     sqlx::query!(
                         "
 UPDATE channels
-SET position = edit_position($1, $2, position)
+SET position = CASE
+    WHEN (position = $1) THEN $2
+    WHEN ($1 > $2)       THEN position + (position BETWEEN $2 AND $1)::int
+    ELSE                      position - (position BETWEEN $1 AND $2)::int
+    END
 WHERE category_id = $3
     AND is_deleted = FALSE
                         ",
