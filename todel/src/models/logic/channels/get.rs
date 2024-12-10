@@ -8,7 +8,7 @@ impl SphereChannel {
             "
 SELECT *
 FROM channels
-WHERE id = $1
+WHERE id = $1 AND is_deleted = FALSE
             ",
         )
         .bind(id as i64)

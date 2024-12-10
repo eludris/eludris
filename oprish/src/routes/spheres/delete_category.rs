@@ -30,7 +30,7 @@ pub async fn delete_category(
     mut db: Connection<DB>,
     session: TokenAuth,
 ) -> RateLimitedRouteResponse<()> {
-    let mut rate_limiter = RateLimiter::new("edit_category", session.0.user_id, conf);
+    let mut rate_limiter = RateLimiter::new("delete_category", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     let sphere = Sphere::get_unpopulated(sphere_id, &mut db)

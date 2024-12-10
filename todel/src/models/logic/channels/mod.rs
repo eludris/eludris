@@ -1,3 +1,4 @@
+mod delete;
 mod edit;
 mod get;
 
@@ -14,7 +15,7 @@ use crate::{
 impl FromRow<'_, PgRow> for SphereChannel {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         match row.get::<ChannelType, _>("channel_type") {
-            ChannelType::Text => Ok(Self::Text(crate::models::TextChannel {
+            ChannelType::Text => Ok(Self::Text(TextChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),
@@ -22,7 +23,7 @@ impl FromRow<'_, PgRow> for SphereChannel {
                 position: row.get::<i32, _>("position") as u32,
                 category_id: row.get::<i64, _>("category_id") as u64,
             })),
-            ChannelType::Voice => Ok(Self::Voice(crate::models::VoiceChannel {
+            ChannelType::Voice => Ok(Self::Voice(VoiceChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),

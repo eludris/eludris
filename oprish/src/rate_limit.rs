@@ -77,6 +77,7 @@ impl RateLimiter {
             edit_category,
             create_channel,
             edit_channel,
+            delete_channel,
             join_sphere,
             get_channel,
             guest_get_channel,

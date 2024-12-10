@@ -120,7 +120,7 @@ WHERE id = $2
 SELECT *
 FROM categories
 WHERE id = $1 AND sphere_id = $2
-                        ",
+                        ", // TODO: add AND is_deleted = FALSE
                         category_id as i64,
                         sphere_id as i64,
                     )
@@ -149,7 +149,7 @@ WHERE id = $1 AND sphere_id = $2
                     "
 SELECT COUNT(id)
 FROM channels
-WHERE category_id = $1
+WHERE category_id = $1 AND is_deleted = FALSE
                     ",
                     destination_category as i64
                 )
@@ -181,7 +181,7 @@ UPDATE channels
 SET
     category_id = edit_channel_category($1, $2, position, $3, $4, category_id),
     position    = edit_channel_position($1, $2, position, $3, $4, category_id)
-WHERE category_id = $3 OR category_id = $4;
+WHERE (category_id = $3 OR category_id = $4) AND is_deleted = FALSE;
                         ",
                         current_channel.get_position() as i32,
                         position as i32,
@@ -206,11 +206,11 @@ WHERE category_id = $3 OR category_id = $4;
                         "
 UPDATE channels
 SET position = edit_position($1, $2, position)
-WHERE category_id = $3
+WHERE category_id = $3 AND is_deleted = FALSE
                         ",
                         current_channel.get_position() as i32,
                         position as i32,
-                        sphere_id as i64,
+                        current_channel.get_category_id() as i64,
                     )
                     .execute(&mut *transaction)
                     .await
