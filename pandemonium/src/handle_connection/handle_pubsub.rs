@@ -109,6 +109,94 @@ async fn handle_event(
                 }
             }
         }
+        ServerPayload::CategoryCreate {
+            category,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::CategoryCreate {
+                        category,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::CategoryEdit {
+            data,
+            category_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::CategoryEdit {
+                        data,
+                        category_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::CategoryDelete {
+            category_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::CategoryDelete {
+                        category_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereChannelCreate { channel, sphere_id } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::SphereChannelCreate { channel, sphere_id },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereChannelEdit {
+            data,
+            channel_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::SphereChannelEdit {
+                        data,
+                        channel_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereChannelDelete {
+            channel_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::SphereChannelDelete {
+                        channel_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
         payload => {
             send_payload(tx, &payload).await;
         }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT COUNT(id)\nFROM channels\nWHERE sphere_id = $1\n            ",
+  "query": "\nSELECT COUNT(id)\nFROM channels\nWHERE sphere_id = $1 AND category_id = $2\n            ",
   "describe": {
     "columns": [
       {
@@ -11,6 +11,7 @@
     ],
     "parameters": {
       "Left": [
+        "Int8",
         "Int8"
       ]
     },
@@ -18,5 +19,5 @@
       null
     ]
   },
-  "hash": "c423128db997f99ac06f63fc89e4de48805bee2100f459c87d4a64fffb8ff23a"
+  "hash": "52585d5c2ed19ff6ebe2f7d6c0b257faffc8968c738991728a97a320f30b033d"
 }

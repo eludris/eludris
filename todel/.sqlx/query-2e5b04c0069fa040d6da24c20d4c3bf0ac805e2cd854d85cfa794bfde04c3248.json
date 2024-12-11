@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nUPDATE categories\nSET\n    position = CASE\n        WHEN (position = $2) THEN -1\n        ELSE position - 1\n        END,\n    is_deleted = (position = $2)\nWHERE sphere_id = $1\n    AND position >= $2\n    AND is_deleted = FALSE\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2e5b04c0069fa040d6da24c20d4c3bf0ac805e2cd854d85cfa794bfde04c3248"
+}

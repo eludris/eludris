@@ -1,3 +1,5 @@
+mod delete;
+mod edit;
 mod get;
 
 use sqlx::{pool::PoolConnection, postgres::PgRow, FromRow, Postgres, Row};
@@ -5,32 +7,28 @@ use sqlx::{pool::PoolConnection, postgres::PgRow, FromRow, Postgres, Row};
 use crate::{
     ids::IdGenerator,
     models::{
-        Category, ChannelType, ErrorResponse, Sphere, SphereChannel, SphereChannelCreate,
-        SphereChannelType, TextChannel, VoiceChannel,
+        ChannelType, ErrorResponse, Sphere, SphereChannel, SphereChannelCreate, SphereChannelType,
+        TextChannel, VoiceChannel,
     },
 };
 
 impl FromRow<'_, PgRow> for SphereChannel {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         match row.get::<ChannelType, _>("channel_type") {
-            ChannelType::Category => Ok(Self::Category(crate::models::Category {
-                id: row.get::<i64, _>("id") as u64,
-                sphere_id: row.get::<i64, _>("sphere_id") as u64,
-                name: row.get("name"),
-                position: row.get::<i32, _>("position") as u32,
-            })),
-            ChannelType::Text => Ok(Self::Text(crate::models::TextChannel {
+            ChannelType::Text => Ok(Self::Text(TextChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),
                 topic: row.get("topic"),
                 position: row.get::<i32, _>("position") as u32,
+                category_id: row.get::<i64, _>("category_id") as u64,
             })),
-            ChannelType::Voice => Ok(Self::Voice(crate::models::VoiceChannel {
+            ChannelType::Voice => Ok(Self::Voice(VoiceChannel {
                 id: row.get::<i64, _>("id") as u64,
                 sphere_id: row.get::<i64, _>("sphere_id") as u64,
                 name: row.get("name"),
                 position: row.get::<i32, _>("position") as u32,
+                category_id: row.get::<i64, _>("category_id") as u64,
             })),
             _ => unreachable!(),
         }
@@ -65,6 +63,7 @@ impl SphereChannel {
         db: &mut PoolConnection<Postgres>,
     ) -> Result<SphereChannel, ErrorResponse> {
         channel.validate()?;
+
         Sphere::get_unpopulated(sphere_id, db)
             .await
             .map_err(|err| {
@@ -74,13 +73,16 @@ impl SphereChannel {
                     err
                 }
             })?;
+
+        let category_id = channel.category_id.unwrap_or(sphere_id);
         let channel_count = sqlx::query!(
             "
 SELECT COUNT(id)
 FROM channels
-WHERE sphere_id = $1
+WHERE sphere_id = $1 AND category_id = $2
             ",
-            sphere_id as i64
+            sphere_id as i64,
+            category_id as i64,
         )
         .fetch_one(&mut **db)
         .await
@@ -96,8 +98,8 @@ WHERE sphere_id = $1
         let channel_id = id_generator.generate();
         sqlx::query(
             "
-INSERT INTO channels(id, sphere_id, channel_type, name, topic, position)
-VALUES($1, $2, $3, $4, $5, $6)
+INSERT INTO channels(id, sphere_id, channel_type, name, topic, position, category_id)
+VALUES($1, $2, $3, $4, $5, $6, $7)
             ",
         )
         .bind(channel_id as i64)
@@ -106,6 +108,7 @@ VALUES($1, $2, $3, $4, $5, $6)
         .bind(&channel.name)
         .bind(&channel.topic)
         .bind(channel_count)
+        .bind(category_id as i64)
         .execute(&mut **db)
         .await
         .map_err(|err| {
@@ -113,24 +116,20 @@ VALUES($1, $2, $3, $4, $5, $6)
             error!(SERVER, "Failed to create sphere")
         })?;
         Ok(match channel.channel_type {
-            SphereChannelType::Category => Self::Category(Category {
-                id: channel_id,
-                sphere_id,
-                name: channel.name,
-                position: channel_count as u32,
-            }),
             SphereChannelType::Text => Self::Text(TextChannel {
                 id: channel_id,
                 sphere_id,
                 name: channel.name,
                 topic: channel.topic,
                 position: channel_count as u32,
+                category_id,
             }),
             SphereChannelType::Voice => Self::Voice(VoiceChannel {
                 id: channel_id,
                 sphere_id,
                 name: channel.name,
                 position: channel_count as u32,
+                category_id,
             }),
         })
     }

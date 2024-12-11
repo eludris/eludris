@@ -111,9 +111,24 @@ pub struct OprishRateLimits {
     /// someone who hasn't made an account.
     #[serde(default = "guest_get_sphere_default")]
     pub guest_get_sphere: RateLimitConf,
-    /// Rate limits for the [`create_channel`] endpoint.
+    /// Rate limits for the [`create_category`] endpoint.
+    #[serde(default = "create_category_default")]
+    pub create_category: RateLimitConf,
+    /// Rate limits for the [`edit_category`] endpoint.
+    #[serde(default = "edit_category_default")]
+    pub edit_category: RateLimitConf,
+    /// Rate limits for the [`delete_category`] endpoint.    
+    #[serde(default = "delete_category_default")]
+    pub delete_category: RateLimitConf,
+    /// Rate limits for the [`create_channel`] endpoint.    
     #[serde(default = "create_channel_default")]
     pub create_channel: RateLimitConf,
+    /// Rate limits for the [`edit_channel`] endpoint.
+    #[serde(default = "edit_channel_default")]
+    pub edit_channel: RateLimitConf,
+    /// Rate limits for the [`delete_channel`] endpoint.
+    #[serde(default = "delete_channel_default")]
+    pub delete_channel: RateLimitConf,
     /// Rate limits for the [`join_sphere`] and [`join_sphere_from_slug`] endpoints.
     #[serde(default = "join_sphere_default")]
     pub join_sphere: RateLimitConf,
@@ -150,7 +165,12 @@ impl Default for OprishRateLimits {
             create_sphere: create_sphere_default(),
             get_sphere: get_sphere_default(),
             guest_get_sphere: guest_get_sphere_default(),
+            create_category: create_category_default(),
+            edit_category: edit_category_default(),
+            delete_category: delete_category_default(),
             create_channel: create_channel_default(),
+            edit_channel: edit_channel_default(),
+            delete_channel: delete_channel_default(),
             join_sphere: join_sphere_default(),
             get_channel: get_channel_default(),
             guest_get_channel: guest_get_channel_default(),
@@ -285,7 +305,42 @@ fn guest_get_sphere_default() -> RateLimitConf {
     }
 }
 
+fn edit_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn delete_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn create_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
 fn create_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn edit_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn delete_channel_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 10,
         limit: 5,

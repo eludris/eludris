@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
 use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, FromRow, Postgres, Row};
 
-use crate::models::{ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User};
+use crate::models::{
+    Category, ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User,
+};
 
 impl Sphere {
     pub(crate) async fn populate_channels(
@@ -13,7 +17,8 @@ impl Sphere {
 SELECT *
 FROM channels
 WHERE sphere_id = $1
-AND is_deleted = FALSE
+    AND is_deleted = FALSE
+ORDER BY position
             ",
         )
         .bind(self.id as i64)
@@ -23,7 +28,54 @@ AND is_deleted = FALSE
             log::error!("Couldn't fetch channels for {} sphere: {}", self.slug, err);
             error!(SERVER, "Failed to get sphere")
         })?;
-        self.channels = channels;
+
+        let mut categories: HashMap<u64, Category> = sqlx::query_as(
+            "
+SELECT *
+FROM categories
+WHERE sphere_id = $1
+    AND is_deleted = FALSE
+ORDER BY position
+            ",
+        )
+        .bind(self.id as i64)
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!(
+                "Couldn't fetch categories for {} sphere: {}",
+                self.slug,
+                err
+            );
+            error!(SERVER, "Failed to get sphere")
+        })?
+        .into_iter()
+        .map(|category: Category| (category.id, category))
+        .collect();
+
+        for channel in channels {
+            match categories.get_mut(&channel.get_category_id()) {
+                Some(category) => category.channels.push(channel),
+                None => {
+                    log::error!(
+                        "Found channel {} with nonexistent category_id {} in sphere {}",
+                        channel.get_id(),
+                        channel.get_category_id(),
+                        self.slug,
+                    );
+                    // Add to default category; sadly comes with some fuckery in channel position.
+                    // TODO: Maybe do something else with this, like returning a new "incomplete" channel type.
+                    categories
+                        .get_mut(&self.id)
+                        .unwrap() // Should always exist.
+                        .channels
+                        .push(channel);
+                }
+            }
+        }
+
+        self.categories = categories.into_values().collect::<Vec<Category>>();
+        self.categories.sort_by(|a, b| a.position.cmp(&b.position));
         Ok(())
     }
 
@@ -38,8 +90,8 @@ SELECT *
 FROM members
 JOIN users ON members.id = users.id
 WHERE sphere_id = $1
-AND members.is_deleted = FALSE
-AND users.is_deleted = FALSE
+    AND members.is_deleted = FALSE
+    AND users.is_deleted = FALSE
             ",
         )
         .bind(self.id as i64)
@@ -91,6 +143,7 @@ AND users.is_deleted = FALSE
 SELECT *
 FROM spheres
 WHERE id = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(id as i64)
@@ -116,7 +169,7 @@ WHERE id = $1
 SELECT *
 FROM spheres
 WHERE slug = $1
-AND is_deleted = FALSE
+    AND is_deleted = FALSE
             ",
         )
         .bind(&slug)
@@ -141,6 +194,7 @@ AND is_deleted = FALSE
 SELECT *
 FROM spheres
 WHERE id = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(id as i64)
@@ -163,6 +217,7 @@ WHERE id = $1
 SELECT *
 FROM spheres
 WHERE slug = $1
+    AND is_deleted = FALSE
             ",
         )
         .bind(&slug)

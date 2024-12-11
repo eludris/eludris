@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{Member, SphereChannel};
+use super::{Category, Member};
 
 /// The different types a sphere can be.
 #[autodoc(category = "Spheres")]
@@ -14,7 +14,7 @@ pub enum SphereType {
     Chat,
     /// Spheres that only support creating posts in forum style.
     Forum,
-    /// Spheres that support both Discord-like chatrooms and form-like posts.
+    /// Spheres that support both Discord-like chatrooms and forum-like posts.
     Hybrid,
 }
 
@@ -28,21 +28,46 @@ pub enum SphereType {
 /// {
 ///   "id": 4080402038786,
 ///   "owner_id": 4080403808259,
+///   "slug": "spehre",
 ///   "name": "Spehre",
 ///   "type": "HYBRID",
 ///   "description": "Truly the sphere of all time",
 ///   "icon": 4080412852228,
 ///   "badges": 0,
-///   "channels": [
+///   "categories": [
 ///     {
-///       "type": "TEXT",
-///       "id": 4080402038789,
-///       "sphere_id": 4080402038786,
-///       "position": 1,
-///       "name": "je-mappelle"
+///       "id":5490083823619,
+///       "name":"uncategorised",
+///       "position":0,
+///       "channels": [
+///         {
+///           "type":"TEXT",
+///           "id":5490083823620,
+///           "sphere_id":5490083823619,
+///           "name":"general",
+///           "position":0,
+///           "category_id":5490083823619
+///         }
+///       ]
 ///     }
 ///   ],
-///   "members": [ ... ]
+///   "members": [
+///     {
+///       "user": {
+///         "id": 5490049220609,
+///         "username": "John-Mahjong",
+///         "social_credit": 0,
+///         "status": {
+///           "type": "ONLINE"
+///         },
+///         "badges": 0,
+///         "permissions": 0,
+///         "email": "john.mahjong@example.com",
+///         "verified": false
+///       },
+///       "sphere_id": 5490083823619
+///     }
+///   ]
 /// }
 /// ```
 #[autodoc(category = "Spheres")]
@@ -71,8 +96,8 @@ pub struct Sphere {
     pub banner: Option<u64>,
     /// The sphere's badges as a bitfield.
     pub badges: u64,
-    /// The channels that this sphere contains.
-    pub channels: Vec<SphereChannel>,
+    /// The categories that this sphere contains.
+    pub categories: Vec<Category>,
     /// The members that are inside this sphere.
     pub members: Vec<Member>,
 }

@@ -1,5 +1,6 @@
 //! A collection of models and some related function implementations for eludris.
 
+mod categories;
 mod channels;
 mod files;
 mod gateway;
@@ -11,6 +12,7 @@ mod sessions;
 mod spheres;
 mod users;
 
+pub use categories::*;
 pub use channels::*;
 pub use files::*;
 pub use gateway::*;

@@ -2,46 +2,46 @@ use rocket::{serde::json::Json, State};
 use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    ids::IdGenerator,
-    models::{ErrorResponse, ServerPayload, Sphere, SphereChannel, SphereChannelCreate},
+    models::{ErrorResponse, ServerPayload, Sphere, SphereChannel, SphereChannelEdit},
     Conf,
 };
-use tokio::sync::Mutex;
 
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
-/// Create a new channel within a sphere.
+/// Edit a channel.
 ///
+/// Name must be less than or equal to 32 characters long if provided.
+///
+/// Topic must be less than or equal to 4096 characters long if provided.
+///
+/// Position must be greater than or equal to 0.
+/// It is automatically upper-bounded to the number of channels in the category.
+///
+/// If category_id is provided, position *must* also be provided.
+///
+/// -- STATUS: 201
 /// -----
 ///
 /// ### Example
 ///
 /// ```sh
-/// curl \
+/// curl --request PATCH \
 ///   -H "Authorization: <token>" \
-///   --json '{"name":"horse","type":"TEXT"}'
-///   https://api.eludris.gay/spheres/4204171493377/channels
-///
-/// {
-///   "type": "TEXT",
-///   "id": 4204171493378,
-///   "sphere_id": 4204171493377,
-///   "name": "horse",
-///   "position": 0
-/// }
+///   --json '{"name":"Bean","position":42,"category_id":1337}' \
+///   https://api.eludris.gay/spheres/1234/channels/5678
 /// ```
 #[autodoc("/spheres", category = "Spheres")]
-#[post("/<sphere_id>/channels", data = "<channel>")]
-pub async fn create_channel(
-    channel: Json<SphereChannelCreate>,
+#[patch("/<sphere_id>/channels/<channel_id>", data = "<channel>")]
+pub async fn edit_channel(
+    channel: Json<SphereChannelEdit>,
     sphere_id: u64,
+    channel_id: u64,
     conf: &State<Conf>,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
-    id_generator: &State<Mutex<IdGenerator>>,
     session: TokenAuth,
 ) -> RateLimitedRouteResponse<Json<SphereChannel>> {
-    let mut rate_limiter = RateLimiter::new("create_channel", session.0.user_id, conf);
+    let mut rate_limiter = RateLimiter::new("edit_channel", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     let sphere = Sphere::get_unpopulated(sphere_id, &mut db)
@@ -58,19 +58,17 @@ pub async fn create_channel(
         return Err(rate_limiter.add_headers(error!(FORBIDDEN)));
     }
 
-    let channel = SphereChannel::create(
-        channel.into_inner(),
-        sphere_id,
-        &mut *id_generator.lock().await,
-        &mut db,
-    )
-    .await
-    .map_err(|err| rate_limiter.add_headers(err))?;
+    let (channel, channel_edit) =
+        SphereChannel::edit(channel.into_inner(), sphere_id, channel_id, &mut db)
+            .await
+            .map_err(|err| rate_limiter.add_headers(err))?;
+
     cache
         .publish::<&str, String, ()>(
             "eludris-events",
-            serde_json::to_string(&ServerPayload::SphereChannelCreate {
-                channel: channel.clone(),
+            serde_json::to_string(&ServerPayload::SphereChannelEdit {
+                data: channel_edit,
+                channel_id,
                 sphere_id,
             })
             .unwrap(),

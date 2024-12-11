@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use super::{InstanceInfo, Message, Sphere, Status, User};
+use super::{
+    Category, CategoryEdit, InstanceInfo, Message, Sphere, SphereChannel, SphereChannelEdit,
+    Status, User,
+};
 use crate::conf::RateLimitConf;
 
 /// Pandemonium websocket payloads sent by the server to the client.
@@ -203,6 +206,151 @@ pub enum ServerPayload {
     /// }
     /// ```
     SphereMemberJoin { user: User, sphere_id: u64 },
+    /// The payload sent when a category is created in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "CATEGORY_CREATE",
+    ///   "d": {
+    ///     "category": {
+    ///       "id": 5473905934337,
+    ///       "name": "iberia",
+    ///       "position": 4,
+    ///       "channels": []
+    ///     },
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    CategoryCreate { category: Category, sphere_id: u64 },
+    /// The payload sent when a category is edited in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "CATEGORY_EDIT",
+    ///   "d": {
+    ///     "data": { "name": "hyperion-fumo", "position": null },
+    ///     "category_id": 5462748233731,
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    CategoryEdit {
+        /// An object containing the validated changes to the category.
+        data: CategoryEdit,
+        /// The id of the category that was changed.
+        category_id: u64,
+        /// The id of the guild in which the category was changed.
+        sphere_id: u64,
+    },
+    /// The payload sent when a category is deleted in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "CATEGORY_DELETE",
+    ///   "d": {
+    ///     "category_id": 5461814149129,
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    CategoryDelete {
+        /// The id of the category that was deleted.
+        category_id: u64,
+        /// The id of the sphere from which the category was deleted.
+        sphere_id: u64,
+    },
+    /// The payload sent when a channel is created in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "SPHERE_CHANNEL_CREATE",
+    ///   "d": {
+    ///     "channel": {
+    ///       "type": "TEXT",
+    ///       "id": 5473965965314,
+    ///       "sphere_id": 5461801828355,
+    ///       "name": "lungmen",
+    ///       "topic": "uwoogh",
+    ///       "position": 2,
+    ///       "category_id": 5462748233731
+    ///     },
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    SphereChannelCreate {
+        /// The channel that was created.
+        channel: SphereChannel,
+        /// The id of the sphere in which the channel was created.
+        sphere_id: u64,
+    },
+    /// The payload sent when a channel is edited in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "SPHERE_CHANNEL_EDIT",
+    ///   "d": {
+    ///     "data": {
+    ///       "name": "wscat",
+    ///       "topic": "dont forget to ping the websocket",
+    ///       "position": 3,
+    ///       "category_id": 5461801828355
+    ///     },
+    ///     "channel_id": 5461813690375,
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    SphereChannelEdit {
+        /// An object containing the validated changes to the channel.
+        data: SphereChannelEdit,
+        /// The id of the channel that was edited.
+        channel_id: u64,
+        /// The id of the sphere in which the channel was edited.
+        sphere_id: u64,
+    },
+    /// The payload sent when a channel is deleted in a sphere the client is in.
+    ///
+    /// -----
+    ///
+    /// ### Example
+    ///
+    /// ```json
+    /// {
+    ///   "op": "SPHERE_CHANNEL_DELETE",
+    ///   "d": {
+    ///     "channel_id": 5461813690375,
+    ///     "sphere_id": 5461801828355
+    ///   }
+    /// }
+    /// ```
+    SphereChannelDelete {
+        /// The id of the channel that was deleted.
+        channel_id: u64,
+        /// The id of the guild from which the channel was deleted.
+        sphere_id: u64,
+    },
 }
 
 /// Pandemonium websocket payloads sent by the client to the server.
