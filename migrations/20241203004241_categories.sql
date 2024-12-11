@@ -1,5 +1,5 @@
--- welcom 2 penis databas
---                                                                      cock
+-- welcom 2 zenis databas
+--                                                                      block
 
 ALTER TYPE channel_type RENAME TO channel_type_old;
 CREATE TYPE channel_type AS ENUM ('TEXT', 'VOICE', 'GROUP', 'DIRECT');
