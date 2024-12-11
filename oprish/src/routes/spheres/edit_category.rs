@@ -9,11 +9,11 @@ use todel::{
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 /// Edit a category.
-/// 
+///
 /// The default category cannot be edited.
-/// 
+///
 /// Name must be less than or equal to 32 characters long if provided.
-/// 
+///
 /// Position must be greater than or equal to 1.
 /// It is automatically upper-bounded to the number of channels in the category.
 ///
