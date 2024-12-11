@@ -36,6 +36,8 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name !=
       github.repository
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://root:root@127.0.0.1:5432/eludris
 
     steps:
       - uses: actions/checkout@v2
@@ -59,14 +61,20 @@ jobs:
           command: install
           args: sqlx-cli --version 0.7.3
 
+      - name: Wait For Database
+        run: |
+          wget https://github.com/palfrey/wait-for-db/releases/download/v1.4.0/wait-for-db-linux-amd64
+          chmod +x wait-for-db-linux-amd64
+          ./wait-for-db-linux-amd64 -m postgres -c ${{env.DATABASE_URL}} -t 10
+
       - name: Run migrations
-        run: sqlx migrate run --database-url postgresql://root:root@127.0.0.1:5432/eludris
+        run: sqlx migrate run --database-url ${{env.DATABASE_URL}}
 
       - name: Test Eludris
         run: ./test.py --logs
         env:
           REDIS_URL: "redis://127.0.0.1:6379"
-          DATABASE_URL: "postgresql://root:root@127.0.0.1:5432/eludris"
+          DATABASE_URL: ${{env.DATABASE_URL}}
 
   clippy:
     name: Clippy; Destroyer of Realities.
