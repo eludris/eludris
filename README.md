@@ -11,23 +11,12 @@
 
 # Eludris
 
-A free and open source, federated, End-To-End-Encrypted social media platform made
-in rust that's easy to deploy and configure while striving to be *truly **yours***.
+Eludris is a thing that you can use to do other things commonly seen in environments
+such as Discord™ and Reddit™.
 
 Eludris tries to combine the best parts of other popular social media platforms
 such as Discord, Reddit, Twitter and so on while not being one or the other.
 
 ### We're currently at version 0.3.3, click [here](https://eludevs.pages.dev/changelogs/0-3-3) to check the changelog
 
-## Deployment
-
-We really recommend using the provided docker-compose as a quick way to get stuff
-running, just edit your `Eludris.toml` to suit your needs then run
-
-```sh
-docker-compose up
-```
-
-Congratulations, you've now successfully deployed your Eludris instance! <img width="30em" src="https://github.com/eludris/.github/blob/main/assets/thang-big.png" />
-
-For more detailed info please visit our [docs](https://eludevs.pages.dev)
+For more detailed info please visit our [docs](https://devs.eludris.com)
