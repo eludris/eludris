@@ -26,11 +26,11 @@ impl SphereChannelEdit {
                 ));
             }
         }
-        if let Some(topic) = &self.topic {
-            if topic.is_empty() || topic.len() > 4096 {
+        if let Some(Some(topic)) = &self.topic {
+            if topic.len() > 4096 {
                 return Err(error!(
                     VALIDATION,
-                    "topic", "The channel's topic must be between 1 and 4096 characters long"
+                    "topic", "The channel's topic must be less than 4096 characters long"
                 ));
             }
         }
@@ -51,7 +51,7 @@ impl SphereChannel {
         sphere_id: u64,
         channel_id: u64,
         db: &mut PoolConnection<Postgres>,
-    ) -> Result<(SphereChannel, SphereChannelEdit), ErrorResponse> {
+    ) -> Result<(Self, SphereChannelEdit), ErrorResponse> {
         channel.validate()?;
 
         Sphere::get_unpopulated(sphere_id, db)
@@ -93,7 +93,7 @@ WHERE id = $2
         }
 
         if let Some(ref topic) = channel.topic {
-            if Some(topic) != current_channel.get_topic() {
+            if topic.as_ref() != current_channel.get_topic() {
                 sqlx::query!(
                     // Guaranteed to not be deleted by get_unpopulated
                     "
@@ -101,7 +101,7 @@ UPDATE channels
 SET topic = $1
 WHERE id = $2
                     ",
-                    topic,
+                    *topic,
                     channel_id as i64,
                 )
                 .execute(&mut *transaction)
@@ -253,7 +253,7 @@ WHERE category_id = $3
                     id: channel_id,
                     sphere_id,
                     name: channel.name.unwrap_or(current_channel.name),
-                    topic: channel.topic.or(current_channel.topic),
+                    topic: channel.topic.unwrap_or(current_channel.topic),
                     position: channel.position.unwrap_or(current_channel.position),
                     category_id: channel.category_id.unwrap_or(current_channel.category_id),
                 }),

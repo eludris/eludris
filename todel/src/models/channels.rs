@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_with::rust::double_option;
 
 use super::User;
 
@@ -279,9 +280,13 @@ pub struct SphereChannelEdit {
     /// The new name of the channel.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// The new type of the channel.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub topic: Option<String>,
+    /// The new topic of the channel.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub topic: Option<Option<String>>,
     /// The new position of the channel.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<u32>,
