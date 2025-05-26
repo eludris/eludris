@@ -20,8 +20,6 @@ pub fn get_routes() -> Vec<Route> {
         delete_channel::delete_channel,
         edit_channel::edit_channel,
         get::get_sphere,
-        get::get_sphere_from_slug,
         join::join_sphere,
-        join::join_sphere_from_slug,
     ]
 }

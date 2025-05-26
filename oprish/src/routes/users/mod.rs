@@ -13,7 +13,6 @@ pub fn get_routes() -> Vec<Route> {
     routes![
         create::create_user,
         verify::verify_user,
-        get::get_self,
         get::get_user,
         edit::edit_user,
         profile::edit_profile,
