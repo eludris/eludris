@@ -360,6 +360,15 @@ pub enum ServerPayload {
         /// The id of the guild from which the channel was deleted.
         sphere_id: u64,
     },
+    SphereUpdate {
+        data: SphereEdit,
+        sphere_id: u64,
+    },
+    MemberUpdate {
+        data: MemberEdit,
+        user_id: u64,
+        sphere_id: u64,
+    },
 }
 
 /// Pandemonium websocket payloads sent by the client to the server.

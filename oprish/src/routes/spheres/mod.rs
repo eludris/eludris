@@ -5,9 +5,12 @@ mod create_category;
 mod create_channel;
 mod delete_category;
 mod delete_channel;
+mod edit;
 mod edit_category;
 mod edit_channel;
+mod edit_member;
 mod get;
+mod get_member;
 mod join;
 
 pub fn get_routes() -> Vec<Route> {
@@ -21,5 +24,8 @@ pub fn get_routes() -> Vec<Route> {
         edit_channel::edit_channel,
         get::get_sphere,
         join::join_sphere,
+        edit::edit,
+        get_member::get_member,
+        edit_member::edit_member,
     ]
 }

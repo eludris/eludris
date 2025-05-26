@@ -82,6 +82,9 @@ impl RateLimiter {
             get_channel,
             guest_get_channel,
             get_messages,
+            get_member,
+            guest_get_member,
+            edit_member,
         );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),

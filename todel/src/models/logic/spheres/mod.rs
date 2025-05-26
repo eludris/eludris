@@ -1,6 +1,7 @@
 mod edit;
 mod get;
 mod join;
+mod members;
 
 use regex::Regex;
 use sqlx::{
@@ -56,6 +57,14 @@ impl SphereCreate {
                 VALIDATION,
                 "slug", "The sphere's slug must be between 1 and 32 characters long"
             ));
+        }
+        if let Some(name) = &self.name {
+            if name.is_empty() || name.len() > 32 {
+                return Err(error!(
+                    VALIDATION,
+                    "name", "The sphere's name must be between 1 and 32 characters long"
+                ));
+            }
         }
         if !self.slug.chars().any(|f| f.is_alphabetic()) {
             return Err(error!(
@@ -151,14 +160,15 @@ WHERE owner_id = $1
         })?;
         sqlx::query(
             "
-INSERT INTO spheres(id, owner_id, sphere_type, slug, description, icon, banner)
-VALUES($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO spheres(id, owner_id, sphere_type, slug, name, description, icon, banner)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
             ",
         )
         .bind(sphere_id as i64)
         .bind(owner_id as i64)
         .bind(&sphere.sphere_type)
         .bind(&sphere.slug)
+        .bind(&sphere.name)
         .bind(&sphere.description)
         .bind(sphere.icon.map(|i| i as i64))
         .bind(sphere.banner.map(|b| b as i64))

@@ -197,6 +197,28 @@ async fn handle_event(
                 .await;
             }
         }
+        ServerPayload::SphereUpdate { data, sphere_id } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::SphereUpdate { data, sphere_id }).await;
+            }
+        }
+        ServerPayload::MemberUpdate {
+            data,
+            user_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MemberUpdate {
+                        data,
+                        user_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
         payload => {
             send_payload(tx, &payload).await;
         }

@@ -142,6 +142,16 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`get_messages`] endpoint.
     #[serde(default = "get_messages_default")]
     pub get_messages: RateLimitConf,
+    /// Rate limits for the [`get_member`] endpoint.
+    #[serde(default = "get_member_default")]
+    pub get_member: RateLimitConf,
+    /// Rate limits for the [`get_member`] endpoint for someone who hasn't made
+    /// an account.
+    #[serde(default = "guest_get_member_default")]
+    pub guest_get_member: RateLimitConf,
+    /// Rate limits for the [`edit_member`] endpoint.
+    #[serde(default = "edit_member_default")]
+    pub edit_member: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -175,6 +185,9 @@ impl Default for OprishRateLimits {
             get_channel: get_channel_default(),
             guest_get_channel: guest_get_channel_default(),
             get_messages: get_messages_default(),
+            get_member: get_member_default(),
+            guest_get_member: guest_get_member_default(),
+            edit_member: edit_member_default(),
         }
     }
 }
@@ -369,6 +382,25 @@ fn guest_get_channel_default() -> RateLimitConf {
 }
 
 fn get_messages_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn get_member_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+fn guest_get_member_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+fn edit_member_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,

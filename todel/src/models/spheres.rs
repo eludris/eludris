@@ -1,4 +1,7 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
+use serde_with::rust::double_option;
 
 use super::{Category, Member};
 
@@ -16,6 +19,16 @@ pub enum SphereType {
     Forum,
     /// Spheres that support both Discord-like chatrooms and forum-like posts.
     Hybrid,
+}
+
+impl Display for SphereType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SphereType::Chat => f.write_str("CHAT"),
+            SphereType::Forum => f.write_str("FORUM"),
+            SphereType::Hybrid => f.write_str("HYBRID"),
+        }
+    }
 }
 
 /// The Sphere payload.
@@ -119,11 +132,13 @@ pub struct Sphere {
 #[autodoc(category = "Spheres", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereCreate {
-    /// The slug of the sphere. This field has to be between 1 and 32 characters long.
+    /// The slug of the sphere. This field has to be between 1 and 32 characters.
     pub slug: String,
     /// The sphere's type.
     #[serde(rename = "type")]
     pub sphere_type: SphereType,
+    /// The sphere's display name. This field has to be between 1 and 32 characters.
+    pub name: Option<String>,
     /// The sphere's description. This field has to be between 1 and 4096 characters.
     pub description: Option<String>,
     /// The sphere's icon. This field has to be a valid file ID in the "sphere-icons" bucket.
@@ -151,17 +166,35 @@ pub struct SphereCreate {
 #[autodoc(category = "Spheres", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SphereEdit {
-    /// The name of the sphere.
-    pub name: String,
+    /// The sphere's display name. This field has to be between 1 and 32 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub name: Option<Option<String>>,
     /// The sphere's type.
     #[serde(rename = "type")]
-    pub sphere_type: SphereType, // Non-hybrid -> hybrid?
-    /// The sphere's description, can be between 1 and 4096 characters.
-    pub description: Option<String>,
+    pub sphere_type: Option<SphereType>, // Non-hybrid -> hybrid?
+    /// The sphere's description, can be less than 4096 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub description: Option<Option<String>>,
     /// The sphere's icon. This field has to be a valid file ID in the "sphere-icons" bucket.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<u64>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub icon: Option<Option<u64>>,
     /// The sphere's banner. This field has to be a valid file ID in the "sphere-banners" bucket.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub banner: Option<u64>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub banner: Option<Option<u64>>,
 }

@@ -92,7 +92,10 @@ WHERE id = $2
             }
         }
 
-        if let Some(ref topic) = channel.topic {
+        if let Some(ref mut topic) = channel.topic {
+            if *topic == Some("".to_string()) {
+                *topic = None;
+            }
             if topic.as_ref() != current_channel.get_topic() {
                 sqlx::query!(
                     // Guaranteed to not be deleted by get_unpopulated
