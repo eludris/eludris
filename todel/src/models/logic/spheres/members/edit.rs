@@ -54,7 +54,7 @@ impl Member {
 
         if Some(id) != requester_id
             && (edit.sphere_avatar.flatten().is_some()
-                && edit.sphere_banner.clone().flatten().is_some()
+                && edit.sphere_banner.flatten().is_some()
                 && edit.sphere_bio.clone().flatten().is_some()
                 && edit.sphere_status.clone().flatten().is_some())
         {
@@ -238,6 +238,6 @@ impl Member {
             error!(SERVER, "Failed to edit member")
         })?;
 
-        Ok(Self::get(id, sphere_id, requester_id, db, cache).await?)
+        Self::get(id, sphere_id, requester_id, db, cache).await
     }
 }

@@ -14,7 +14,7 @@ impl Member {
         cache: &mut C,
     ) -> Result<Self, ErrorResponse> {
         let user = User::get(id, requester_id, db, cache).await?;
-        Ok(sqlx::query(
+        sqlx::query(
             "
             SELECT * 
             FROM members
@@ -39,7 +39,7 @@ impl Member {
             sphere_bio: r.get("sphere_bio"),
             sphere_status: r.get("sphere_status"),
         })
-        .ok_or_else(|| error!(NOT_FOUND))?)
+        .ok_or_else(|| error!(NOT_FOUND))
     }
 
     pub async fn get_username<C: AsyncCommands>(
@@ -49,8 +49,8 @@ impl Member {
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
     ) -> Result<Self, ErrorResponse> {
-        let user = User::get_username(&username, requester_id, db, cache).await?;
-        Ok(sqlx::query(
+        let user = User::get_username(username, requester_id, db, cache).await?;
+        sqlx::query(
             "
             SELECT * 
             FROM members
@@ -75,6 +75,6 @@ impl Member {
             sphere_bio: r.get("sphere_bio"),
             sphere_status: r.get("sphere_status"),
         })
-        .ok_or_else(|| error!(NOT_FOUND))?)
+        .ok_or_else(|| error!(NOT_FOUND))
     }
 }
