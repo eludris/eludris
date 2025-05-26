@@ -4,7 +4,7 @@ use rocket::{http::Status, response::status::Custom, serde::json::Json, State};
 use rocket_db_pools::Connection;
 use todel::{
     http::{Cache, DB},
-    models::{CreatePasswordResetCode, Emailer, ResetPassword, User},
+    models::{Emailer, PasswordReset, PasswordResetCodeCreate, User},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -26,7 +26,7 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 #[autodoc("/users", category = "Users")]
 #[post("/reset-password", data = "<create_code>")]
 pub async fn create_password_reset_code(
-    create_code: Json<CreatePasswordResetCode>,
+    create_code: Json<PasswordResetCodeCreate>,
     conf: &State<Conf>,
     rng: &State<Mutex<StdRng>>,
     emailer: &State<Emailer>,
@@ -67,7 +67,7 @@ pub async fn create_password_reset_code(
 #[autodoc("/users", category = "Users")]
 #[patch("/reset-password", data = "<reset>")]
 pub async fn reset_password(
-    reset: Json<ResetPassword>,
+    reset: Json<PasswordReset>,
     conf: &State<Conf>,
     rng: &State<Mutex<StdRng>>,
     hasher: &State<Argon2<'static>>,

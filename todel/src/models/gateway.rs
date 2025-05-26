@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Category, CategoryEdit, InstanceInfo, Message, Sphere, SphereChannel, SphereChannelEdit,
-    Status, User,
+    Category, CategoryEdit, InstanceInfo, MemberEdit, Message, Sphere, SphereChannel,
+    SphereChannelEdit, SphereEdit, Status, User,
 };
 use crate::conf::RateLimitConf;
 
@@ -111,7 +111,7 @@ pub enum ServerPayload {
         spheres: Vec<Sphere>,
     },
     /// The payload received when a user updates themselves. This includes both user updates from
-    /// the [`update_user`] endpoint and profile updates from the [`update_profile`] endpoint.
+    /// the [`edit_user`] endpoint and profile updates from the [`edit_profile`] endpoint.
     ///
     /// -----
     ///
@@ -144,7 +144,10 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    PresenceUpdate { user_id: u64, status: Status },
+    PresenceUpdate {
+        user_id: u64,
+        status: Status,
+    },
     /// The payload sent when the client receives a [`Message`].
     ///
     /// -----
@@ -205,7 +208,10 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    SphereMemberJoin { user: User, sphere_id: u64 },
+    SphereMemberJoin {
+        user: User,
+        sphere_id: u64,
+    },
     /// The payload sent when a category is created in a sphere the client is in.
     ///
     /// -----
@@ -226,7 +232,10 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    CategoryCreate { category: Category, sphere_id: u64 },
+    CategoryCreate {
+        category: Category,
+        sphere_id: u64,
+    },
     /// The payload sent when a category is edited in a sphere the client is in.
     ///
     /// -----
@@ -243,7 +252,7 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    CategoryEdit {
+    CategoryUpdate {
         /// An object containing the validated changes to the category.
         data: CategoryEdit,
         /// The id of the category that was changed.
@@ -322,7 +331,7 @@ pub enum ServerPayload {
     ///   }
     /// }
     /// ```
-    SphereChannelEdit {
+    SphereChannelUpdate {
         /// An object containing the validated changes to the channel.
         data: SphereChannelEdit,
         /// The id of the channel that was edited.

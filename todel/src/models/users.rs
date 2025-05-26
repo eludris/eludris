@@ -117,7 +117,7 @@ impl fmt::Display for User {
 ///
 /// ```json
 /// {
-///   "username": "yendri",d
+///   "username": "yendri",
 ///   "email": "yendri@llamoyendri.io",
 ///   "password": "authentícame por favor" // don't actually use this as a password
 /// }
@@ -125,14 +125,15 @@ impl fmt::Display for User {
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UserCreate {
-    /// The user's name.
+    /// The user's name. This field has to be between 2 and 32 characters and contain
+    /// at least one letter.
     ///
     /// This is different to their `display_name` as it denotes how they're more formally
     /// referenced by the API.
     pub username: String,
     /// The user's email.
     pub email: String,
-    /// The user's password.
+    /// The user's password. This field has to be at least 8 characters long.
     pub password: String,
 }
 
@@ -152,7 +153,7 @@ pub struct UserCreate {
 /// ```
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct UpdateUser {
+pub struct UserEdit {
     /// The user's current password for validation.
     pub password: String,
     /// The user's new username.
@@ -182,7 +183,7 @@ pub struct UpdateUser {
 /// ```
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct UpdateUserProfile {
+pub struct UserProfileEdit {
     /// The user's new display name. This field has to be between 2 and 32 characters long.
     #[serde(
         default,
@@ -237,7 +238,7 @@ pub struct UpdateUserProfile {
 /// ```
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CreatePasswordResetCode {
+pub struct PasswordResetCodeCreate {
     /// The user's email.
     pub email: String,
 }
@@ -258,7 +259,7 @@ pub struct CreatePasswordResetCode {
 /// ```
 #[autodoc(category = "Users")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ResetPassword {
+pub struct PasswordReset {
     /// The password reset code the user got emailed.
     pub code: u32,
     /// The user's email.

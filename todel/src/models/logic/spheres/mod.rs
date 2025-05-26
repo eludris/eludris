@@ -1,3 +1,4 @@
+mod edit;
 mod get;
 mod join;
 

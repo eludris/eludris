@@ -74,12 +74,12 @@ pub struct OprishRateLimits {
     /// someone who hasn't made an account.
     #[serde(default = "guest_get_user_default")]
     pub guest_get_user: RateLimitConf,
-    /// Rate limits for the [`update_user`] enpoint.
-    #[serde(default = "update_user_default")]
-    pub update_user: RateLimitConf,
-    /// Rate limits for the [`update_profile`] enpoint.
-    #[serde(default = "update_profile_default")]
-    pub update_profile: RateLimitConf,
+    /// Rate limits for the [`edit_user`] enpoint.
+    #[serde(default = "edit_user_default")]
+    pub edit_user: RateLimitConf,
+    /// Rate limits for the [`edit_profile`] enpoint.
+    #[serde(default = "edit_profile_default")]
+    pub edit_profile: RateLimitConf,
     /// Rate limits for the [`delete_user`] enpoint.
     #[serde(default = "delete_user_default")]
     pub delete_user: RateLimitConf,
@@ -153,8 +153,8 @@ impl Default for OprishRateLimits {
             verify_user: verify_user_default(),
             get_user: get_user_default(),
             guest_get_user: guest_get_user_default(),
-            update_user: update_user_default(),
-            update_profile: update_profile_default(),
+            edit_user: edit_user_default(),
+            edit_profile: edit_profile_default(),
             delete_user: delete_user_default(),
             create_password_reset_code: create_password_reset_code_default(),
             reset_password: reset_password_default(),
@@ -221,14 +221,14 @@ fn guest_get_user_default() -> RateLimitConf {
     }
 }
 
-fn update_user_default() -> RateLimitConf {
+fn edit_user_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 180,
         limit: 5,
     }
 }
 
-fn update_profile_default() -> RateLimitConf {
+fn edit_profile_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 180,
         limit: 5,

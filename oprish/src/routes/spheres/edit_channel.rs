@@ -66,7 +66,7 @@ pub async fn edit_channel(
     cache
         .publish::<&str, String, ()>(
             "eludris-events",
-            serde_json::to_string(&ServerPayload::SphereChannelEdit {
+            serde_json::to_string(&ServerPayload::SphereChannelUpdate {
                 data: channel_edit,
                 channel_id,
                 sphere_id,

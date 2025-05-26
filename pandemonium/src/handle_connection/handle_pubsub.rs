@@ -124,7 +124,7 @@ async fn handle_event(
                 .await;
             }
         }
-        ServerPayload::CategoryEdit {
+        ServerPayload::CategoryUpdate {
             data,
             category_id,
             sphere_id,
@@ -132,7 +132,7 @@ async fn handle_event(
             if session.sphere_ids.contains(&sphere_id) {
                 send_payload(
                     tx,
-                    &ServerPayload::CategoryEdit {
+                    &ServerPayload::CategoryUpdate {
                         data,
                         category_id,
                         sphere_id,
@@ -165,7 +165,7 @@ async fn handle_event(
                 .await;
             }
         }
-        ServerPayload::SphereChannelEdit {
+        ServerPayload::SphereChannelUpdate {
             data,
             channel_id,
             sphere_id,
@@ -173,7 +173,7 @@ async fn handle_event(
             if session.sphere_ids.contains(&sphere_id) {
                 send_payload(
                     tx,
-                    &ServerPayload::SphereChannelEdit {
+                    &ServerPayload::SphereChannelUpdate {
                         data,
                         channel_id,
                         sphere_id,

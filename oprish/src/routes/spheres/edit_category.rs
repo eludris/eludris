@@ -64,7 +64,7 @@ pub async fn edit_category(
     cache
         .publish::<&str, String, ()>(
             "eludris-events",
-            serde_json::to_string(&ServerPayload::CategoryEdit {
+            serde_json::to_string(&ServerPayload::CategoryUpdate {
                 data: category_edit,
                 category_id,
                 sphere_id,

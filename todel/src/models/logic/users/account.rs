@@ -13,8 +13,8 @@ use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
 use crate::{
     ids::{IdGenerator, ELUDRIS_EPOCH},
     models::{
-        CreatePasswordResetCode, EmailPreset, Emailer, ErrorResponse, PasswordDeleteCredentials,
-        ResetPassword, Session, Status, StatusType, UpdateUser, User, UserCreate,
+        EmailPreset, Emailer, ErrorResponse, PasswordDeleteCredentials, PasswordReset,
+        PasswordResetCodeCreate, Session, Status, StatusType, User, UserCreate, UserEdit,
     },
     Conf,
 };
@@ -88,7 +88,7 @@ impl UserCreate {
     }
 }
 
-impl UpdateUser {
+impl UserEdit {
     pub async fn validate(&self, db: &mut PoolConnection<Postgres>) -> Result<(), ErrorResponse> {
         if self.username.is_none() && self.email.is_none() && self.new_password.is_none() {
             return Err(error!(VALIDATION, "body", "At least one field must exist"));
@@ -131,7 +131,7 @@ impl UpdateUser {
     }
 }
 
-impl ResetPassword {
+impl PasswordReset {
     pub fn validate(&self) -> Result<(), ErrorResponse> {
         validate_email(&self.email)?;
         validate_password(&self.password)
@@ -380,29 +380,29 @@ WHERE id = $1
         Ok(())
     }
 
-    pub async fn update<H: PasswordHasher, R: CryptoRngCore>(
+    pub async fn edit<H: PasswordHasher, R: CryptoRngCore>(
         id: u64,
-        update: UpdateUser,
+        edit: UserEdit,
         mailer: &Emailer,
         conf: &Conf,
         hasher: &H,
         rng: &mut R,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
-        update.validate(&mut *db).await?;
-        Self::validate_password(id, &update.password, hasher, db).await?;
+        edit.validate(&mut *db).await?;
+        Self::validate_password(id, &edit.password, hasher, db).await?;
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
         let mut seperated = query.separated(", ");
         let username = Self::get_unfiltered(id, &mut *db).await?.username;
-        if let Some(username) = &update.username {
+        if let Some(username) = &edit.username {
             seperated
                 .push("username = ")
                 .push_bind_unseparated(username);
         }
-        if let Some(email) = &update.email {
+        if let Some(email) = &edit.email {
             seperated.push("email = ").push_bind_unseparated(email);
         }
-        if let Some(new_password) = &update.new_password {
+        if let Some(new_password) = &edit.new_password {
             let salt = SaltString::generate(rng);
             let hash = hasher
                 .hash_password(new_password.as_bytes(), &salt)
@@ -435,10 +435,10 @@ WHERE id = $1
                         user.email.as_ref().expect("Couldn't get user email")
                     ),
                     EmailPreset::UserUpdated {
-                        old_username: update.username.as_ref().map(|_| username.as_str()),
-                        username: update.username.as_deref().unwrap_or_else(|| &username),
-                        new_email: update.email.as_deref(),
-                        password: update.new_password.is_some(),
+                        old_username: edit.username.as_ref().map(|_| username.as_str()),
+                        username: edit.username.as_deref().unwrap_or_else(|| &username),
+                        new_email: edit.email.as_deref(),
+                        password: edit.new_password.is_some(),
                     },
                     email,
                 )
@@ -448,7 +448,7 @@ WHERE id = $1
     }
 
     pub async fn create_password_reset_code<R: CryptoRngCore, C: AsyncCommands>(
-        create_code: CreatePasswordResetCode,
+        create_code: PasswordResetCodeCreate,
         rng: &mut R,
         conf: &Conf,
         mailer: &Emailer,
@@ -501,7 +501,7 @@ WHERE email = $1
     }
 
     pub async fn reset_password<H: PasswordHasher, R: CryptoRngCore, C: AsyncCommands>(
-        reset: ResetPassword,
+        reset: PasswordReset,
         hasher: &H,
         rng: &mut R,
         mailer: &Emailer,
