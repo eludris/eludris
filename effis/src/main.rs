@@ -26,12 +26,14 @@ use todel::{
     Conf,
 };
 
-pub const BUCKETS: [&str; 5] = [
+pub const BUCKETS: [&str; 7] = [
     "attachments",
     "avatars",
     "banners",
     "sphere-icons",
     "sphere-banners",
+    "member-avatars",
+    "member-banners",
 ];
 
 #[cfg(test)]

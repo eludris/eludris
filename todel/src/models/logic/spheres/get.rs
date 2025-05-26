@@ -126,7 +126,10 @@ WHERE sphere_id = $1
                 user,
                 sphere_id: self.id,
                 nickname: row.get("nickname"),
-                server_avatar: row.get::<Option<i64>, _>("server_avatar").map(|a| a as u64),
+                sphere_avatar: row.get::<Option<i64>, _>("sphere_avatar").map(|a| a as u64),
+                sphere_banner: row.get::<Option<i64>, _>("sphere_banner").map(|a| a as u64),
+                sphere_bio: row.get("sphere_bio"),
+                sphere_status: row.get("sphere_status"),
             })
         }
         self.members = members;

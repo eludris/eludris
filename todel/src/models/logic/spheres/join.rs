@@ -54,11 +54,15 @@ VALUES($1, $2)
             sphere_id,
             user: User::get_unfiltered(user_id, db).await?,
             nickname: None,
-            server_avatar: None,
+            sphere_avatar: None,
+            sphere_banner: None,
+            sphere_bio: None,
+            sphere_status: None,
         })
     }
 
     pub async fn join_slug(
+        // slightly wet code to prevent double-fetching of sphere data
         slug: String,
         user_id: u64,
         db: &mut PoolConnection<Postgres>,
@@ -110,7 +114,10 @@ VALUES($1, $2)
             sphere_id: sphere.id,
             user: User::get_unfiltered(user_id, db).await?,
             nickname: None,
-            server_avatar: None,
+            sphere_avatar: None,
+            sphere_banner: None,
+            sphere_bio: None,
+            sphere_status: None,
         })
     }
 }
