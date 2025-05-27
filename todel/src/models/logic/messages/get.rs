@@ -1,8 +1,8 @@
 use async_recursion::async_recursion;
 use redis::AsyncCommands;
-use sqlx::{pool::PoolConnection, Postgres, QueryBuilder, Row};
+use sqlx::{pool::PoolConnection, types::Json, Postgres, QueryBuilder, Row};
 
-use crate::models::{ErrorResponse, Message, SphereChannel, Status, StatusType, User};
+use crate::models::{Embed, ErrorResponse, File, Message, SphereChannel, Status, StatusType, User};
 
 impl Message {
     #[allow(clippy::multiple_bound_locations)] // happens thanks to the `async_recursion` macro
@@ -14,9 +14,9 @@ impl Message {
     ) -> Result<Self, ErrorResponse> {
         let row = sqlx::query!(
             "
-SELECT *
-FROM messages
-WHERE id = $1
+            SELECT *
+            FROM messages
+            WHERE id = $1
             ",
             id as i64
         )
@@ -63,6 +63,44 @@ WHERE id = $1
             },
             None => None,
         };
+        let attachment_ids = sqlx::query!(
+            "
+            SELECT attachment_id
+            FROM message_attachments
+            WHERE message_id = $1
+            ",
+            id as i64
+        )
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't fetch message attachments {}: {}", id, err);
+            error!(SERVER, "Failed to fetch message data")
+        })?;
+        let embeds = sqlx::query!(
+            r#"
+            SELECT embed as "embed: Json<Embed>"
+            FROM message_embeds
+            WHERE message_id = $1
+            "#,
+            id as i64
+        )
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't fetch message embed {}: {}", id, err);
+            error!(SERVER, "Failed to fetch message data")
+        })?
+        .into_iter()
+        .map(|r| r.embed.0)
+        .collect();
+        let mut attachments = vec![];
+        for attachment_id in attachment_ids {
+            attachments.push(
+                File::fetch_file_data(attachment_id.attachment_id as u64, "attachments", db)
+                    .await?,
+            );
+        }
         Ok(Self {
             id: row.id as u64,
             author,
@@ -70,7 +108,8 @@ WHERE id = $1
             reference,
             disguise: None,
             channel: SphereChannel::get(row.channel_id as u64, db).await?,
-            attachments: vec![],
+            attachments,
+            embeds,
         })
     }
 
@@ -91,9 +130,9 @@ WHERE id = $1
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
             "
-SELECT *
-FROM messages
-WHERE channel_id = 
+            SELECT *
+            FROM messages
+            WHERE channel_id =
             ",
         );
         query.push_bind(channel_id as i64);
@@ -116,6 +155,7 @@ WHERE channel_id =
         })?;
         let mut messages = vec![];
         for row in rows {
+            let id = row.get::<i64, _>("id") as u64;
             let author = match row.get::<Option<i64>, _>("author_id") {
                 Some(id) => User::get(id as u64, None, db, cache).await?,
                 None => User {
@@ -152,14 +192,54 @@ WHERE channel_id =
                 },
                 None => None,
             };
+            // not the most optimal way but whatever
+            let attachment_ids = sqlx::query!(
+                "
+                SELECT attachment_id
+                FROM message_attachments
+                WHERE message_id = $1
+                ",
+                id as i64
+            )
+            .fetch_all(&mut **db)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch message attachments {}: {}", id, err);
+                error!(SERVER, "Failed to fetch channel history")
+            })?;
+            let mut attachments = vec![];
+            for attachment_id in attachment_ids {
+                attachments.push(
+                    File::fetch_file_data(attachment_id.attachment_id as u64, "attachments", db)
+                        .await?,
+                );
+            }
+            let embeds = sqlx::query!(
+                r#"
+            SELECT embed as "embed: Json<Embed>"
+            FROM message_embeds
+            WHERE message_id = $1
+            "#,
+                id as i64
+            )
+            .fetch_all(&mut **db)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch message embed {}: {}", id, err);
+                error!(SERVER, "Failed to fetch message data")
+            })?
+            .into_iter()
+            .map(|r| r.embed.0)
+            .collect();
             messages.push(Self {
-                id: row.get::<i64, _>("id") as u64,
+                id,
                 author,
                 content: row.get("content"),
                 reference,
                 disguise: None,
                 channel: SphereChannel::get(row.get::<i64, _>("channel_id") as u64, db).await?,
-                attachments: vec![],
+                attachments,
+                embeds,
             })
         }
         messages.reverse();

@@ -50,6 +50,7 @@ sqlx = { version = "0.7.3", features = [
     "macros",
     "postgres",
     "ipnetwork",
+    "json",
 ], optional = true }
 todel_codegen = { version = "0.4.0-alpha.1", path = "../codegen" }
 tokio = { version = "1.41.1", optional = true }

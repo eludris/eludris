@@ -81,8 +81,14 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 CREATE TABLE IF NOT EXISTS message_attachments (
-  message_id BIGINT,
-  attachment_id BIGINT,
+  message_id BIGINT NOT NULL,
+  attachment_id BIGINT NOT NULL,
   FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (attachment_id) REFERENCES files(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_embeds (
+  message_id BIGINT NOT NULL,
+  embed jsonb NOT NULL,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

@@ -1,8 +1,11 @@
 use serde::{Deserialize, Serialize};
+use serde_with::rust::double_option;
 
-use super::{FileData, SphereChannel, User};
+use super::{CustomEmbed, Embed, FileData, SphereChannel, User};
 
 /// The MessageCreate payload. This is used when you want to create a message using the REST API.
+///
+/// At least either content, an attachment or an embed have to exist.
 ///
 /// -----
 ///
@@ -17,11 +20,15 @@ use super::{FileData, SphereChannel, User};
 #[autodoc(category = "Messaging", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MessageCreate {
-    /// The message's content. This field has to be at-least 2 characters long. The upper limit
-    /// is the instance's [`InstanceInfo`] `message_limit`.
+    /// The message's content. The upper limit is the instance's [`InstanceInfo`] `message_limit`.
     ///
     /// Leading and trailing whitespace will be trimmed off the content.
-    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
+    #[serde(default)]
+    pub attachments: Vec<u64>,
+    #[serde(default)]
+    pub embeds: Vec<CustomEmbed>,
     /// The ID of the message referenced by this message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<u64>,
@@ -67,11 +74,20 @@ pub struct MessageDisguise {
 #[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MessageEdit {
-    /// The message's updated content. This field has to be at-least 2 characters long. The upper
-    /// limit is the instance's [`InstanceInfo`] `message_limit`.
+    /// The message's updated content. The upper limit is the instance's [`InstanceInfo`] `message_limit`.
+    /// If this is set to be an empty string it will be considered to be null,
     ///
     /// Leading and trailing whitespace will be trimmed off the content.
-    pub content: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub content: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attachments: Option<Vec<u64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub embedds: Option<Vec<Embed>>,
 }
 
 /// The Message payload. This is returned when you're provided information about a pre-existing
@@ -117,6 +133,8 @@ pub struct Message {
     pub channel: SphereChannel,
     /// The attachments of this message.
     pub attachments: Vec<FileData>,
+    /// The embeds of this message.
+    pub embeds: Vec<Embed>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "_disguise")]
     pub disguise: Option<MessageDisguise>,

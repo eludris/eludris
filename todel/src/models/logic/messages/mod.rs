@@ -5,21 +5,43 @@ use sqlx::{pool::PoolConnection, Postgres};
 
 use crate::{
     ids::IdGenerator,
-    models::{ErrorResponse, Message, MessageCreate, SphereChannel, User},
+    models::{Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User},
     Conf,
 };
 
 impl MessageCreate {
     pub async fn validate(&mut self, conf: &Conf) -> Result<(), ErrorResponse> {
-        self.content = self.content.trim().to_string();
-        if self.content.is_empty() || self.content.len() > conf.oprish.message_limit {
+        if let Some(ref mut content) = self.content {
+            *content = content.trim().to_string();
+            if content.is_empty() {
+                self.content = None;
+            } else if content.len() > conf.oprish.message_limit {
+                return Err(error!(
+                    VALIDATION,
+                    "content",
+                    format!(
+                        "Message content has to be less than {} characters long",
+                        conf.oprish.message_limit
+                    )
+                ));
+            }
+        }
+        if self.content.is_none() && self.attachments.is_empty() && self.embeds.is_empty() {
             return Err(error!(
                 VALIDATION,
-                "content",
-                format!(
-                    "Message content has to be between 1 and {} characters long",
-                    conf.oprish.message_limit
-                )
+                "body", "Message must contain at least either content, an attachment or an embed"
+            ));
+        }
+        if self.attachments.len() > 10 {
+            return Err(error!(
+                VALIDATION,
+                "attachments", "Message can't contain more than 10 attachments"
+            ));
+        }
+        if self.embeds.len() > 10 {
+            return Err(error!(
+                VALIDATION,
+                "embeds", "Message can't contain more than 10 embeds"
             ));
         }
         if let Some(disguise) = &self.disguise {
@@ -94,14 +116,23 @@ VALUES($1, $2, $3, $4, $5)
             },
             None => None,
         };
+        let mut attachments = vec![];
+        for attachment_id in message.attachments {
+            attachments.push(File::fetch_file_data(attachment_id, "attachments", db).await?);
+        }
         Ok(Self {
             id,
             author: User::get(author_id, None, db, cache).await?,
-            content: Some(message.content),
+            content: message.content,
             reference,
             disguise: message.disguise,
             channel,
             attachments: vec![],
+            embeds: message
+                .embeds
+                .into_iter()
+                .map(|e| Embed::Custom(e))
+                .collect(),
         })
     }
 }
