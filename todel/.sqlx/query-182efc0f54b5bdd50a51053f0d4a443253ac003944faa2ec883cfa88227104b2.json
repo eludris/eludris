@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT id\nFROM members\nWHERE id = $1\nAND sphere_id = $2\n            ",
+  "query": "\n            SELECT id\n            FROM members\n            WHERE id = $1\n            AND sphere_id = $2\n            ",
   "describe": {
     "columns": [
       {
@@ -19,5 +19,5 @@
       false
     ]
   },
-  "hash": "b3757f8720c86edfc3838f79436677bb55e0c65be64236e2030f721888c067cb"
+  "hash": "182efc0f54b5bdd50a51053f0d4a443253ac003944faa2ec883cfa88227104b2"
 }

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                DELETE FROM message_embeds\n                WHERE message_id = $1\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c1ad62ece0c28f744c955c1cd4773c097403599ba67dff7741f8a93e4e7fc56a"
+}

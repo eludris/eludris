@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT *\nFROM messages\nWHERE id = $1\n            ",
+  "query": "\n            SELECT *\n            FROM messages\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -48,5 +48,5 @@
       false
     ]
   },
-  "hash": "f2ab2c634c33e6c40b93c79a116eff3119c86bc1d79819ef0b2c672a83c36bfa"
+  "hash": "03d630f8e045f9f017c730c77c681bfc258f8999a911dde8fcc21e4cd6156c60"
 }

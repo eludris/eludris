@@ -14,9 +14,9 @@ use sqlx::{pool::PoolConnection, Postgres};
 use tokio::fs;
 
 #[cfg(feature = "http")]
+use crate::ids::IdGenerator;
 use crate::{
     error,
-    ids::IdGenerator,
     models::{ErrorResponse, FileData, FileMetadata},
 };
 
@@ -352,7 +352,6 @@ AND bucket = $2
         })
     }
 
-    #[cfg(feature = "http")]
     pub async fn fetch_file_data<'a>(
         id: u64,
         bucket: &'a str,
@@ -364,7 +363,6 @@ AND bucket = $2
             .map(|f| f.get_file_data())
     }
 
-    #[cfg(feature = "http")]
     pub fn get_file_data(self) -> FileData {
         let metadata = match self.content_type.as_ref() {
             "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
