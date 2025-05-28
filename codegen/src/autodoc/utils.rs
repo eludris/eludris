@@ -1,8 +1,8 @@
 use std::ops::Not;
 
 use syn::{
-    spanned::Spanned, Attribute, Error, Field, GenericArgument, Lit, Meta, MetaNameValue,
-    NestedMeta, PathArguments, PathSegment, Type,
+    spanned::Spanned, AngleBracketedGenericArguments, Attribute, Error, Field, GenericArgument,
+    Lit, Meta, MetaNameValue, NestedMeta, PathArguments, PathSegment, Type,
 };
 
 use super::models::FieldInfo;
@@ -42,9 +42,51 @@ pub fn get_type(ty: &Type) -> Result<String, Error> {
 }
 
 pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
+    if segment.ident == "RateLimitedRouteResponse"
+        || segment.ident == "Result"
+        || segment.ident == "Box"
+        || segment.ident == "Custom"
+    {
+        if let PathArguments::AngleBracketed(args) = &segment.arguments {
+            match args.args.first() {
+                Some(GenericArgument::Type(Type::Path(ty))) => {
+                    if let Some(segment) = ty.path.segments.last() {
+                        return display_path_segment(segment);
+                    } else {
+                        return Err(Error::new(ty.span(), "Cannot extract type from field"));
+                    }
+                }
+                Some(GenericArgument::Type(Type::Tuple(ty))) => {
+                    if let Some(ty) = ty.elems.first() {
+                        return get_type(ty);
+                    } else {
+                        // this is valid
+                        return Ok("()".to_string());
+                    }
+                }
+                _ => {
+                    return Err(Error::new(segment.span(), "Cannot extract type from field"));
+                }
+            };
+        } else {
+            return Err(Error::new(segment.span(), "Cannot extract type from field"));
+        }
+    }
+
     Ok(match &segment.arguments {
         PathArguments::None => segment.ident.to_string(),
         PathArguments::AngleBracketed(args) => {
+            // convert Vec<T> to T[]
+            if segment.ident == "Vec" {
+                if let Some(GenericArgument::Type(Type::Path(ty))) = args.args.first() {
+                    if let Some(segment) = ty.path.segments.last() {
+                        return display_path_segment(segment).map(|s| format!("{}[]", s));
+                    } else {
+                        return Err(Error::new(ty.span(), "Cannot extract type from field"));
+                    }
+                }
+            }
+
             let mut arg_strings = vec![];
 
             args.args.iter().try_for_each(|a| match a {
@@ -59,6 +101,31 @@ pub fn display_path_segment(segment: &PathSegment) -> Result<String, Error> {
                     Ok(())
                 }
                 GenericArgument::Lifetime(_) => Ok(()),
+                GenericArgument::Type(Type::Tuple(ty)) => {
+                    let types = ty
+                        .elems
+                        .iter()
+                        .filter_map(|t| {
+                            let ty = get_type(t).ok()?;
+                            if ty == "Status" {
+                                None
+                            } else {
+                                Some(ty)
+                            }
+                        })
+                        .collect::<Vec<_>>();
+
+                    if types.len() > 1 {
+                        return Err(Error::new(
+                            ty.span(),
+                            "Cannot generate documentation for tuple types with more than one non-Status element",
+                        ));
+                    }
+                    if !types.is_empty() {
+                        arg_strings.push(types[0].clone());
+                    }
+                    Ok(())
+                }
                 _ => Err(Error::new(
                     a.span(),
                     "Cannot generate documentation for non-type generics",
@@ -84,8 +151,8 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
     fields: T,
 ) -> Result<Vec<FieldInfo>, Error> {
     let mut field_infos = vec![];
-    for field in fields {
-        let name = field
+    'outer: for field in fields {
+        let mut name = field
             .ident
             .as_ref()
             .ok_or_else(|| {
@@ -95,11 +162,17 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                 )
             })?
             .to_string();
-        let field_type = get_type(&field.ty)?;
+        let mut r#type = get_type(&field.ty)?;
         let doc = get_doc(&field.attrs)?;
         let mut flattened = false;
         let mut nullable = false;
-        let mut ommitable = false;
+        let mut omittable = false;
+
+        if r#type == "String" {
+            r#type = "str".to_string();
+        } else if r#type == "TempFile" {
+            r#type = "file".to_string();
+        }
 
         // I'm sorry, Torvalds
         for attr in field.attrs.iter().filter(|a| a.path.is_ident("serde")) {
@@ -109,25 +182,40 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
                         NestedMeta::Meta(Meta::Path(path)) => {
                             if path.is_ident("flatten") {
                                 flattened = true;
-                            } else if path.is_ident("skip") {
-                                continue;
+                            } else if path.is_ident("skip") || path.is_ident("skip_serializing") {
+                                continue 'outer;
                             }
                         }
                         NestedMeta::Meta(Meta::NameValue(meta)) => {
                             if meta.path.is_ident("skip_serializing_if") {
-                                ommitable = true;
+                                omittable = true;
+                                // Strip Option<> from type.
+                                if r#type.starts_with("Option<") {
+                                    r#type = r#type[7..r#type.len() - 1].to_string();
+                                }
                                 if let Type::Path(ty) = &field.ty {
                                     if ty.path.segments.last().unwrap().ident == "Option" {
-                                        if let Some(qself) = &ty.qself {
-                                            if let Type::Path(ty) = &*qself.ty {
+                                        if let PathArguments::AngleBracketed(
+                                            AngleBracketedGenericArguments { args, .. },
+                                        ) = &ty.path.segments.last().unwrap().arguments
+                                        {
+                                            if let GenericArgument::Type(Type::Path(ty)) =
+                                                args.last().unwrap()
+                                            {
                                                 if ty.path.segments.last().unwrap().ident
                                                     == "Option"
                                                 {
                                                     nullable = true;
+                                                    r#type =
+                                                        r#type[7..r#type.len() - 1].to_string();
                                                 }
                                             }
                                         }
                                     }
+                                }
+                            } else if meta.path.is_ident("rename") {
+                                if let Lit::Str(lit) = meta.lit {
+                                    name = lit.value();
                                 }
                             }
                         }
@@ -138,17 +226,18 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         }
 
         if let Type::Path(ty) = &field.ty {
-            if ty.path.segments.last().unwrap().ident == "Option" && !ommitable {
+            if ty.path.segments.last().unwrap().ident == "Option" && !omittable {
                 nullable = true;
+                r#type = r#type[7..r#type.len() - 1].to_string();
             }
         }
         field_infos.push(FieldInfo {
             name,
-            field_type,
+            r#type,
             doc,
             flattened,
             nullable,
-            ommitable,
+            omittable,
         })
     }
     Ok(field_infos)

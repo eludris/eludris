@@ -3,7 +3,10 @@ extern crate rocket;
 #[macro_use]
 extern crate todel;
 
+mod cleanup;
 mod cors;
+mod database;
+mod email;
 mod rate_limit;
 mod routes;
 
@@ -12,17 +15,24 @@ use std::env;
 use std::sync::Once;
 
 use anyhow::Context;
+use argon2::Argon2;
+use rand::{rngs::StdRng, SeedableRng};
 use rocket::{Build, Config, Rocket};
-use rocket_db_pools::{deadpool_redis::Pool, Database};
+use rocket_db_pools::Database;
+use todel::{
+    http::{Cache, DB},
+    ids::IdGenerator,
+    Conf,
+};
+use tokio::sync::Mutex;
+
+use cleanup::ScheduledCleanup;
+use database::DatabaseFairing;
+use email::EmailFairing;
 use routes::*;
-use todel::Conf;
 
 #[cfg(test)]
 static INIT: Once = Once::new();
-
-#[derive(Database)]
-#[database("cache")]
-pub struct Cache(Pool);
 
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
@@ -46,8 +56,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .merge((
             "databases.db",
             rocket_db_pools::Config {
-                url: env::var("DATABASE_URL")
-                    .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string()),
+                url: env::var("DATABASE_URL").unwrap_or_else(|_| {
+                    "postgresql://root:root@localhost:5432/eludris".to_string()
+                }),
                 min_connections: None,
                 max_connections: 1024,
                 connect_timeout: 3,
@@ -66,11 +77,21 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         ));
 
     Ok(rocket::custom(config)
-        .mount("/", get_routes())
-        .mount("/messages", messages::get_routes())
         .manage(Conf::new_from_env()?)
+        .manage(Mutex::new(StdRng::from_entropy()))
+        .manage(Mutex::new(IdGenerator::new()))
+        .manage(Argon2::default())
+        .attach(DB::init())
         .attach(Cache::init())
-        .attach(cors::Cors))
+        .attach(cors::Cors)
+        .attach(DatabaseFairing)
+        .attach(EmailFairing)
+        .attach(ScheduledCleanup)
+        .mount("/", get_routes())
+        .mount("/users", users::get_routes())
+        .mount("/sessions", sessions::get_routes())
+        .mount("/spheres", spheres::get_routes())
+        .mount("/channels", channels::get_routes()))
 }
 
 #[rocket::main]

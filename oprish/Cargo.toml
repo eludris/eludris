@@ -12,8 +12,13 @@ serde = { version = "1.0.144", features = ["derive"] }
 serde_json = "1.0.85"
 log = "0.4.17"
 env_logger = "0.10.0"
-todel = { features = ["http"], path = "../todel", version = "0.3.0" }
-rocket_db_pools = { version = "0.1.0-rc.2", features = ["deadpool_redis"] }
+todel = { features = ["http"], path = "../todel", version = "0.4.0-alpha1" }
+rocket_db_pools = { version = "0.1.0-rc.4", features = ["deadpool_redis", "sqlx", "sqlx_postgres"] }
 anyhow = "1.0.71"
-tokio = { version = "1.22.0", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.41.1", features = ["rt-multi-thread", "macros"] }
 dotenvy = "0.15.7"
+sqlx = { version = "0.7.3", features = ["postgres", "macros"] }
+rand = "0.8.5"
+lettre = { version = "0.10.4", default-features = false, features = ["smtp-transport", "builder", "hostname", "tokio1", "tokio1-rustls-tls", "pool"] }
+argon2 = "0.5.0"
+chrono = "0.4.26"

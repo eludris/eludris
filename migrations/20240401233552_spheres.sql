@@ -1,0 +1,94 @@
+-- # DAMATASE CREATED
+--
+-- This damatabse is really cool
+-- it reminds me of going to school
+-- and when I go home it always feels
+-- like
+--
+--
+-- YIPPEEEEEEEEE
+
+CREATE TYPE sphere_type AS ENUM ('CHAT', 'FORUM', 'HYBRID');
+
+CREATE TABLE IF NOT EXISTS spheres (
+  id BIGINT PRIMARY KEY,
+  owner_id BIGINT NOT NULL,
+  name VARCHAR(32),
+  slug VARCHAR(32) UNIQUE,
+  sphere_type sphere_type NOT NULL DEFAULT 'HYBRID',
+  description VARCHAR(4096),
+  icon BIGINT,
+  banner BIGINT,
+  badges BIGINT NOT NULL DEFAULT 0,
+  default_permissions BIGINT NOT NULL DEFAULT 0,
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (icon) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (banner) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TYPE channel_type AS ENUM ('CATEGORY', 'TEXT', 'VOICE', 'GROUP', 'DIRECT');
+
+CREATE TABLE IF NOT EXISTS channels (
+  id BIGINT PRIMARY KEY,
+  sphere_id BIGINT,
+  owner_id BIGINT,
+  recipient_id BIGINT,
+  channel_type channel_type NOT NULL DEFAULT 'TEXT',
+  position INT,
+  icon BIGINT,
+  name VARCHAR(32),
+  topic VARCHAR(4096),
+  default_permissions BIGINT,
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  FOREIGN KEY (sphere_id) REFERENCES spheres(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS members (
+  id BIGINT NOT NULL,
+  sphere_id BIGINT NOT NULL,
+  nickname VARCHAR(32),
+  sphere_avatar BIGINT,
+  sphere_banner BIGINT,
+  sphere_bio VARCHAR(4096),
+  sphere_status VARCHAR(128),
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (sphere_id) REFERENCES spheres(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (sphere_avatar) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (sphere_banner) REFERENCES files(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS channel_members (
+  id BIGINT NOT NULL,
+  channel_id BIGINT,
+  FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id BIGINT PRIMARY KEY,
+  channel_id BIGINT NOT NULL,
+  author_id BIGINT,
+  content TEXT,
+  reference BIGINT,
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (reference) REFERENCES messages(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_attachments (
+  message_id BIGINT NOT NULL,
+  attachment_id BIGINT NOT NULL,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (attachment_id) REFERENCES files(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_embeds (
+  message_id BIGINT NOT NULL,
+  embed jsonb NOT NULL,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE ON UPDATE CASCADE
+);

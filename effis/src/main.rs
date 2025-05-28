@@ -13,26 +13,31 @@ use std::{env, fs, path::Path};
 
 use anyhow::Context;
 
+use reqwest::Client;
 use rocket::{
     data::{Limits, ToByteUnit},
     tokio::sync::Mutex,
     Build, Config, Rocket,
 };
-use rocket_db_pools::{deadpool_redis::Pool, sqlx::MySqlPool, Database};
-use todel::{ids::IDGenerator, Conf};
+use rocket_db_pools::Database;
+use todel::{
+    http::{Cache, DB},
+    ids::IdGenerator,
+    Conf,
+};
 
-pub const BUCKETS: [&str; 1] = ["attachments"];
+pub const BUCKETS: [&str; 7] = [
+    "attachments",
+    "avatars",
+    "banners",
+    "sphere-icons",
+    "sphere-banners",
+    "member-avatars",
+    "member-banners",
+];
 
 #[cfg(test)]
 static INIT: Once = Once::new();
-
-#[derive(Database)]
-#[database("db")]
-pub struct DB(MySqlPool);
-
-#[derive(Database)]
-#[database("cache")]
-pub struct Cache(Pool);
 
 fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     #[cfg(test)]
@@ -69,8 +74,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .merge((
             "databases.db",
             rocket_db_pools::Config {
-                url: env::var("DATABASE_URL")
-                    .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string()),
+                url: env::var("DATABASE_URL").unwrap_or_else(|_| {
+                    "postgresql://root:root@localhost:5432/eludris".to_string()
+                }),
                 min_connections: None,
                 max_connections: 1024,
                 connect_timeout: 3,
@@ -89,8 +95,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         ));
 
     Ok(rocket::custom(config)
-        .manage(Mutex::new(IDGenerator::new()))
+        .manage(Mutex::new(IdGenerator::new()))
         .manage(conf)
+        .manage(Client::new())
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)
@@ -102,17 +109,6 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
 async fn main() -> Result<(), anyhow::Error> {
     dotenvy::dotenv().ok();
     env_logger::init();
-
-    let db_url = env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "mysql://root:root@localhost:3306/eludris".to_string());
-
-    let pool = MySqlPool::connect(&db_url)
-        .await
-        .with_context(|| format!("Failed to connect to database on {}", db_url))?;
-    sqlx::migrate!("../migrations")
-        .run(&pool)
-        .await
-        .context("Failed to run migrations")?;
 
     create_file_dirs()?;
 

@@ -15,20 +15,20 @@ lazy_static! {
 /// ## Example
 ///
 /// ```rust
-/// use todel::ids::IDGenerator;
+/// use todel::ids::IdGenerator;
 ///
-/// let mut generator = IDGenerator::new(); // Create a new ID generator.
+/// let mut generator = IdGenerator::new(); // Create a new ID generator.
 ///
-/// generator.generate_id(); // Generate an ID which also increments the sequence.
+/// generator.generate(); // Generate an ID which also increments the sequence.
 /// ```
 #[derive(Debug, Clone, Default)]
-pub struct IDGenerator {
+pub struct IdGenerator {
     sequence: u8,
     worker_id: u8,
 }
 
-impl IDGenerator {
-    /// Create a new IDGenerator from an instance ID.
+impl IdGenerator {
+    /// Create a new IdGenerator from an instance ID.
     pub fn new() -> Self {
         Self {
             sequence: 0,
@@ -42,7 +42,7 @@ impl IDGenerator {
     }
 
     /// Generate a new ID and handle incrementing the sequence
-    pub fn generate_id(&mut self) -> u64 {
+    pub fn generate(&mut self) -> u64 {
         if self.sequence == u8::MAX {
             self.sequence = 0
         } else {
@@ -60,37 +60,37 @@ impl IDGenerator {
 
 #[cfg(test)]
 mod tests {
-    use super::IDGenerator;
+    use super::IdGenerator;
 
     #[test]
     fn id_generator() {
-        let mut generator = IDGenerator::new();
+        let mut generator = IdGenerator::new();
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 1);
         assert_eq!(id >> 8 & 0xFF, 0);
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 2);
         assert_eq!(id >> 8 & 0xFF, 0);
     }
 
     #[test]
     fn id_generator_overflow() {
-        let mut generator = IDGenerator {
+        let mut generator = IdGenerator {
             sequence: u8::MAX - 1,
             worker_id: 3,
         };
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, u8::MAX as u64);
         assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 0);
         assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
 
-        let id = generator.generate_id();
+        let id = generator.generate();
         assert_eq!(id & 0xFF, 1);
         assert_eq!(id >> 8 & 0xFF, generator.worker_id as u64);
     }

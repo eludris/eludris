@@ -6,7 +6,9 @@ mod utils;
 
 use std::{env, fs};
 
+use lazy_static::lazy_static;
 use proc_macro::{Span, TokenStream};
+use regex::Regex;
 use syn::{parse::Parser, spanned::Spanned, Error, Item, Lit, Meta, NestedMeta};
 
 use self::{models::ItemInfo, utils::get_doc};
@@ -77,15 +79,27 @@ pub fn handle_autodoc(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
 
         let item = match item {
             Item::Fn(item) => {
+                lazy_static! {
+                    static ref STATUS_REGEX: Regex =
+                        Regex::new(r"-- STATUS: (?P<code>\d{3})\n").unwrap();
+                };
+
                 let name = item.sig.ident.to_string();
-                let doc = get_doc(&item.attrs)?;
+                let mut doc = get_doc(&item.attrs)?;
+                let mut status_code = 200;
+                if let Some(ref some_doc) = doc {
+                    if let Some(captures) = STATUS_REGEX.captures(some_doc) {
+                        status_code = captures["code"].parse::<u8>().unwrap();
+                        doc = Some(STATUS_REGEX.replace(some_doc, "").to_string());
+                    }
+                }
                 ItemInfo {
                     name,
                     doc,
                     category,
                     hidden,
                     package: package.clone(),
-                    item: handle_fn::handle_fn(&attrs, item)?,
+                    item: handle_fn::handle_fn(&attrs, item, status_code)?,
                 }
             }
             Item::Enum(item) => {

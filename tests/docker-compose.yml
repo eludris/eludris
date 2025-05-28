@@ -7,13 +7,14 @@ services:
     ports:
       - "6379:6379"
 
-  mariadb:
-    image: mariadb:latest
+  postgresql:
+    image: postgres:15
     restart: unless-stopped
 
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: eludris
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: eludris
 
     ports:
-      - "3306:3306"
+      - "5432:5432"

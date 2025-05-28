@@ -1,19 +1,28 @@
-#![allow(clippy::unnecessary_lazy_evaluations)] // Needed because rocket
+#[cfg(feature = "http")]
 use std::path::PathBuf;
 
+#[cfg(feature = "http")]
 use image::{io::Reader as ImageReader, ImageFormat};
+#[cfg(feature = "http")]
 use rocket::{
     fs::TempFile,
     http::{ContentType, Header},
     FromForm, Responder,
 };
-use sqlx::{pool::PoolConnection, MySql};
-use tokio::{fs, sync::Mutex};
+use sqlx::{pool::PoolConnection, Postgres};
+#[cfg(feature = "http")]
+use tokio::fs;
 
-use crate::error;
-use crate::ids::IDGenerator;
-use crate::models::{ErrorResponse, File, FileData, FileMetadata};
+#[cfg(feature = "http")]
+use crate::ids::IdGenerator;
+use crate::{
+    error,
+    models::{ErrorResponse, FileData, FileMetadata},
+};
 
+use crate::models::File;
+
+#[cfg(feature = "http")]
 #[derive(Debug, Responder)]
 pub struct FetchResponse<'a> {
     pub file: fs::File,
@@ -35,7 +44,8 @@ pub struct FetchResponse<'a> {
 ///   -F spoiler=true \
 ///   https://cdn.eludris.gay/attachments/
 /// ```
-#[autodoc(category = "Files")]
+#[cfg(feature = "http")]
+#[autodoc(category = "Files", hidden = true)]
 #[derive(Debug, FromForm)]
 pub struct FileUpload<'a> {
     pub file: TempFile<'a>,
@@ -43,11 +53,12 @@ pub struct FileUpload<'a> {
 }
 
 impl File {
+    #[cfg(feature = "http")]
     pub async fn create<'a>(
         mut file: TempFile<'a>,
         bucket: String,
-        gen: &Mutex<IDGenerator>,
-        db: &mut PoolConnection<MySql>,
+        id_generator: &mut IdGenerator,
+        db: &mut PoolConnection<Postgres>,
         spoiler: bool,
     ) -> Result<FileData, ErrorResponse> {
         if file.len() == 0 {
@@ -57,7 +68,7 @@ impl File {
             ));
         }
 
-        let id = gen.lock().await.generate_id();
+        let id = id_generator.generate();
         let path = PathBuf::from(format!("files/{}/{}", bucket, id));
         let name = match file.raw_name() {
             Some(name) => PathBuf::from(name.dangerous_unsafe_unsanitized_raw().as_str())
@@ -81,13 +92,13 @@ impl File {
             "
 SELECT file_id, content_type, width, height
 FROM files
-WHERE hash = ?
-AND bucket = ?
-                ",
+WHERE hash = $1
+AND bucket = $2
+            ",
             hash,
             bucket,
         )
-        .fetch_one(&mut *db)
+        .fetch_one(&mut **db)
         .await
         .map(|f| (f.file_id, f.content_type, f.width, f.height))
         {
@@ -95,25 +106,25 @@ AND bucket = ?
             sqlx::query!(
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ",
-                id,
-                file_id,
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ",
+                id as i64,
+                file_id as i64,
                 name,
                 content_type,
                 hash,
                 bucket,
                 spoiler,
-                width,
-                height,
+                width as Option<i32>,
+                height as Option<i32>,
             )
-            .execute(&mut *db)
+            .execute(&mut **db)
             .await
             .unwrap();
 
             Self {
                 id,
-                file_id,
+                file_id: file_id as u64,
                 name,
                 content_type,
                 hash,
@@ -124,8 +135,11 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             }
         } else {
             let file = tokio::task::spawn_blocking(move || {
-                let mime = tree_magic_mini::from_u8(&data);
-                let (width, height) = match mime {
+                let mut mime = tree_magic::from_u8(&data);
+                if mime == "application/x-riff" && name.ends_with(".webp") { // tree magic bug
+                    mime = "image/webp".to_string();
+                }
+                let (width, height) = match mime.as_str() {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
                             let mut reader = ImageReader::open(&path)
@@ -212,7 +226,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                     id,
                     file_id: id,
                     name,
-                    content_type: mime.to_string(),
+                    content_type: mime,
                     hash,
                     bucket,
                     spoiler,
@@ -225,19 +239,19 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             sqlx::query!(
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ",
-                file.id.to_string(),
-                file.id.to_string(),
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ",
+                file.id as i64,
+                file.id as i64,
                 file.name,
                 file.content_type,
                 file.hash,
                 file.bucket,
                 file.spoiler,
-                file.width.map(|s| s as u32),
-                file.height.map(|s| s as u32),
+                file.width.map(|s| s as i32),
+                file.height.map(|s| s as i32),
             )
-            .execute(&mut *db)
+            .execute(&mut **db)
             .await
             .unwrap();
 
@@ -247,37 +261,42 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
         Ok(file.get_file_data())
     }
 
-    async fn get<'a>(id: u64, bucket: &'a str, db: &mut PoolConnection<MySql>) -> Option<Self> {
+    pub async fn get<'a>(
+        id: u64,
+        bucket: &'a str,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Option<Self> {
         sqlx::query!(
             "
 SELECT *
 FROM files
-WHERE id = ?
-AND bucket = ?
-                ",
-            id.to_string(),
+WHERE id = $1
+AND bucket = $2
+            ",
+            id as i64,
             bucket,
         )
-        .fetch_one(&mut *db)
+        .fetch_one(&mut **db)
         .await
         .map(|r| Self {
-            id: r.id,
-            file_id: r.file_id,
+            id: r.id as u64,
+            file_id: r.file_id as u64,
             name: r.name,
             content_type: r.content_type,
             hash: r.hash,
             bucket: r.bucket,
-            spoiler: r.spoiler == 1,
+            spoiler: r.spoiler,
             width: r.width.map(|s| s as usize),
             height: r.height.map(|s| s as usize),
         })
         .ok()
     }
 
+    #[cfg(feature = "http")]
     pub async fn fetch_file<'a>(
         id: u64,
         bucket: &'a str,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
         let file_data = Self::get(id, bucket, db)
             .await
@@ -303,10 +322,11 @@ AND bucket = ?
         })
     }
 
+    #[cfg(feature = "http")]
     pub async fn fetch_file_download<'a>(
         id: u64,
         bucket: &'a str,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
         let file_data = Self::get(id, bucket, db)
             .await
@@ -335,7 +355,7 @@ AND bucket = ?
     pub async fn fetch_file_data<'a>(
         id: u64,
         bucket: &'a str,
-        db: &mut PoolConnection<MySql>,
+        db: &mut PoolConnection<Postgres>,
     ) -> Result<FileData, ErrorResponse> {
         Self::get(id, bucket, db)
             .await
@@ -343,7 +363,7 @@ AND bucket = ?
             .map(|f| f.get_file_data())
     }
 
-    fn get_file_data(self) -> FileData {
+    pub fn get_file_data(self) -> FileData {
         let metadata = match self.content_type.as_ref() {
             "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                 if self.width.is_some() && self.height.is_some() {

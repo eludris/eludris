@@ -1,6 +1,8 @@
 //! Simple abstraction for a TOML based Eludris configuration file
-mod effis_rate_limits;
-mod oprish_rate_limits;
+mod effis;
+mod email;
+mod oprish;
+mod pandemonium;
 
 use serde::{Deserialize, Serialize};
 
@@ -13,102 +15,10 @@ use std::{env, fs, path};
 #[cfg(feature = "logic")]
 use url::Url;
 
-pub use effis_rate_limits::*;
-pub use oprish_rate_limits::*;
-
-/// Eludris config.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Conf {
-    pub instance_name: String,
-    pub description: Option<String>,
-    #[serde(default)]
-    pub oprish: OprishConf,
-    #[serde(default)]
-    pub pandemonium: PandemoniumConf,
-    #[serde(default)]
-    pub effis: EffisConf,
-}
-
-/// Oprish config.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OprishConf {
-    #[serde(default = "message_limit_default")]
-    pub message_limit: usize,
-    pub url: String,
-    #[serde(default)]
-    pub rate_limits: OprishRateLimits,
-}
-
-impl Default for OprishConf {
-    fn default() -> Self {
-        Self {
-            url: "https://example.com".to_string(),
-            message_limit: message_limit_default(),
-            rate_limits: OprishRateLimits::default(),
-        }
-    }
-}
-
-fn message_limit_default() -> usize {
-    2048
-}
-
-/// Pandemonium config.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PandemoniumConf {
-    pub url: String,
-    #[serde(default = "pandemonium_rate_limit_default")]
-    pub rate_limit: RateLimitConf,
-}
-
-impl Default for PandemoniumConf {
-    fn default() -> Self {
-        Self {
-            url: "https://example.com".to_string(),
-            rate_limit: pandemonium_rate_limit_default(),
-        }
-    }
-}
-
-fn pandemonium_rate_limit_default() -> RateLimitConf {
-    RateLimitConf {
-        reset_after: 10,
-        limit: 5,
-    }
-}
-
-/// Effis config.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EffisConf {
-    #[serde(deserialize_with = "deserialize_file_size")]
-    #[serde(default = "file_size_default")]
-    pub file_size: u64,
-    #[serde(deserialize_with = "deserialize_file_size")]
-    #[serde(default = "attachment_file_size_default")]
-    pub attachment_file_size: u64,
-    pub url: String,
-    #[serde(default)]
-    pub rate_limits: EffisRateLimits,
-}
-
-fn file_size_default() -> u64 {
-    20_000_000 // 20MB
-}
-
-fn attachment_file_size_default() -> u64 {
-    100_000_000 // 100MB
-}
-
-impl Default for EffisConf {
-    fn default() -> Self {
-        Self {
-            file_size: file_size_default(),
-            url: "https://example.com".to_string(),
-            attachment_file_size: attachment_file_size_default(),
-            rate_limits: EffisRateLimits::default(),
-        }
-    }
-}
+pub use effis::*;
+pub use email::*;
+pub use oprish::*;
+pub use pandemonium::*;
 
 /// Represents a single rate limit.
 ///
@@ -123,7 +33,7 @@ impl Default for EffisConf {
 /// }
 /// ```
 #[autodoc(category = "Instance")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RateLimitConf {
     /// The amount of seconds after which the rate limit resets.
     pub reset_after: u32,
@@ -151,6 +61,24 @@ macro_rules! validate_file_sizes {
             bail!("File size can't be 0");
         }
     };
+}
+
+/// Eludris config used for the `Eludris.toml` file.
+///
+/// For a full example of this check the
+/// `[Eludris.toml](https://github.com/eludris/eludris/blob/main/Eludris.toml)` file in the meta repository.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Conf {
+    pub instance_name: String,
+    pub description: Option<String>,
+    #[serde(default)]
+    pub oprish: OprishConf,
+    #[serde(default)]
+    pub pandemonium: PandemoniumConf,
+    #[serde(default)]
+    pub effis: EffisConf,
+    #[serde(default)]
+    pub email: Option<Email>,
 }
 
 #[cfg(feature = "logic")]
@@ -193,6 +121,7 @@ impl Conf {
             oprish: OprishConf::default(),
             pandemonium: PandemoniumConf::default(),
             effis: EffisConf::default(),
+            email: None,
         };
         conf.validate()?;
         Ok(conf)
@@ -211,7 +140,7 @@ impl Conf {
         if self.oprish.message_limit < 1024 {
             bail!("Message limit can not be less than 1024 characters");
         }
-        validate_rate_limit_limits!(self.oprish.rate_limits, info, message_create, rate_limits);
+        validate_rate_limit_limits!(self.oprish.rate_limits, get_instance_info, create_message);
         validate_rate_limit_limits!(self.pandemonium, rate_limit);
         validate_rate_limit_limits!(self.effis.rate_limits, assets, attachments, fetch_file);
 
@@ -221,6 +150,18 @@ impl Conf {
             .with_context(|| format!("Invalid pandemonium url {}", self.pandemonium.url))?;
         Url::parse(&self.effis.url)
             .with_context(|| format!("Invalid effis url {}", self.effis.url))?;
+
+        if let Some(email) = &self.email {
+            if email.relay.is_empty() {
+                bail!("Invalid SMTP relay url");
+            }
+            if email.name.is_empty() {
+                bail!("Invalid email name");
+            }
+            if email.address.is_empty() {
+                bail!("Invalid email address");
+            }
+        }
 
         validate_file_sizes!(
             self.effis.file_size,
@@ -260,7 +201,7 @@ mod tests {
             url = "https://example.com"
 
             [oprish.rate_limits]
-            info = { reset_after = 10, limit = 2}
+            get_instance_info = { reset_after = 10, limit = 2}
 
             [pandemonium]
             url = "wss://foo.bar"
@@ -272,6 +213,11 @@ mod tests {
 
             [effis.rate_limits]
             attachments = { reset_after = 600, limit = 20, file_size_limit = "500MB"}
+
+            [email]
+            relay = "smtp.foo.com"
+            name = "Fenni"
+            address = "fenni@fenrir.den"
             "#;
 
         let conf_str: Conf = toml::from_str(conf_str).unwrap();
@@ -281,7 +227,7 @@ mod tests {
             description: Some("The poggest place to chat".to_string()),
             oprish: OprishConf {
                 rate_limits: OprishRateLimits {
-                    info: RateLimitConf {
+                    get_instance_info: RateLimitConf {
                         reset_after: 10,
                         limit: 2,
                     },
@@ -308,6 +254,13 @@ mod tests {
                 },
                 ..Default::default()
             },
+            email: Some(Email {
+                relay: "smtp.foo.com".to_string(),
+                name: "Fenni".to_string(),
+                address: "fenni@fenrir.den".to_string(),
+                credentials: None,
+                subjects: EmailSubjects::default(),
+            }),
         };
 
         assert_eq!(format!("{:?}", conf_str), format!("{:?}", conf));
@@ -387,9 +340,8 @@ mod tests {
             conf.effis.rate_limits.assets,
             conf.effis.rate_limits.attachments,
             conf.effis.rate_limits.fetch_file,
-            conf.oprish.rate_limits.info,
-            conf.oprish.rate_limits.message_create,
-            conf.oprish.rate_limits.rate_limits
+            conf.oprish.rate_limits.get_instance_info,
+            conf.oprish.rate_limits.create_message
         );
 
         test_urls!(conf, oprish, pandemonium, effis);

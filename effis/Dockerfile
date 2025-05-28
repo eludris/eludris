@@ -1,17 +1,14 @@
 # syntax=docker/dockerfile:1
-FROM rust:slim-buster as builder
+FROM rust:1.83-slim-bullseye as builder
 
 WORKDIR /effis
 
 # Cargo workspace "necessities"
 COPY ./oprish/Cargo.toml /oprish/Cargo.toml
 COPY ./pandemonium/Cargo.toml /pandemonium/Cargo.toml
-COPY ./cli/Cargo.toml /cli/Cargo.toml
-COPY ./integration-tests/Cargo.toml /integration-tests/Cargo.toml
-RUN mkdir /oprish/src /pandemonium/src /cli/src /integration-tests/src
-RUN touch /oprish/src/main.rs /pandemonium/src/main.rs /cli/src/main.rs /integration-tests/src/main.rs
+RUN mkdir /oprish/src /pandemonium/src
+RUN touch /oprish/src/main.rs /pandemonium/src/main.rs
 
-COPY ./migrations /migrations
 COPY ./Cargo.toml /Cargo.toml
 COPY ./Cargo.lock /Cargo.lock
 COPY ./todel /todel
@@ -25,7 +22,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 RUN --mount=type=cache,target=/target \
     cp /target/release/effis /usr/local/bin/effis
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 # Remove docker's default of removing cache after use.
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
@@ -40,4 +37,4 @@ ENV RUST_LOG debug
 
 COPY --from=builder /usr/local/bin/effis /bin/effis
 
-CMD ["wait-for-it", "mariadb:3306", "-t", "0", "--", "/bin/effis"]
+CMD ["wait-for-it", "postgresql:5432", "-t", "0", "--", "/bin/effis"]

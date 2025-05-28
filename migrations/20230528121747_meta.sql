@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS meta (
+  secret BYTEA NOT NULL
+);

@@ -7,15 +7,18 @@ x-restart-policy:
 services:
   oprish:
     <<: *restart-policy
-    depends_on: [ "mariadb", "keydb" ]
+    depends_on: ["keydb", "postgresql"]
 
     environment:
-      - DATABASE_URL=mysql://root:root@mariadb/eludris
+      - DATABASE_URL=postgresql://root:root@postgresql/eludris
       - REDIS_URL=redis://keydb:6379
     volumes:
       - type: bind
         source: Eludris.toml
         target: /Eludris.toml
+      - type: bind
+        source: static
+        target: /static
     build:
       context: .
       dockerfile: oprish/Dockerfile
@@ -24,12 +27,14 @@ services:
   pandemonium:
     extends:
       service: oprish
+    depends_on: ["oprish"]
     build:
       dockerfile: pandemonium/Dockerfile
 
   effis:
     extends:
       service: oprish
+    depends_on: ["oprish"]
     volumes:
       - type: bind
         source: ./files
@@ -43,12 +48,12 @@ services:
     volumes:
       - "./keydb:/data"
 
-  mariadb:
+  postgresql:
     <<: *restart-policy
-    image: mariadb:10-jammy
+    image: postgres:15
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_ROOT_HOST: "%"
-      MYSQL_DATABASE: eludris
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: eludris
     volumes:
-      - "./mariadb:/var/lib/mysql"
+      - "./pgdata:/var/lib/postgresql/data"

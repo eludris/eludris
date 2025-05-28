@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eludris Account Verification Code</title>
+  <style>
+    #wrapper {
+      border-collapse: collapse;
+      padding: 0;
+    }
+
+    #content {
+      background-color: hsl(257, 33%, 8%);
+      border-radius: 5px;
+      color: #eee;
+      padding: 20px;
+      text-align: center;
+      margin: 20px auto;
+    }
+
+    h2 {
+      font-size: 36px;
+      margin: 20px 5px;
+    }
+
+    p {
+      font-size: 20px;
+    }
+
+    #code-wrapper {
+      display: block;
+      margin: 30px 5px 30px 5px;
+    }
+
+    #code {
+      font-size: 30px;
+      background-color: hsl(257, 35%, 13%);
+      margin: 0 auto;
+      padding: 10px 15px;
+      border-radius: 10px;
+    }
+
+    #note-text {
+      font-weight: 300;
+    }
+
+    @media only screen and (max-width: 1000px) {
+      #content {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" id="wrapper" >
+    <tr valign="top">
+        <td align="center">
+          <table width="50%" id="content">
+            <h2>Eludris Account Verification Code</h2>
+            <p>An account with the name ${USERNAME} has been created using this email. Use this code to verify it!</p>
+            <div id="code-wrapper">
+              <span id="code">${CODE}</span>
+            </div>
+            <span id="note-text">You have 7 days to verify your account before it is automatically deleted.</span>
+          <table>
+        </td>
+    </tr>
+  </table>
+</body>
+</html>

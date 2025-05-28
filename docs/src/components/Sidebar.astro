@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { getCollection } from 'astro:content';
 import AUTODOC_ENTRIES from '../../public/autodoc/index.json';
 import { ItemInfo, ItemType } from '../lib/types';
+import { Icon } from 'astro-icon';
 
 interface Child {
   slug: string;
@@ -13,7 +14,7 @@ const sortChildren = (a: Child, b: Child) => a.name.localeCompare(b.name);
 
 let entries: { [key: string]: { models: Child[]; routes: Child[] } } = {};
 
-AUTODOC_ENTRIES.forEach((slug) => {
+AUTODOC_ENTRIES.items.forEach((slug) => {
   const item: ItemInfo = JSON.parse(readFileSync(`public/autodoc/${slug}`).toString());
   if (!item.hidden) {
     slug = slug.split('.')[0];
@@ -77,28 +78,36 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
             <details open class="category">
               <summary>{crate[0].toUpperCase() + crate.substring(1)}</summary>
               <ul>
-                {children.models.length > 0 &&
-                  children.models.sort(sortChildren).map((child) => (
-                    <li class="page">
-                      <a
-                        href={`/reference/${child.slug}`}
-                        class={slug == child.slug ? 'active' : ''}
-                      >
-                        {child.name}
-                      </a>
-                    </li>
-                  ))}
-                {children.routes.length > 0 &&
-                  children.routes.sort(sortChildren).map((child) => (
-                    <li class="page">
-                      <a
-                        href={`/reference/${child.slug}`}
-                        class={slug == child.slug ? 'active' : ''}
-                      >
-                        {child.name}
-                      </a>
-                    </li>
-                  ))}
+                {children.models.length > 0 && (
+                  <>
+                    {children.routes.length > 0 && <>Models</>}
+                    {children.models.sort(sortChildren).map((child) => (
+                      <li class="page">
+                        <a
+                          href={`/reference/${child.slug}`}
+                          class={slug == child.slug ? 'active' : ''}
+                        >
+                          <Icon name="mdi:cube-outline" /> {child.name}
+                        </a>
+                      </li>
+                    ))}
+                  </>
+                )}
+                {children.routes.length > 0 && (
+                  <>
+                    {children.models.length > 0 && <>Routes</>}
+                    {children.routes.sort(sortChildren).map((child) => (
+                      <li class="page">
+                        <a
+                          href={`/reference/${child.slug}`}
+                          class={slug == child.slug ? 'active' : ''}
+                        >
+                          <Icon name="mdi:protocol" /> {child.name}
+                        </a>
+                      </li>
+                    ))}
+                  </>
+                )}
               </ul>
             </details>
           </li>
@@ -203,6 +212,12 @@ const stars = fetch('https://api.github.com/repos/eludris/eludris')
     list-style: none;
     padding: 2px 0;
     margin: 0px 5px;
+  }
+
+  .page [astro-icon] {
+    position: relative;
+    top: 2px;
+    width: 16px;
   }
 
   #sidebar a {

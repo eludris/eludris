@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nUPDATE channels\nSET\n    category_id = CASE\n        WHEN (category_id = $3 AND position = $1)  THEN $4\n        ELSE                                            category_id\n        END,\n    position = CASE\n        WHEN (category_id = $3 AND position = $1)  THEN $2\n        WHEN (category_id = $3 AND position > $1)  THEN position - 1\n        WHEN (category_id = $4 AND position >= $2) THEN position + 1\n        ELSE                                            position\n        END\nWHERE (category_id = $3 OR category_id = $4)\n    AND is_deleted = FALSE;\n                        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3dbce0ac9d6cf2ce44913b6946204c1b09d374067ed04f88e2bef117bfe77370"
+}
