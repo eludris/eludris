@@ -16,6 +16,4 @@ such as Discord™ and Reddit™.
 Eludris tries to combine the best parts of other popular social media platforms
 such as Discord, Reddit, Twitter and so on while not being one or the other.
 
-### We're currently at version 0.3.3, click [here](https://eludevs.pages.dev/changelogs/0-3-3) to check the changelog
-
 For more detailed info please visit our [docs](https://devs.eludris.com)
