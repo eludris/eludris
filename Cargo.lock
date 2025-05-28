@@ -599,7 +599,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "effis"
-version = "0.4.0-alpha1"
+version = "0.4.0-alpha2"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -1793,7 +1793,7 @@ checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 
 [[package]]
 name = "oprish"
-version = "0.4.0-alpha1"
+version = "0.4.0-alpha2"
 dependencies = [
  "anyhow",
  "argon2",
@@ -1820,7 +1820,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "pandemonium"
-version = "0.4.0-alpha1"
+version = "0.4.0-alpha2"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -3169,7 +3169,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "todel"
-version = "0.4.0-alpha1"
+version = "0.4.0-alpha2"
 dependencies = [
  "anyhow",
  "argon2",
@@ -3203,7 +3203,7 @@ dependencies = [
 
 [[package]]
 name = "todel_codegen"
-version = "0.4.0-alpha1"
+version = "0.4.0-alpha2"
 dependencies = [
  "lazy_static",
  "quote",

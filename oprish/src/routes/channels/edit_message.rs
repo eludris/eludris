@@ -19,7 +19,7 @@ pub async fn edit_message(
     mut db: Connection<DB>,
     session: TokenAuth,
 ) -> RateLimitedRouteResponse<Result<Json<Message>, ErrorResponse>> {
-    let mut rate_limiter = RateLimiter::new("delete_message", session.0.user_id, conf);
+    let mut rate_limiter = RateLimiter::new("edit_message", session.0.user_id, conf);
     if !SphereChannel::has_member(channel_id, session.0.user_id, &mut db)
         .await
         .map_err(|err| rate_limiter.add_headers(err))?
