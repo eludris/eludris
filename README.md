@@ -6,7 +6,6 @@
   <a href="https://twitter.com/eludris"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Twitter&logo=twitter&color=15202b&labelColor=15202b" /></a>
   <a href="https://eludevs.pages.dev"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Docs&logo=mdbook&color=211233&labelColor=211233" /></a>
   <a href="https://github.com/eludris/eludris/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/eludris/eludris/ci.yml?label=checks&labelColor=333&logo=github&style=for-the-badge" /></a>
-  <a href="https://github.com/eludris/eludris/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/eludris/eludris/build.yml?label=Builds&labelColor=003f8c&logo=docker&style=for-the-badge" /></a>
 </p>
 
 # Eludris
