@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Category, CategoryEdit, InstanceInfo, MemberEdit, Message, Sphere, SphereChannel,
+    Category, CategoryEdit, InstanceInfo, MemberEdit, Message, MessageEdit, Sphere, SphereChannel,
     SphereChannelEdit, SphereEdit, Status, User,
 };
 use crate::conf::RateLimitConf;
@@ -187,6 +187,9 @@ pub enum ServerPayload {
     /// }
     /// ```
     SphereJoin(Sphere),
+    SphereLeave {
+        sphere_id: u64,
+    },
     /// The payload sent when another user joins a sphere the client is in.
     ///
     /// -----
@@ -210,6 +213,10 @@ pub enum ServerPayload {
     /// ```
     SphereMemberJoin {
         user: User,
+        sphere_id: u64,
+    },
+    SphereMemberLeave {
+        user_id: u64,
         sphere_id: u64,
     },
     /// The payload sent when a category is created in a sphere the client is in.
@@ -368,6 +375,15 @@ pub enum ServerPayload {
         data: MemberEdit,
         user_id: u64,
         sphere_id: u64,
+    },
+    MessageDelete {
+        channel_id: u64,
+        message_id: u64,
+    },
+    MessageUpdate {
+        channel_id: u64,
+        message_id: u64,
+        data: MessageEdit,
     },
 }
 

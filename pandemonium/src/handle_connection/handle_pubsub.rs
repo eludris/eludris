@@ -102,6 +102,14 @@ async fn handle_event(
                 send_payload(tx, &ServerPayload::SphereMemberJoin { user, sphere_id }).await;
             }
         }
+        ServerPayload::SphereMemberLeave { user_id, sphere_id } => {
+            if user_id == session.user.id {
+                session.sphere_ids.retain(|i| *i != sphere_id);
+                send_payload(tx, &ServerPayload::SphereLeave { sphere_id }).await;
+            } else if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::SphereMemberLeave { user_id, sphere_id }).await;
+            }
+        }
         ServerPayload::MessageCreate(message) => {
             if let SphereChannel::Text(channel) = &message.channel {
                 if session.sphere_ids.contains(&channel.sphere_id) {
@@ -214,6 +222,72 @@ async fn handle_event(
                         data,
                         user_id,
                         sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageDelete {
+            channel_id,
+            message_id,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageDelete: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!("Couldn't fetch channel data for MessageDelete: {}", err);
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageDelete {
+                        channel_id,
+                        message_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageUpdate {
+            channel_id,
+            message_id,
+            data,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageUpdate: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!("Couldn't fetch channel data for MessageUpdate: {}", err);
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageUpdate {
+                        channel_id,
+                        message_id,
+                        data,
                     },
                 )
                 .await;

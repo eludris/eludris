@@ -54,7 +54,7 @@ impl Sphere {
     ) -> Result<Self, ErrorResponse> {
         edit.validate()?;
 
-        let channel = Self::get_unpopulated(sphere_id, db).await.map_err(|err| {
+        let sphere = Self::get_unpopulated(sphere_id, db).await.map_err(|err| {
             if let ErrorResponse::NotFound { .. } = err {
                 error!(VALIDATION, "sphere", "Sphere doesn't exist")
             } else {
@@ -211,15 +211,15 @@ WHERE id = $2
         })?;
 
         Ok(Self {
-            id: channel.id,
-            owner_id: channel.owner_id,
-            name: edit.name.unwrap_or(channel.name),
-            slug: channel.slug,
-            sphere_type: edit.sphere_type.unwrap_or(channel.sphere_type),
-            description: edit.description.unwrap_or(channel.description),
-            icon: edit.icon.unwrap_or(channel.icon),
-            banner: edit.banner.unwrap_or(channel.banner),
-            badges: channel.badges,
+            id: sphere.id,
+            owner_id: sphere.owner_id,
+            name: edit.name.unwrap_or(sphere.name),
+            slug: sphere.slug,
+            sphere_type: edit.sphere_type.unwrap_or(sphere.sphere_type),
+            description: edit.description.unwrap_or(sphere.description),
+            icon: edit.icon.unwrap_or(sphere.icon),
+            banner: edit.banner.unwrap_or(sphere.banner),
+            badges: sphere.badges,
             categories: vec![],
             members: vec![],
         })

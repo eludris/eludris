@@ -15,7 +15,12 @@ pub struct CustomEmbed {
     #[serde(skip_serializing_if = "Option::is_none")]
     color: Option<u8>,
     #[serde(default = "custom_embed_default_border_colour")]
+    #[serde(skip_serializing_if = "is_zero")]
     border_colour: u8,
+}
+
+fn is_zero(n: &u8) -> bool {
+    *n == 0
 }
 
 fn custom_embed_default_border_colour() -> u8 {

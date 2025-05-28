@@ -51,7 +51,8 @@ pub async fn join_sphere(
         SphereIdentifier::Slug(slug) => Sphere::get_slug(slug, &mut db, &mut cache).await,
     }
     .map_err(|err| rate_limiter.add_headers(err))?;
-    let member = Sphere::join(sphere.id, session.0.user_id, &mut db)
+    let member = sphere
+        .add_member(session.0.user_id, &mut db)
         .await
         .map_err(|e| rate_limiter.add_headers(e))?;
     cache

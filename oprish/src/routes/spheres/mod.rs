@@ -12,6 +12,7 @@ mod edit_member;
 mod get;
 mod get_member;
 mod join;
+mod remove_member;
 
 pub fn get_routes() -> Vec<Route> {
     routes![
@@ -24,6 +25,7 @@ pub fn get_routes() -> Vec<Route> {
         edit_channel::edit_channel,
         get::get_sphere,
         join::join_sphere,
+        remove_member::remove_member,
         edit::edit,
         get_member::get_member,
         edit_member::edit_member,

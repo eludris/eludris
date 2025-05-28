@@ -87,7 +87,7 @@ pub struct MessageEdit {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub attachments: Option<Vec<u64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub embedds: Option<Vec<Embed>>,
+    pub embeds: Option<Vec<CustomEmbed>>,
 }
 
 /// The Message payload. This is returned when you're provided information about a pre-existing

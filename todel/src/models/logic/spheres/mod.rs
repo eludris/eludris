@@ -1,7 +1,8 @@
+mod add_member;
 mod edit;
 mod get;
-mod join;
 mod members;
+mod remove_member;
 
 use regex::Regex;
 use sqlx::{
@@ -213,9 +214,7 @@ VALUES($1, $2, $2, $3, $4, 0)
             error!(SERVER, "Failed to create sphere")
         })?;
 
-        let member = Self::join(sphere_id, owner_id, db).await?;
-
-        Ok(Self {
+        let mut sphere = Self {
             id: sphere_id,
             owner_id,
             slug: sphere.slug,
@@ -238,12 +237,15 @@ VALUES($1, $2, $2, $3, $4, 0)
                     category_id: sphere_id,
                 })],
             }],
-            members: vec![member],
-        })
+            members: vec![],
+        };
+        let member = sphere.add_member(owner_id, db).await?;
+        sphere.members.push(member);
+        Ok(sphere)
     }
 
     pub async fn has_member(
-        sphere_id: u64,
+        &self,
         user_id: u64,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<bool, ErrorResponse> {
@@ -254,7 +256,7 @@ FROM members
 WHERE id = $2
 AND sphere_id = $1
             ",
-            sphere_id as i64,
+            self.id as i64,
             user_id as i64
         )
         .fetch_optional(&mut **db)
@@ -262,7 +264,7 @@ AND sphere_id = $1
         .map_err(|err| {
             log::error!(
                 "Couldn't check if user {} is member of sphere {}: {}",
-                sphere_id,
+                self.id,
                 user_id,
                 err
             );

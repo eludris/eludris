@@ -56,7 +56,6 @@ pub async fn create_message(
         session.0.user_id,
         &mut *id_generator.lock().await,
         &mut db,
-        conf,
         &mut cache,
     )
     .await

@@ -1,28 +1,25 @@
+mod delete;
+mod edit;
 mod get;
 
 use redis::AsyncCommands;
-use sqlx::{pool::PoolConnection, Postgres};
+use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
 use crate::{
     ids::IdGenerator,
     models::{Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User},
-    Conf,
 };
 
 impl MessageCreate {
-    pub async fn validate(&mut self, conf: &Conf) -> Result<(), ErrorResponse> {
+    pub fn validate(&mut self) -> Result<(), ErrorResponse> {
         if let Some(ref mut content) = self.content {
             *content = content.trim().to_string();
             if content.is_empty() {
                 self.content = None;
-            } else if content.len() > conf.oprish.message_limit {
+            } else if content.len() > 4096 {
                 return Err(error!(
                     VALIDATION,
-                    "content",
-                    format!(
-                        "Message content has to be less than {} characters long",
-                        conf.oprish.message_limit
-                    )
+                    "content", "Message content has to be less than 4096 characters long"
                 ));
             }
         }
@@ -66,10 +63,9 @@ impl Message {
         author_id: u64,
         id_generator: &mut IdGenerator,
         db: &mut PoolConnection<Postgres>,
-        conf: &Conf,
         cache: &mut C,
     ) -> Result<Self, ErrorResponse> {
-        message.validate(conf).await?;
+        message.validate()?;
         let channel = SphereChannel::get(channel_id, db).await.map_err(|err| {
             if let ErrorResponse::NotFound { .. } = err {
                 error!(VALIDATION, "channel", "Channel doesn't exist")
@@ -78,28 +74,6 @@ impl Message {
             }
         })?;
         let id = id_generator.generate();
-        sqlx::query!(
-            "
-INSERT INTO messages(id, channel_id, author_id, content, reference)
-VALUES($1, $2, $3, $4, $5)
-            ",
-            id as i64,
-            channel_id as i64,
-            author_id as i64,
-            message.content,
-            message.reference.map(|r| r as i64),
-        )
-        .execute(&mut **db)
-        .await
-        .map_err(|err| {
-            log::error!(
-                "Couldn't create message by {} on {}: {}",
-                author_id,
-                channel_id,
-                err
-            );
-            error!(SERVER, "Failed to create message")
-        })?;
         let reference = match message.reference {
             Some(reference) => match Self::get(reference, db, cache).await {
                 Ok(message) => Some(Box::new(message)),
@@ -116,23 +90,99 @@ VALUES($1, $2, $3, $4, $5)
             },
             None => None,
         };
+        let author = User::get(author_id, None, db, cache).await?;
         let mut attachments = vec![];
-        for attachment_id in message.attachments {
-            attachments.push(File::fetch_file_data(attachment_id, "attachments", db).await?);
+        for (i, attachment_id) in message.attachments.into_iter().enumerate() {
+            let file = match File::get(attachment_id, "attachments", db).await {
+                Some(file) => file,
+                None => {
+                    return Err(error!(
+                        VALIDATION,
+                        format!("attachments-{}", i),
+                        "File doesn't exist"
+                    ))
+                }
+            };
+            attachments.push(file.get_file_data());
         }
+        let mut transaction = db.begin().await.map_err(|err| {
+            log::error!("Couldn't start message create transaction: {}", err);
+            error!(SERVER, "Failed to create message")
+        })?;
+        sqlx::query!(
+            "
+INSERT INTO messages(id, channel_id, author_id, content, reference)
+VALUES($1, $2, $3, $4, $5)
+            ",
+            id as i64,
+            channel_id as i64,
+            author_id as i64,
+            message.content,
+            message.reference.map(|r| r as i64),
+        )
+        .execute(&mut *transaction)
+        .await
+        .map_err(|err| {
+            log::error!(
+                "Couldn't create message by {} on {}: {}",
+                author_id,
+                channel_id,
+                err
+            );
+            error!(SERVER, "Failed to create message")
+        })?;
+        for attachment in attachments.iter() {
+            sqlx::query!(
+                "
+                INSERT INTO message_attachments(message_id, attachment_id)
+                VALUES($1, $2)
+                ",
+                id as i64,
+                attachment.id as i64,
+            )
+            .execute(&mut *transaction)
+            .await
+            .map_err(|err| {
+                log::error!(
+                    "Couldn't add message attachment {} to {}: {}",
+                    attachment.id,
+                    id,
+                    err
+                );
+                error!(SERVER, "Failed to create message")
+            })?;
+        }
+        for embed in message.embeds.iter() {
+            sqlx::query!(
+                "
+                INSERT INTO message_embeds(message_id, embed)
+                VALUES($1, $2)
+                ",
+                id as i64,
+                serde_json::to_value(Embed::Custom(embed.clone())).unwrap(),
+            )
+            .execute(&mut *transaction)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't add message embed {:?} to {}: {}", embed, id, err);
+                error!(SERVER, "Failed to create message")
+            })?;
+        }
+
+        transaction.commit().await.map_err(|err| {
+            log::error!("Couldn't commit message create transaction: {}", err);
+            error!(SERVER, "Failed to create message")
+        })?;
+
         Ok(Self {
             id,
-            author: User::get(author_id, None, db, cache).await?,
+            author,
             content: message.content,
             reference,
             disguise: message.disguise,
             channel,
-            attachments: vec![],
-            embeds: message
-                .embeds
-                .into_iter()
-                .map(|e| Embed::Custom(e))
-                .collect(),
+            attachments,
+            embeds: message.embeds.into_iter().map(Embed::Custom).collect(),
         })
     }
 }

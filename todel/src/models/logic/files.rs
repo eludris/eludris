@@ -365,7 +365,7 @@ AND bucket = $2
     }
 
     #[cfg(feature = "http")]
-    fn get_file_data(self) -> FileData {
+    pub fn get_file_data(self) -> FileData {
         let metadata = match self.content_type.as_ref() {
             "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                 if self.width.is_some() && self.height.is_some() {

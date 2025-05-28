@@ -108,6 +108,13 @@ impl SphereChannel {
             SphereChannel::Voice(..) => None,
         }
     }
+
+    pub fn get_sphere_id(&self) -> u64 {
+        match self {
+            SphereChannel::Text(channel) => channel.sphere_id,
+            SphereChannel::Voice(channel) => channel.sphere_id,
+        }
+    }
 }
 
 /// A Discord-like text channel.

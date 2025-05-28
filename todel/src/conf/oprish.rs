@@ -117,10 +117,10 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`edit_category`] endpoint.
     #[serde(default = "edit_category_default")]
     pub edit_category: RateLimitConf,
-    /// Rate limits for the [`delete_category`] endpoint.    
+    /// Rate limits for the [`delete_category`] endpoint.
     #[serde(default = "delete_category_default")]
     pub delete_category: RateLimitConf,
-    /// Rate limits for the [`create_channel`] endpoint.    
+    /// Rate limits for the [`create_channel`] endpoint.
     #[serde(default = "create_channel_default")]
     pub create_channel: RateLimitConf,
     /// Rate limits for the [`edit_channel`] endpoint.
@@ -142,6 +142,9 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`get_messages`] endpoint.
     #[serde(default = "get_messages_default")]
     pub get_messages: RateLimitConf,
+    /// Rate limits for the [`get_message`] endpoint.
+    #[serde(default = "get_message_default")]
+    pub get_message: RateLimitConf,
     /// Rate limits for the [`get_member`] endpoint.
     #[serde(default = "get_member_default")]
     pub get_member: RateLimitConf,
@@ -152,6 +155,15 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`edit_member`] endpoint.
     #[serde(default = "edit_member_default")]
     pub edit_member: RateLimitConf,
+    /// Rate limits for the [`edit_message`] endpoint.
+    #[serde(default = "edit_message_default")]
+    pub edit_message: RateLimitConf,
+    /// Rate limits for the [`delete_message`] endpoint.
+    #[serde(default = "delete_message_default")]
+    pub delete_message: RateLimitConf,
+    /// Rate limits for the [`leave_sphere`] endpoint.
+    #[serde(default = "leave_sphere_default")]
+    pub leave_sphere: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -185,9 +197,13 @@ impl Default for OprishRateLimits {
             get_channel: get_channel_default(),
             guest_get_channel: guest_get_channel_default(),
             get_messages: get_messages_default(),
+            get_message: get_message_default(),
             get_member: get_member_default(),
             guest_get_member: guest_get_member_default(),
             edit_member: edit_member_default(),
+            edit_message: edit_message_default(),
+            delete_message: delete_message_default(),
+            leave_sphere: leave_sphere_default(),
         }
     }
 }
@@ -388,19 +404,49 @@ fn get_messages_default() -> RateLimitConf {
     }
 }
 
+fn get_message_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
 fn get_member_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,
     }
 }
+
 fn guest_get_member_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,
     }
 }
+
 fn edit_member_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn delete_message_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn edit_message_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn leave_sphere_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,
