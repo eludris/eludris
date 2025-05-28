@@ -189,8 +189,8 @@ pub enum ErrorResponse {
 #[cfg(feature = "logic")]
 #[macro_export]
 macro_rules! error {
-    ($rate_limiter:expr, $error:ident, $($val:expr),+) => {
-        return $rate_limiter.wrap_response(Err(error!($error, $($val),+)));
+    ($rate_limiter:expr, $error:ident $(, $val:expr)*) => {
+        return $rate_limiter.wrap_response(Err(error!($error $(, $val)*)));
     };
     (UNAUTHORIZED) => {
         ErrorResponse::Unauthorized {

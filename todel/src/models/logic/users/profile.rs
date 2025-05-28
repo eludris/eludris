@@ -1,11 +1,11 @@
 use sqlx::{pool::PoolConnection, Postgres, QueryBuilder};
 
 use crate::{
-    models::{ErrorResponse, File, UpdateUserProfile, User},
+    models::{ErrorResponse, File, User, UserProfileEdit},
     Conf,
 };
 
-impl UpdateUserProfile {
+impl UserProfileEdit {
     pub async fn validate(
         &self,
         conf: &Conf,
@@ -54,7 +54,8 @@ impl UpdateUserProfile {
             if File::get(avatar, "avatars", &mut *db).await.is_none() {
                 return Err(error!(
                     VALIDATION,
-                    "avatar", "The user's avatar must be a valid file that must exist"
+                    "avatar",
+                    "The user's avatar must be a valid file that exists in the avatars bucket"
                 ));
             }
         }
@@ -62,7 +63,8 @@ impl UpdateUserProfile {
             if File::get(banner, "banners", &mut *db).await.is_none() {
                 return Err(error!(
                     VALIDATION,
-                    "banner", "The user's banner must be a valid file that must exist"
+                    "banner",
+                    "The user's banner must be a valid file that exists in the banners bucket"
                 ));
             }
         }
@@ -71,9 +73,9 @@ impl UpdateUserProfile {
 }
 
 impl User {
-    pub async fn update_profile(
+    pub async fn edit_profile(
         id: u64,
-        profile: UpdateUserProfile,
+        profile: UserProfileEdit,
         conf: &Conf,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {

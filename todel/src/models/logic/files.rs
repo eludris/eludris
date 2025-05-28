@@ -14,9 +14,9 @@ use sqlx::{pool::PoolConnection, Postgres};
 use tokio::fs;
 
 #[cfg(feature = "http")]
+use crate::ids::IdGenerator;
 use crate::{
     error,
-    ids::IdGenerator,
     models::{ErrorResponse, FileData, FileMetadata},
 };
 
@@ -135,7 +135,10 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             }
         } else {
             let file = tokio::task::spawn_blocking(move || {
-                let mime = tree_magic::from_u8(&data);
+                let mut mime = tree_magic::from_u8(&data);
+                if mime == "application/x-riff" && name.ends_with(".webp") { // tree magic bug
+                    mime = "image/webp".to_string();
+                }
                 let (width, height) = match mime.as_str() {
                     "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                         if mime == "image/jpeg" {
@@ -349,7 +352,6 @@ AND bucket = $2
         })
     }
 
-    #[cfg(feature = "http")]
     pub async fn fetch_file_data<'a>(
         id: u64,
         bucket: &'a str,
@@ -361,8 +363,7 @@ AND bucket = $2
             .map(|f| f.get_file_data())
     }
 
-    #[cfg(feature = "http")]
-    fn get_file_data(self) -> FileData {
+    pub fn get_file_data(self) -> FileData {
         let metadata = match self.content_type.as_ref() {
             "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                 if self.width.is_some() && self.height.is_some() {

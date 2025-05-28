@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
 /// The type of a user's status.
-///
-/// This is a string.
 #[autodoc(category = "Users")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
@@ -40,7 +38,7 @@ pub struct Status {
     pub text: Option<String>,
 }
 
-/// The user payload.
+/// The User payload.
 ///
 /// -----
 ///
@@ -119,7 +117,7 @@ impl fmt::Display for User {
 ///
 /// ```json
 /// {
-///   "username": "yendri",d
+///   "username": "yendri",
 ///   "email": "yendri@llamoyendri.io",
 ///   "password": "authentícame por favor" // don't actually use this as a password
 /// }
@@ -127,14 +125,15 @@ impl fmt::Display for User {
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UserCreate {
-    /// The user's name.
+    /// The user's name. This field has to be between 2 and 32 characters and contain
+    /// at least one letter.
     ///
     /// This is different to their `display_name` as it denotes how they're more formally
     /// referenced by the API.
     pub username: String,
     /// The user's email.
     pub email: String,
-    /// The user's password.
+    /// The user's password. This field has to be at least 8 characters long.
     pub password: String,
 }
 
@@ -154,7 +153,7 @@ pub struct UserCreate {
 /// ```
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct UpdateUser {
+pub struct UserEdit {
     /// The user's current password for validation.
     pub password: String,
     /// The user's new username.
@@ -184,7 +183,7 @@ pub struct UpdateUser {
 /// ```
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct UpdateUserProfile {
+pub struct UserProfileEdit {
     /// The user's new display name. This field has to be between 2 and 32 characters long.
     #[serde(
         default,
@@ -209,14 +208,14 @@ pub struct UpdateUserProfile {
         with = "double_option"
     )]
     pub bio: Option<Option<String>>,
-    /// The user's new avatar. This field has to be a valid file ID in the "avatar" bucket.
+    /// The user's new avatar. This field has to be a valid file ID in the "avatars" bucket.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         with = "double_option"
     )]
     pub avatar: Option<Option<u64>>,
-    /// The user's new banner. This field has to be a valid file ID in the "banner" bucket.
+    /// The user's new banner. This field has to be a valid file ID in the "banners" bucket.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -239,7 +238,7 @@ pub struct UpdateUserProfile {
 /// ```
 #[autodoc(category = "Users", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CreatePasswordResetCode {
+pub struct PasswordResetCodeCreate {
     /// The user's email.
     pub email: String,
 }
@@ -260,7 +259,7 @@ pub struct CreatePasswordResetCode {
 /// ```
 #[autodoc(category = "Users")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ResetPassword {
+pub struct PasswordReset {
     /// The password reset code the user got emailed.
     pub code: u32,
     /// The user's email.

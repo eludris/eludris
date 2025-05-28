@@ -42,6 +42,7 @@ const TIMEOUT_DURATION: Duration = Duration::from_secs(48); // TIMEOUT_PADDING
 pub struct SessionData {
     session: Session,
     user: User,
+    sphere_ids: Vec<u64>,
 }
 
 /// A simple function that check's if a client's last ping was over TIMEOUT_DURATION seconds ago and
@@ -143,13 +144,13 @@ pub async fn handle_connection(
             rate_limited,
             rate_limiter,
             rl_address,
-            pool,
+            Arc::clone(&pool),
             Arc::clone(&last_ping),
             Arc::clone(&secret)
           ) => {
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Owned(reason) }, rl_address).await;
         },
-        _ = handle_pubsub(pubsub, Arc::clone(&session), Arc::clone(&cache), Arc::clone(&tx)) => {
+        _ = handle_pubsub(pubsub, Arc::clone(&session), Arc::clone(&cache), Arc::clone(&tx), pool) => {
             close_socket(tx, rx, CloseFrame { code: CloseCode::Error, reason: Cow::Borrowed("Server Error") }, rl_address).await;
         },
     };

@@ -3,8 +3,10 @@ use futures::StreamExt;
 use redis::aio::Connection;
 use redis::aio::PubSub;
 use redis::AsyncCommands;
+use sqlx::Pool;
+use sqlx::Postgres;
 use std::sync::Arc;
-use todel::models::{ServerPayload, StatusType};
+use todel::models::{ServerPayload, Sphere, SphereChannel, StatusType};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_tungstenite::tungstenite::Message as WebSocketMessage;
@@ -19,6 +21,7 @@ pub async fn handle_pubsub(
     session: Arc<Mutex<Option<SessionData>>>,
     cache: Arc<Mutex<Connection>>,
     tx: Arc<Mutex<SplitSink<WebSocketStream<TcpStream>, WebSocketMessage>>>,
+    pool: Arc<Pool<Postgres>>,
 ) {
     pubsub
         .into_on_message()
@@ -29,7 +32,7 @@ pub async fn handle_pubsub(
             }
             let session = session.as_mut().unwrap();
             match deserialize_message(msg) {
-                Ok(payload) => handle_event(payload, session, &cache, &tx).await,
+                Ok(payload) => handle_event(payload, session, &cache, &tx, &pool).await,
                 Err(err) => log::warn!("Failed to deserialize event payload: {}", err),
             }
         })
@@ -41,6 +44,7 @@ async fn handle_event(
     session: &mut SessionData,
     cache: &Arc<Mutex<Connection>>,
     tx: &Arc<Mutex<SplitSink<WebSocketStream<TcpStream>, WebSocketMessage>>>,
+    pool: &Arc<Pool<Postgres>>,
 ) {
     match payload {
         ServerPayload::PresenceUpdate { user_id, status } => {
@@ -72,6 +76,222 @@ async fn handle_event(
                 }
             }
             send_payload(tx, &ServerPayload::UserUpdate(user)).await;
+        }
+        ServerPayload::SphereMemberJoin { user, sphere_id } => {
+            if user.id == session.user.id {
+                let mut db = match pool.acquire().await {
+                    Ok(conn) => conn,
+                    Err(err) => {
+                        log::error!(
+                            "Couldn't acquire database connection for SphereMemberJoin: {}",
+                            err
+                        );
+                        return;
+                    }
+                };
+                let sphere = match Sphere::get(sphere_id, &mut db, &mut *cache.lock().await).await {
+                    Ok(sphere) => sphere,
+                    Err(err) => {
+                        log::error!("Couldn't fetch sphere data for SphereMemberJoin: {}", err);
+                        return;
+                    }
+                };
+                session.sphere_ids.push(sphere_id);
+                send_payload(tx, &ServerPayload::SphereJoin(sphere)).await;
+            } else if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::SphereMemberJoin { user, sphere_id }).await;
+            }
+        }
+        ServerPayload::SphereMemberLeave { user_id, sphere_id } => {
+            if user_id == session.user.id {
+                session.sphere_ids.retain(|i| *i != sphere_id);
+                send_payload(tx, &ServerPayload::SphereLeave { sphere_id }).await;
+            } else if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::SphereMemberLeave { user_id, sphere_id }).await;
+            }
+        }
+        ServerPayload::MessageCreate(message) => {
+            if let SphereChannel::Text(channel) = &message.channel {
+                if session.sphere_ids.contains(&channel.sphere_id) {
+                    send_payload(tx, &ServerPayload::MessageCreate(message)).await;
+                }
+            }
+        }
+        ServerPayload::CategoryCreate {
+            category,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::CategoryCreate {
+                        category,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::CategoryUpdate {
+            data,
+            category_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::CategoryUpdate {
+                        data,
+                        category_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::CategoryDelete {
+            category_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::CategoryDelete {
+                        category_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereChannelCreate { channel, sphere_id } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::SphereChannelCreate { channel, sphere_id },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereChannelUpdate {
+            data,
+            channel_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::SphereChannelUpdate {
+                        data,
+                        channel_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereChannelDelete {
+            channel_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::SphereChannelDelete {
+                        channel_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::SphereUpdate { data, sphere_id } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::SphereUpdate { data, sphere_id }).await;
+            }
+        }
+        ServerPayload::MemberUpdate {
+            data,
+            user_id,
+            sphere_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MemberUpdate {
+                        data,
+                        user_id,
+                        sphere_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageDelete {
+            channel_id,
+            message_id,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageDelete: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!("Couldn't fetch channel data for MessageDelete: {}", err);
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageDelete {
+                        channel_id,
+                        message_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageUpdate {
+            channel_id,
+            message_id,
+            data,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageUpdate: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!("Couldn't fetch channel data for MessageUpdate: {}", err);
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageUpdate {
+                        channel_id,
+                        message_id,
+                        data,
+                    },
+                )
+                .await;
+            }
         }
         payload => {
             send_payload(tx, &payload).await;

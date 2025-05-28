@@ -26,7 +26,15 @@ use todel::{
     Conf,
 };
 
-pub const BUCKETS: [&str; 3] = ["attachments", "avatars", "banners"];
+pub const BUCKETS: [&str; 7] = [
+    "attachments",
+    "avatars",
+    "banners",
+    "sphere-icons",
+    "sphere-banners",
+    "member-avatars",
+    "member-banners",
+];
 
 #[cfg(test)]
 static INIT: Once = Once::new();

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n         UPDATE members\n         SET nickname = $1\n         WHERE id = $2\n         AND sphere_id = $3\n                         ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "bc699768099102719b7fbb686012427c95c2650e85c82b80aa5a5578d3c0ba58"
+}

@@ -4,7 +4,7 @@ use rocket::{serde::json::Json, State};
 use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::{Emailer, ServerPayload, UpdateUser, User},
+    models::{Emailer, ServerPayload, User, UserEdit},
     Conf,
 };
 use tokio::sync::Mutex;
@@ -35,9 +35,9 @@ use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 /// }
 /// ```
 #[autodoc("/users", category = "Users")]
-#[patch("/", data = "<update>")]
-pub async fn update_user(
-    update: Json<UpdateUser>,
+#[patch("/", data = "<edit>")]
+pub async fn edit_user(
+    edit: Json<UserEdit>,
     hasher: &State<Argon2<'static>>,
     rng: &State<Mutex<StdRng>>,
     conf: &State<Conf>,
@@ -46,12 +46,12 @@ pub async fn update_user(
     mut cache: Connection<Cache>,
     session: TokenAuth,
 ) -> RateLimitedRouteResponse<Json<User>> {
-    let mut rate_limiter = RateLimiter::new("update_user", session.0.user_id, conf);
+    let mut rate_limiter = RateLimiter::new("edit_user", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
     let payload = ServerPayload::UserUpdate(
-        User::update(
+        User::edit(
             session.0.user_id,
-            update.into_inner(),
+            edit.into_inner(),
             mailer,
             conf,
             hasher.inner(),

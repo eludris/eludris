@@ -88,9 +88,10 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .attach(EmailFairing)
         .attach(ScheduledCleanup)
         .mount("/", get_routes())
-        .mount("/messages", messages::get_routes())
         .mount("/users", users::get_routes())
-        .mount("/sessions", sessions::get_routes()))
+        .mount("/sessions", sessions::get_routes())
+        .mount("/spheres", spheres::get_routes())
+        .mount("/channels", channels::get_routes()))
 }
 
 #[rocket::main]

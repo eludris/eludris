@@ -1,7 +1,11 @@
+mod categories;
+mod channels;
 mod email;
 mod files;
+mod messages;
 mod meta;
 mod sessions;
+mod spheres;
 mod users;
 
 pub use email::*;

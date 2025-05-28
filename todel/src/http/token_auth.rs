@@ -12,6 +12,7 @@ use crate::{
 
 use super::DB;
 
+#[derive(Clone, Debug)]
 pub struct TokenAuth(pub Session);
 
 #[rocket::async_trait]

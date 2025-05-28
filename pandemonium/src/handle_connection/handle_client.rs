@@ -90,7 +90,10 @@ async fn handle_payload(
             let mut db = match pool.acquire().await {
                 Ok(conn) => conn,
                 Err(err) => {
-                    log::error!("Couldn't acquire database connection: {}", err);
+                    log::error!(
+                        "Couldn't acquire database connection for Authenticate: {}",
+                        err
+                    );
                     return Err("Server failed to authenticate client".to_string());
                 }
             };
@@ -142,35 +145,16 @@ async fn handle_payload(
                     return Err("Failed to connect user".to_string());
                 };
             }
-            let users: Vec<User> = match cache.smembers::<_, Vec<u64>>("sessions").await {
-                Ok(users) => {
-                    // TODO: try_join_all (please)
-                    let mut user_datas = vec![];
-                    for user_id in users.into_iter().filter(|u| u != &user.id) {
-                        match User::get(user_id, None, &mut db, &mut *cache).await {
-                            Ok(user) => {
-                                if user.status.status_type != StatusType::Offline {
-                                    user_datas.push(user);
-                                }
-                            }
-                            Err(err) => {
-                                log::error!("Failed to get online user {}: {}", user_id, err);
-                            }
-                        }
-                    }
-                    user_datas
-                }
-                Err(err) => {
-                    log::error!("Failed to get online users: {}", err);
-                    return Err("Failed to connect user".to_string());
-                }
-            };
-            let payload = ServerPayload::Authenticated { user, users };
+            let spheres = User::get_spheres(user_session.user_id, &mut db, &mut *cache)
+                .await
+                .map_err(|_| "Failed to connect user".to_string())?;
+            let payload = ServerPayload::Authenticated { user, spheres };
             send_payload(tx, &payload).await;
-            if let ServerPayload::Authenticated { user, .. } = payload {
+            if let ServerPayload::Authenticated { user, spheres } = payload {
                 *session = Some(SessionData {
                     session: user_session,
                     user,
+                    sphere_ids: spheres.iter().map(|s| s.id).collect(),
                 });
             }
         }

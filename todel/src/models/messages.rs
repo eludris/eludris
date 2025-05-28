@@ -1,8 +1,11 @@
 use serde::{Deserialize, Serialize};
+use serde_with::rust::double_option;
 
-use super::User;
+use super::{CustomEmbed, Embed, FileData, SphereChannel, User};
 
 /// The MessageCreate payload. This is used when you want to create a message using the REST API.
+///
+/// At least either content, an attachment or an embed have to exist.
 ///
 /// -----
 ///
@@ -10,17 +13,25 @@ use super::User;
 ///
 /// ```json
 /// {
-///   "content": "Hello, World!"
+///   "content": "Hello, World!",
+///   "reference": 4080402038782
 /// }
 /// ```
 #[autodoc(category = "Messaging", hidden = true)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MessageCreate {
-    /// The message's content. This field has to be at-least 2 characters long. The upper limit
-    /// is the instance's [`InstanceInfo`] `message_limit`.
+    /// The message's content. The upper limit is the instance's [`InstanceInfo`] `message_limit`.
     ///
-    /// The content will be trimmed from leading and trailing whitespace.
-    pub content: String,
+    /// Leading and trailing whitespace will be trimmed off the content.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
+    #[serde(default)]
+    pub attachments: Vec<u64>,
+    #[serde(default)]
+    pub embeds: Vec<CustomEmbed>,
+    /// The ID of the message referenced by this message.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "_disguise")]
     pub disguise: Option<MessageDisguise>,
@@ -48,6 +59,37 @@ pub struct MessageDisguise {
     pub avatar: Option<String>,
 }
 
+/// The MessageEdit payload. This is used when you want to edit an existing message using the REST
+/// API.
+///
+/// -----
+///
+/// ### Example
+///
+/// ```json
+/// {
+///   "content": "~~I am smart~~ EDIT: I was wrong."
+/// }
+/// ```
+#[autodoc(category = "Messaging")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MessageEdit {
+    /// The message's updated content. The upper limit is the instance's [`InstanceInfo`] `message_limit`.
+    /// If this is set to be an empty string it will be considered to be null,
+    ///
+    /// Leading and trailing whitespace will be trimmed off the content.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "double_option"
+    )]
+    pub content: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attachments: Option<Vec<u64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub embeds: Option<Vec<CustomEmbed>>,
+}
+
 /// The Message payload. This is returned when you're provided information about a pre-existing
 /// message.
 ///
@@ -57,6 +99,7 @@ pub struct MessageDisguise {
 ///
 /// ```json
 /// {
+///   "id": 4080402038782,
 ///   "author": {
 ///      "id": 48615849987333,
 ///      "username": "mlynar",
@@ -65,14 +108,34 @@ pub struct MessageDisguise {
 ///      "permissions": 8
 ///   }
 ///   "content": "Hello, World!"
+///   "channel": {
+///     "type": "TEXT",
+///     "id": 4080402038789,
+///     "sphere": 4080402038786,
+///     "position": 1,
+///     "name": "je-mappelle"
+///   }
 /// }
 /// ```
 #[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Message {
+    /// The ID of the message.
+    pub id: u64,
     /// The message's author.
     pub author: User,
-    /// There message's data.
-    #[serde(flatten)]
-    pub message: MessageCreate,
+    /// The message's content.
+    pub content: Option<String>,
+    /// The message referenced by this message.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<Box<Message>>,
+    /// The channel in which the message is sent.
+    pub channel: SphereChannel,
+    /// The attachments of this message.
+    pub attachments: Vec<FileData>,
+    /// The embeds of this message.
+    pub embeds: Vec<Embed>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "_disguise")]
+    pub disguise: Option<MessageDisguise>,
 }

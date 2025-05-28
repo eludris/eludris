@@ -1,5 +1,6 @@
-pub mod messages;
+pub mod channels;
 pub mod sessions;
+pub mod spheres;
 pub mod users;
 
 use rocket::{serde::json::Json, Route, State};

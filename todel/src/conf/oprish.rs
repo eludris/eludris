@@ -74,12 +74,12 @@ pub struct OprishRateLimits {
     /// someone who hasn't made an account.
     #[serde(default = "guest_get_user_default")]
     pub guest_get_user: RateLimitConf,
-    /// Rate limits for the [`update_user`] enpoint.
-    #[serde(default = "update_user_default")]
-    pub update_user: RateLimitConf,
-    /// Rate limits for the [`update_profile`] enpoint.
-    #[serde(default = "update_profile_default")]
-    pub update_profile: RateLimitConf,
+    /// Rate limits for the [`edit_user`] enpoint.
+    #[serde(default = "edit_user_default")]
+    pub edit_user: RateLimitConf,
+    /// Rate limits for the [`edit_profile`] enpoint.
+    #[serde(default = "edit_profile_default")]
+    pub edit_profile: RateLimitConf,
     /// Rate limits for the [`delete_user`] enpoint.
     #[serde(default = "delete_user_default")]
     pub delete_user: RateLimitConf,
@@ -101,6 +101,69 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`resend_verification`] endpoint.
     #[serde(default = "resend_verification_default")]
     pub resend_verification: RateLimitConf,
+    /// Rate limits for the [`create_sphere`] endpoint.
+    #[serde(default = "create_sphere_default")]
+    pub create_sphere: RateLimitConf,
+    /// Rate limits for the [`get_sphere`] and [`get_sphere_from_slug`] endpoints.
+    #[serde(default = "get_sphere_default")]
+    pub get_sphere: RateLimitConf,
+    /// Rate limits for the [`get_sphere`] and [`get_sphere_from_slug`] endpoints for
+    /// someone who hasn't made an account.
+    #[serde(default = "guest_get_sphere_default")]
+    pub guest_get_sphere: RateLimitConf,
+    /// Rate limits for the [`create_category`] endpoint.
+    #[serde(default = "create_category_default")]
+    pub create_category: RateLimitConf,
+    /// Rate limits for the [`edit_category`] endpoint.
+    #[serde(default = "edit_category_default")]
+    pub edit_category: RateLimitConf,
+    /// Rate limits for the [`delete_category`] endpoint.
+    #[serde(default = "delete_category_default")]
+    pub delete_category: RateLimitConf,
+    /// Rate limits for the [`create_channel`] endpoint.
+    #[serde(default = "create_channel_default")]
+    pub create_channel: RateLimitConf,
+    /// Rate limits for the [`edit_channel`] endpoint.
+    #[serde(default = "edit_channel_default")]
+    pub edit_channel: RateLimitConf,
+    /// Rate limits for the [`delete_channel`] endpoint.
+    #[serde(default = "delete_channel_default")]
+    pub delete_channel: RateLimitConf,
+    /// Rate limits for the [`join_sphere`] and [`join_sphere_from_slug`] endpoints.
+    #[serde(default = "join_sphere_default")]
+    pub join_sphere: RateLimitConf,
+    /// Rate limits for the [`get_channel`] endpoint.
+    #[serde(default = "get_channel_default")]
+    pub get_channel: RateLimitConf,
+    /// Rate limits for the [`get_channel`] endpoint for someone who hasn't made
+    /// an account.
+    #[serde(default = "guest_get_channel_default")]
+    pub guest_get_channel: RateLimitConf,
+    /// Rate limits for the [`get_messages`] endpoint.
+    #[serde(default = "get_messages_default")]
+    pub get_messages: RateLimitConf,
+    /// Rate limits for the [`get_message`] endpoint.
+    #[serde(default = "get_message_default")]
+    pub get_message: RateLimitConf,
+    /// Rate limits for the [`get_member`] endpoint.
+    #[serde(default = "get_member_default")]
+    pub get_member: RateLimitConf,
+    /// Rate limits for the [`get_member`] endpoint for someone who hasn't made
+    /// an account.
+    #[serde(default = "guest_get_member_default")]
+    pub guest_get_member: RateLimitConf,
+    /// Rate limits for the [`edit_member`] endpoint.
+    #[serde(default = "edit_member_default")]
+    pub edit_member: RateLimitConf,
+    /// Rate limits for the [`edit_message`] endpoint.
+    #[serde(default = "edit_message_default")]
+    pub edit_message: RateLimitConf,
+    /// Rate limits for the [`delete_message`] endpoint.
+    #[serde(default = "delete_message_default")]
+    pub delete_message: RateLimitConf,
+    /// Rate limits for the [`leave_sphere`] endpoint.
+    #[serde(default = "leave_sphere_default")]
+    pub leave_sphere: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -112,8 +175,8 @@ impl Default for OprishRateLimits {
             verify_user: verify_user_default(),
             get_user: get_user_default(),
             guest_get_user: guest_get_user_default(),
-            update_user: update_user_default(),
-            update_profile: update_profile_default(),
+            edit_user: edit_user_default(),
+            edit_profile: edit_profile_default(),
             delete_user: delete_user_default(),
             create_password_reset_code: create_password_reset_code_default(),
             reset_password: reset_password_default(),
@@ -121,6 +184,26 @@ impl Default for OprishRateLimits {
             get_sessions: get_sessions_default(),
             delete_session: delete_session_default(),
             resend_verification: resend_verification_default(),
+            create_sphere: create_sphere_default(),
+            get_sphere: get_sphere_default(),
+            guest_get_sphere: guest_get_sphere_default(),
+            create_category: create_category_default(),
+            edit_category: edit_category_default(),
+            delete_category: delete_category_default(),
+            create_channel: create_channel_default(),
+            edit_channel: edit_channel_default(),
+            delete_channel: delete_channel_default(),
+            join_sphere: join_sphere_default(),
+            get_channel: get_channel_default(),
+            guest_get_channel: guest_get_channel_default(),
+            get_messages: get_messages_default(),
+            get_message: get_message_default(),
+            get_member: get_member_default(),
+            guest_get_member: guest_get_member_default(),
+            edit_member: edit_member_default(),
+            edit_message: edit_message_default(),
+            delete_message: delete_message_default(),
+            leave_sphere: leave_sphere_default(),
         }
     }
 }
@@ -167,14 +250,14 @@ fn guest_get_user_default() -> RateLimitConf {
     }
 }
 
-fn update_user_default() -> RateLimitConf {
+fn edit_user_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 180,
         limit: 5,
     }
 }
 
-fn update_profile_default() -> RateLimitConf {
+fn edit_profile_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 180,
         limit: 5,
@@ -227,5 +310,145 @@ fn resend_verification_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 60,
         limit: 5,
+    }
+}
+
+fn create_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 60,
+        limit: 5,
+    }
+}
+
+fn get_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 20,
+    }
+}
+
+fn guest_get_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn edit_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn delete_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn create_category_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn create_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn edit_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn delete_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 10,
+        limit: 5,
+    }
+}
+
+fn join_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 20,
+    }
+}
+
+fn get_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 20,
+    }
+}
+
+fn guest_get_channel_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn get_messages_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn get_message_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn get_member_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn guest_get_member_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn edit_member_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn delete_message_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn edit_message_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn leave_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
     }
 }
