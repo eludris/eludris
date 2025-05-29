@@ -266,6 +266,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
         Ok(file.get_file_data())
     }
 
+    #[cfg(feature = "http")]
     pub async fn open_file(&self, size: Option<u32>) -> Result<fs::File, ErrorResponse> {
         let mut path = format!("files/{}/{}", self.bucket, self.file_id);
         let data = self.get_file_data();
