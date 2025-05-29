@@ -2,7 +2,7 @@
 use std::path::PathBuf;
 
 #[cfg(feature = "http")]
-use image::{io::Reader as ImageReader, ImageFormat, imageops::FilterType};
+use image::{imageops::FilterType, io::Reader as ImageReader, ImageFormat};
 #[cfg(feature = "http")]
 use rocket::{
     fs::TempFile,
