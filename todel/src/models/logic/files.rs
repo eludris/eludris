@@ -1,9 +1,8 @@
 #[cfg(feature = "http")]
 use std::path::PathBuf;
 
-use image::imageops::FilterType;
 #[cfg(feature = "http")]
-use image::{io::Reader as ImageReader, ImageFormat};
+use image::{io::Reader as ImageReader, ImageFormat, imageops::FilterType};
 #[cfg(feature = "http")]
 use rocket::{
     fs::TempFile,
@@ -13,7 +12,6 @@ use rocket::{
 use sqlx::{pool::PoolConnection, Postgres};
 #[cfg(feature = "http")]
 use tokio::fs;
-use tokio::fs::try_exists;
 
 #[cfg(feature = "http")]
 use crate::ids::IdGenerator;
@@ -283,7 +281,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             }
             let old_path = path.clone();
             path = format!("{}-{}", path, size);
-            if !try_exists(&path).await.map_err(|e| {
+            if !fs::try_exists(&path).await.map_err(|e| {
                 log::error!(
                     "Could not fetch file {} with id {}: {:?}",
                     self.name,
