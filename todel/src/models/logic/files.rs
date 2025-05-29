@@ -1,6 +1,7 @@
 #[cfg(feature = "http")]
 use std::path::PathBuf;
 
+use image::imageops::FilterType;
 #[cfg(feature = "http")]
 use image::{io::Reader as ImageReader, ImageFormat};
 #[cfg(feature = "http")]
@@ -12,6 +13,7 @@ use rocket::{
 use sqlx::{pool::PoolConnection, Postgres};
 #[cfg(feature = "http")]
 use tokio::fs;
+use tokio::fs::try_exists;
 
 #[cfg(feature = "http")]
 use crate::ids::IdGenerator;
@@ -29,6 +31,10 @@ pub struct FetchResponse<'a> {
     pub disposition: Header<'a>,
     pub content_type: ContentType,
 }
+
+pub const RESIZABLE_BUCKETS: [&'static str; 4] =
+    ["avatars", "sphere-icons", "member-avatars", "emojis"];
+pub const SIZES: [u32; 1] = [256];
 
 /// The data format for uploading a file.
 ///
@@ -153,26 +159,26 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                                     error!(SERVER, "Failed to strip file metadata")
                                 })?;
                             reader.set_format(ImageFormat::Jpeg);
-                                reader.decode()
-                                .map_err(|e| {
-                                    log::error!(
-                                        "Failed to strip file metadata on {} while decoding with id {}: {:?}",
-                                        name,
-                                        id,
-                                        e
-                                    );
-                                    error!(SERVER, "Failed to strip file metadata")
-                                })?
-                                .save_with_format(&path, ImageFormat::Jpeg)
-                                .map_err(|e| {
-                                    log::error!(
-                                        "Failed to strip image metadata on {} while saving with id {}: {:?}",
-                                        name,
-                                        id,
-                                        e
-                                    );
-                                    error!(SERVER, "Failed to strip file metadata")
-                                })?;
+                            reader.decode()
+                            .map_err(|e| {
+                                log::error!(
+                                    "Failed to strip file metadata on {} while decoding with id {}: {:?}",
+                                    name,
+                                    id,
+                                    e
+                                );
+                                error!(SERVER, "Failed to strip file metadata")
+                            })?
+                            .save_with_format(&path, ImageFormat::Jpeg)
+                            .map_err(|e| {
+                                log::error!(
+                                    "Failed to strip image metadata on {} while saving with id {}: {:?}",
+                                    name,
+                                    id,
+                                    e
+                                );
+                                error!(SERVER, "Failed to strip file metadata")
+                            })?;
                         }
                         imagesize::blob_size(&data)
                             .map(|d| (Some(d.width), Some(d.height)))
@@ -261,6 +267,78 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
         Ok(file.get_file_data())
     }
 
+    pub async fn open_file(&self, size: Option<u32>) -> Result<fs::File, ErrorResponse> {
+        let mut path = format!("files/{}/{}", self.bucket, self.file_id);
+        let data = self.get_file_data();
+        if let Some(size) = size {
+            if !matches!(data.metadata, FileMetadata::Image { .. }) {
+                return Err(error!(VALIDATION, "bucket", "Only images support resizing"));
+            } else if !RESIZABLE_BUCKETS.contains(&self.bucket.as_str()) {
+                return Err(error!(
+                    VALIDATION,
+                    "bucket", "This bucket doesn't support resizing"
+                ));
+            } else if !SIZES.contains(&size) {
+                return Err(error!(VALIDATION, "size", "Unsupported size"));
+            }
+            let old_path = path.clone();
+            path = format!("{}-{}", path, size);
+            if !try_exists(&path).await.map_err(|e| {
+                log::error!(
+                    "Could not fetch file {} with id {}: {:?}",
+                    self.name,
+                    self.id,
+                    e
+                );
+                error!(SERVER, "Error fetching file")
+            })? {
+                let content_type = self.content_type.clone();
+                return Ok(fs::File::from_std(
+                    tokio::task::spawn_blocking(move || {
+                        let mut reader = ImageReader::open(&old_path).map_err(|e| {
+                            log::error!("Failed to open file for resizing at {}: {}", path, e);
+                            error!(SERVER, "Failed to resize file")
+                        })?;
+                        reader.set_format(ImageFormat::from_mime_type(content_type).unwrap());
+                        reader
+                            .decode()
+                            .map_err(|e| {
+                                log::error!(
+                                    "Failed to strip open file for resizing at {}: {}",
+                                    path,
+                                    e
+                                );
+                                error!(SERVER, "Failed to resize file")
+                            })?
+                            .resize(size, size, FilterType::Nearest)
+                            .save_with_format(&path, ImageFormat::Jpeg)
+                            .map_err(|e| {
+                                log::error!("Failed to write file at {}: {}", path, e);
+                                error!(SERVER, "Failed to resize file")
+                            })?;
+                        Ok::<std::fs::File, ErrorResponse>(std::fs::File::open(&path).map_err(
+                            |e| {
+                                log::error!("Failed to open file at {}: {}", path, e);
+                                error!(SERVER, "Failed to resize file")
+                            },
+                        )?)
+                    })
+                    .await
+                    .unwrap()?,
+                ));
+            }
+        }
+        fs::File::open(path).await.map_err(|e| {
+            log::error!(
+                "Could not fetch file {} with id {}: {:?}",
+                self.name,
+                self.id,
+                e
+            );
+            error!(SERVER, "Error fetching file")
+        })
+    }
+
     pub async fn get<'a>(
         id: u64,
         bucket: &'a str,
@@ -296,22 +374,13 @@ AND bucket = $2
     pub async fn fetch_file<'a>(
         id: u64,
         bucket: &'a str,
+        size: Option<u32>,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
         let file_data = Self::get(id, bucket, db)
             .await
             .ok_or_else(|| error!(NOT_FOUND))?;
-        let file = fs::File::open(format!("files/{}/{}", bucket, file_data.file_id))
-            .await
-            .map_err(|e| {
-                log::error!(
-                    "Could not fetch file {} with id {}: {:?}",
-                    file_data.name,
-                    file_data.id,
-                    e
-                );
-                error!(SERVER, "Error fetching file")
-            })?;
+        let file = file_data.open_file(size).await?;
         Ok(FetchResponse {
             file,
             disposition: Header::new(
@@ -326,22 +395,13 @@ AND bucket = $2
     pub async fn fetch_file_download<'a>(
         id: u64,
         bucket: &'a str,
+        size: Option<u32>,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<FetchResponse<'a>, ErrorResponse> {
         let file_data = Self::get(id, bucket, db)
             .await
             .ok_or_else(|| error!(NOT_FOUND))?;
-        let file = fs::File::open(format!("files/{}/{}", bucket, file_data.file_id))
-            .await
-            .map_err(|e| {
-                log::error!(
-                    "Could not fetch file {} with id {}: {:?}",
-                    file_data.name,
-                    file_data.id,
-                    e
-                );
-                error!(SERVER, "Error fetching file")
-            })?;
+        let file = file_data.open_file(size).await?;
         Ok(FetchResponse {
             file,
             disposition: Header::new(
@@ -363,7 +423,7 @@ AND bucket = $2
             .map(|f| f.get_file_data())
     }
 
-    pub fn get_file_data(self) -> FileData {
+    pub fn get_file_data(&self) -> FileData {
         let metadata = match self.content_type.as_ref() {
             "image/gif" | "image/jpeg" | "image/png" | "image/webp" => {
                 if self.width.is_some() && self.height.is_some() {
@@ -391,8 +451,8 @@ AND bucket = $2
 
         FileData {
             id: self.id,
-            name: self.name,
-            bucket: self.bucket,
+            name: self.name.clone(),
+            bucket: self.bucket.clone(),
             metadata,
             spoiler: self.spoiler,
         }

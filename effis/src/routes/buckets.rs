@@ -82,10 +82,11 @@ pub async fn upload_file<'a>(
 /// <raw file data>
 /// ```
 #[autodoc(category = "Files")]
-#[get("/<bucket>/<id>")]
+#[get("/<bucket>/<id>?<size>")]
 pub async fn get_file<'a>(
     bucket: &'a str,
     id: u64,
+    size: Option<u32>,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -94,7 +95,7 @@ pub async fn get_file<'a>(
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
     check_bucket(bucket).map_err(|e| rate_limiter.add_headers(e))?;
-    let file = File::fetch_file(id, bucket, &mut db)
+    let file = File::fetch_file(id, bucket, size, &mut db)
         .await
         .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(file)
@@ -115,10 +116,11 @@ pub async fn get_file<'a>(
 /// <raw file data>
 /// ```
 #[autodoc(category = "Files")]
-#[get("/<bucket>/<id>/download")]
+#[get("/<bucket>/<id>/download?<size>")]
 pub async fn download_file<'a>(
     bucket: &'a str,
     id: u64,
+    size: Option<u32>,
     ip: ClientIP,
     mut cache: Connection<Cache>,
     mut db: Connection<DB>,
@@ -127,7 +129,7 @@ pub async fn download_file<'a>(
     let mut rate_limiter = RateLimiter::new("fetch_file", bucket, ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
     check_bucket(bucket).map_err(|e| rate_limiter.add_headers(e))?;
-    let file = File::fetch_file_download(id, bucket, &mut db)
+    let file = File::fetch_file_download(id, bucket, size, &mut db)
         .await
         .map_err(|e| rate_limiter.add_headers(e))?;
     rate_limiter.wrap_response(file)

@@ -26,7 +26,7 @@ use todel::{
     Conf,
 };
 
-pub const BUCKETS: [&str; 7] = [
+pub const BUCKETS: [&str; 8] = [
     "attachments",
     "avatars",
     "banners",
@@ -34,6 +34,7 @@ pub const BUCKETS: [&str; 7] = [
     "sphere-banners",
     "member-avatars",
     "member-banners",
+    "emojis",
 ];
 
 #[cfg(test)]
