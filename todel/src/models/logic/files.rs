@@ -32,8 +32,7 @@ pub struct FetchResponse<'a> {
     pub content_type: ContentType,
 }
 
-pub const RESIZABLE_BUCKETS: [&'static str; 4] =
-    ["avatars", "sphere-icons", "member-avatars", "emojis"];
+pub const RESIZABLE_BUCKETS: [&str; 4] = ["avatars", "sphere-icons", "member-avatars", "emojis"];
 pub const SIZES: [u32; 1] = [256];
 
 /// The data format for uploading a file.
@@ -316,12 +315,10 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                                 log::error!("Failed to write file at {}: {}", path, e);
                                 error!(SERVER, "Failed to resize file")
                             })?;
-                        Ok::<std::fs::File, ErrorResponse>(std::fs::File::open(&path).map_err(
-                            |e| {
-                                log::error!("Failed to open file at {}: {}", path, e);
-                                error!(SERVER, "Failed to resize file")
-                            },
-                        )?)
+                        std::fs::File::open(&path).map_err(|e| {
+                            log::error!("Failed to open file at {}: {}", path, e);
+                            error!(SERVER, "Failed to resize file")
+                        })
                     })
                     .await
                     .unwrap()?,
