@@ -43,7 +43,7 @@ pub async fn edit_profile(
     let mut rate_limiter = RateLimiter::new("edit_profile", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
     let payload = ServerPayload::UserUpdate(
-        User::edit_profile(session.0.user_id, profile.into_inner(), conf, &mut db)
+        User::edit_profile(session.0.user_id, profile.into_inner(), &mut db)
             .await
             .map_err(|err| rate_limiter.add_headers(err))?,
     );
