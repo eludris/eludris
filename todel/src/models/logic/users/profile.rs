@@ -1,16 +1,9 @@
 use sqlx::{pool::PoolConnection, Postgres, QueryBuilder};
 
-use crate::{
-    models::{ErrorResponse, File, User, UserProfileEdit},
-    Conf,
-};
+use crate::models::{ErrorResponse, File, User, UserProfileEdit};
 
 impl UserProfileEdit {
-    pub async fn validate(
-        &self,
-        conf: &Conf,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Result<(), ErrorResponse> {
+    pub async fn validate(&self, db: &mut PoolConnection<Postgres>) -> Result<(), ErrorResponse> {
         if self.display_name.is_none()
             && self.bio.is_none()
             && self.status.is_none()
@@ -30,14 +23,10 @@ impl UserProfileEdit {
             }
         }
         if let Some(Some(bio)) = &self.bio {
-            if bio.is_empty() || bio.len() > conf.oprish.bio_limit {
+            if bio.is_empty() || bio.len() > 4096 {
                 return Err(error!(
                     VALIDATION,
-                    "bio",
-                    format!(
-                        "The user's bio must be between 1 and {} characters in length",
-                        conf.oprish.bio_limit
-                    )
+                    "bio", "The user's bio must be between 1 and 4096 characters in length"
                 ));
             }
         }
@@ -76,10 +65,9 @@ impl User {
     pub async fn edit_profile(
         id: u64,
         profile: UserProfileEdit,
-        conf: &Conf,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<Self, ErrorResponse> {
-        profile.validate(conf, &mut *db).await?;
+        profile.validate(&mut *db).await?;
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE users SET ");
         let mut seperated = query.separated(", ");
         if let Some(display_name) = profile.display_name {
