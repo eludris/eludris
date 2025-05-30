@@ -1,5 +1,6 @@
 use rocket::Route;
 
+mod avatar;
 mod create;
 mod delete;
 mod edit;
@@ -20,5 +21,6 @@ pub fn get_routes() -> Vec<Route> {
         reset_password::create_password_reset_code,
         reset_password::reset_password,
         resend_verification::resend_verification,
+        avatar::get_avatar,
     ]
 }

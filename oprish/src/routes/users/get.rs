@@ -41,7 +41,6 @@ pub async fn get_user(
     session: Option<TokenAuth>,
     ip: ClientIP,
 ) -> RateLimitedRouteResponse<Json<User>> {
-    println!("{:?}", session);
     let mut rate_limiter;
     if let Some(session) = &session {
         rate_limiter = RateLimiter::new("get_user", session.0.user_id, conf);
