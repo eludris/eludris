@@ -1,8 +1,13 @@
 #[cfg(feature = "http")]
-use std::path::PathBuf;
+use std::{io::Cursor, path::PathBuf};
 
 #[cfg(feature = "http")]
-use image::{imageops::FilterType, io::Reader as ImageReader, ImageFormat};
+use image::{
+    codecs::gif::{GifDecoder, GifEncoder, Repeat},
+    imageops::{self},
+    io::Reader as ImageReader,
+    AnimationDecoder, Frame, ImageDecoder, ImageFormat,
+};
 #[cfg(feature = "http")]
 use rocket::{
     fs::TempFile,
@@ -295,27 +300,103 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 let content_type = self.content_type.clone();
                 return Ok(fs::File::from_std(
                     tokio::task::spawn_blocking(move || {
-                        let mut reader = ImageReader::open(&old_path).map_err(|e| {
-                            log::error!("Failed to open file for resizing at {}: {}", path, e);
-                            error!(SERVER, "Failed to resize file")
-                        })?;
-                        reader.set_format(ImageFormat::from_mime_type(content_type).unwrap());
-                        reader
-                            .decode()
-                            .map_err(|e| {
-                                log::error!(
-                                    "Failed to strip open file for resizing at {}: {}",
-                                    path,
-                                    e
-                                );
-                                error!(SERVER, "Failed to resize file")
-                            })?
-                            .resize(size, size, FilterType::Nearest)
-                            .save_with_format(&path, ImageFormat::Jpeg)
-                            .map_err(|e| {
-                                log::error!("Failed to write file at {}: {}", path, e);
+                        if content_type == "image/gif" {
+                            let original = std::fs::read(&old_path).map_err(|e| {
+                                log::error!("Failed to open file for resizing at {}: {}", path, e);
                                 error!(SERVER, "Failed to resize file")
                             })?;
+                            let decoder = GifDecoder::new(Cursor::new(original)).map_err(|e| {
+                                log::error!("Failed to open file for resizing at {}: {}", path, e);
+                                error!(SERVER, "Failed to resize file")
+                            })?;
+                            let (width, height) = decoder.dimensions();
+                            if width <= size && height <= size {
+                                std::fs::copy(&old_path, &path).map_err(|e| {
+                                    log::error!(
+                                        "Failed to copy file for resizing at {}: {}",
+                                        path,
+                                        e
+                                    );
+                                    error!(SERVER, "Failed to resize file")
+                                })?;
+                            } else {
+                                let mut target_width = size;
+                                let mut target_height = size;
+                                if width > height {
+                                    target_height = (height as f32 * (size as f32 / width as f32))
+                                        .round()
+                                        as u32;
+                                } else if height > width {
+                                    target_width = (width as f32 * (size as f32 / height as f32))
+                                        .round()
+                                        as u32;
+                                }
+                                let mut frames = vec![];
+                                for frame in decoder.into_frames() {
+                                    let frame = frame.map_err(|e| {
+                                        log::error!(
+                                            "Failed to open frame for resizing at {}: {}",
+                                            path,
+                                            e
+                                        );
+                                        error!(SERVER, "Failed to resize file")
+                                    })?;
+                                    let buffer = frame.buffer();
+                                    let resized =
+                                        imageops::thumbnail(buffer, target_width, target_height);
+                                    frames.push(Frame::from_parts(
+                                        resized,
+                                        frame.left(),
+                                        frame.top(),
+                                        frame.delay(),
+                                    ));
+                                }
+                                let mut out = Cursor::new(vec![]);
+                                {
+                                    let mut encoder = GifEncoder::new(&mut out);
+                                    encoder.set_repeat(Repeat::Infinite).unwrap();
+                                    encoder.encode_frames(frames).map_err(|e| {
+                                        log::error!(
+                                        "Failed to build gif from frames for resizing at {}: {}",
+                                        path,
+                                        e
+                                    );
+                                        error!(SERVER, "Failed to resize file")
+                                    })?;
+                                }
+                                std::fs::write(&path, out.get_ref()).map_err(|e| {
+                                    log::error!(
+                                        "Failed to write gif after resizing at {}: {}",
+                                        path,
+                                        e
+                                    );
+                                    error!(SERVER, "Failed to resize file")
+                                })?;
+                            }
+                        } else {
+                            let mut reader = ImageReader::open(&old_path).map_err(|e| {
+                                log::error!("Failed to open file for resizing at {}: {}", path, e);
+                                error!(SERVER, "Failed to resize file")
+                            })?;
+                            let format = ImageFormat::from_mime_type(content_type).unwrap();
+                            reader.set_format(format);
+                            reader
+                                .decode()
+                                .map_err(|e| {
+                                    log::error!(
+                                        "Failed to strip open file for resizing at {}: {}",
+                                        path,
+                                        e
+                                    );
+                                    error!(SERVER, "Failed to resize file")
+                                })?
+                                .thumbnail(size, size)
+                                .save_with_format(&path, format)
+                                .map_err(|e| {
+                                    log::error!("Failed to write file at {}: {}", path, e);
+                                    error!(SERVER, "Failed to resize file")
+                                })?;
+                        }
                         std::fs::File::open(&path).map_err(|e| {
                             log::error!("Failed to open file at {}: {}", path, e);
                             error!(SERVER, "Failed to resize file")
