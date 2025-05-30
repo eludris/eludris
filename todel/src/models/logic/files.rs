@@ -1,5 +1,5 @@
 #[cfg(feature = "http")]
-use std::{io::Cursor, path::PathBuf};
+use std::{cmp, io::Cursor, path::PathBuf};
 
 #[cfg(feature = "http")]
 use image::{
@@ -322,14 +322,18 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                             } else {
                                 let mut target_width = size;
                                 let mut target_height = size;
-                                if width > height {
-                                    target_height = (height as f32 * (size as f32 / width as f32))
-                                        .round()
-                                        as u32;
-                                } else if height > width {
-                                    target_width = (width as f32 * (size as f32 / height as f32))
-                                        .round()
-                                        as u32;
+                                match width.cmp(&height) {
+                                    cmp::Ordering::Greater => {
+                                        target_height =
+                                            (height as f32 * (size as f32 / width as f32)).round()
+                                                as u32;
+                                    }
+                                    cmp::Ordering::Less => {
+                                        target_width =
+                                            (width as f32 * (size as f32 / height as f32)).round()
+                                                as u32;
+                                    }
+                                    cmp::Ordering::Equal => {}
                                 }
                                 let mut frames = vec![];
                                 for frame in decoder.into_frames() {
