@@ -145,7 +145,8 @@ async fn handle_payload(
                     return Err("Failed to connect user".to_string());
                 };
             }
-            let spheres = User::get_spheres(user_session.user_id, &mut db, &mut *cache)
+            let spheres = user
+                .get_spheres(&mut db, &mut *cache)
                 .await
                 .map_err(|_| "Failed to connect user".to_string())?;
             let payload = ServerPayload::Authenticated { user, spheres };

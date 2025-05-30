@@ -164,6 +164,9 @@ pub struct OprishRateLimits {
     /// Rate limits for the [`leave_sphere`] endpoint.
     #[serde(default = "leave_sphere_default")]
     pub leave_sphere: RateLimitConf,
+    /// Rate limits for the [`get_spheres`] endpoint.
+    #[serde(default = "get_spheres_default")]
+    pub get_spheres: RateLimitConf,
 }
 
 impl Default for OprishRateLimits {
@@ -204,6 +207,7 @@ impl Default for OprishRateLimits {
             edit_message: edit_message_default(),
             delete_message: delete_message_default(),
             leave_sphere: leave_sphere_default(),
+            get_spheres: get_spheres_default(),
         }
     }
 }
@@ -447,6 +451,13 @@ fn edit_message_default() -> RateLimitConf {
 }
 
 fn leave_sphere_default() -> RateLimitConf {
+    RateLimitConf {
+        reset_after: 5,
+        limit: 10,
+    }
+}
+
+fn get_spheres_default() -> RateLimitConf {
     RateLimitConf {
         reset_after: 5,
         limit: 10,

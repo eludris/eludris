@@ -100,7 +100,7 @@ AND is_deleted = FALSE
 
     // TODO: use async iteration to map over it for optimization
     pub async fn get_spheres<C: AsyncCommands>(
-        user_id: u64,
+        &self,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
     ) -> Result<Vec<Sphere>, ErrorResponse> {
@@ -113,11 +113,11 @@ ON sphere_id = spheres.id
 WHERE members.id = $1
             ",
         )
-        .bind(user_id as i64)
+        .bind(self.id as i64)
         .fetch_all(&mut **db)
         .await
         .map_err(|err| {
-            log::error!("Failed to fetch user {}'s spheres: {}", user_id, err);
+            log::error!("Failed to fetch user {}'s spheres: {}", self.id, err);
             error!(SERVER, "Couldn't fetch user spheres")
         })?;
         let mut populated = vec![];

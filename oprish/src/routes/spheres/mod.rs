@@ -11,6 +11,7 @@ mod edit_channel;
 mod edit_member;
 mod get;
 mod get_member;
+mod get_spheres;
 mod join;
 mod remove_member;
 
@@ -29,5 +30,6 @@ pub fn get_routes() -> Vec<Route> {
         edit::edit,
         get_member::get_member,
         edit_member::edit_member,
+        get_spheres::get_spheres,
     ]
 }

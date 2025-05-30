@@ -89,6 +89,7 @@ impl RateLimiter {
             edit_message,
             delete_message,
             leave_sphere,
+            get_spheres,
         );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),
