@@ -30,7 +30,9 @@ pub struct FetchResponse<'a> {
     pub content_type: ContentType,
 }
 
+#[cfg(feature = "http")]
 pub const RESIZABLE_BUCKETS: [&str; 4] = ["avatars", "sphere-icons", "member-avatars", "emojis"];
+#[cfg(feature = "http")]
 pub const SIZES: [u32; 1] = [256];
 
 /// The data format for uploading a file.
