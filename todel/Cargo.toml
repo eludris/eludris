@@ -40,6 +40,7 @@ rocket_db_pools = { version = "0.1.0-rc.4", features = [
     "deadpool_redis",
     "sqlx",
 ], optional = true }
+reqwest = { version = "0.11.24", default-features = false, features = ["rustls-tls", "json"], optional = true }
 serde = { version = "1.0.144", features = ["derive"] }
 serde_json = { version = "1.0.96", optional = true }
 serde_with = "3.0.0"
@@ -58,6 +59,7 @@ toml = { version = "0.5.9", optional = true }
 tree_magic = { version = "0.2.3", optional = true }
 ubyte = { version = "0.10.3", features = ["serde"] }
 url = { version = "2.2.2", optional = true }
+scraper = { version = "0.23.1", optional = true }
 
 [features]
 logic = [
@@ -88,4 +90,6 @@ http = [
     "dep:rocket",
     "dep:rocket_db_pools",
     "dep:tree_magic",
+    "dep:reqwest",
+    "dep:scraper",
 ]

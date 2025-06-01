@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Category, CategoryEdit, InstanceInfo, MemberEdit, Message, MessageEdit, Sphere, SphereChannel,
-    SphereChannelEdit, SphereEdit, Status, User,
+    Category, CategoryEdit, Embed, InstanceInfo, MemberEdit, Message, MessageEdit, Sphere,
+    SphereChannel, SphereChannelEdit, SphereEdit, Status, User,
 };
 use crate::conf::RateLimitConf;
 
@@ -384,6 +384,11 @@ pub enum ServerPayload {
         channel_id: u64,
         message_id: u64,
         data: MessageEdit,
+    },
+    MessageEmbedPopulate {
+        channel_id: u64,
+        message_id: u64,
+        embeds: Vec<Embed>,
     },
 }
 

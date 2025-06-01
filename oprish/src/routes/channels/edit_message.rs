@@ -52,5 +52,8 @@ pub async fn edit_message(
         .await
         .map_err(|err| rate_limiter.add_headers(err))?;
 
+    let message_clone = message.clone();
+    tokio::spawn(async move { message_clone.populate_embeds(db.into_inner(), cache).await });
+
     rate_limiter.wrap_response(Ok(Json(message)))
 }

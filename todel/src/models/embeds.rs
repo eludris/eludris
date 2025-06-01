@@ -5,6 +5,40 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "type")]
 pub enum Embed {
     Custom(CustomEmbed),
+    Image {
+        url: String,
+        width: u32,
+        height: u32,
+    },
+    Video {
+        url: String,
+        width: u32,
+        height: u32,
+    },
+    Website {
+        url: String,
+        name: Option<String>,
+        title: Option<String>,
+        description: Option<String>,
+        colour: Option<String>,
+        image: Option<String>,
+        image_width: Option<u32>,
+        image_height: Option<u32>,
+    },
+    YouTubeVideo {
+        url: String,
+        title: String,
+        video_id: String,
+        description: Option<String>,
+        channel: String,
+        channel_url: String,
+        timestamp: Option<u32>,
+    },
+    Spotify {
+        url: String,
+        title: String,
+        iframe: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

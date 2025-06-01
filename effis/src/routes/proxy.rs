@@ -1,4 +1,3 @@
-use reqwest::header::USER_AGENT;
 use reqwest::Client;
 use rocket::http::ContentType;
 use rocket::State;
@@ -48,20 +47,12 @@ pub async fn proxy<'a>(
 ) -> RateLimitedRouteResponse<Result<ProxyResponse, ErrorResponse>> {
     let mut rate_limiter = RateLimiter::new("proxy_file", "attachments", ip, conf.inner());
     rate_limiter.process_rate_limit(0, &mut cache).await?;
-    let resp = http
-        .get(url)
-        .header(
-            USER_AGENT,
-            "Mozilla/5.0 (compatible; eludris/0.4.0-alpha1;)",
-        )
-        .send()
-        .await
-        .map_err(|_| {
-            rate_limiter.add_headers(error!(
-                VALIDATION,
-                "url", "Couldn't fetch data from the provided URL"
-            ))
-        })?;
+    let resp = http.get(url).send().await.map_err(|_| {
+        rate_limiter.add_headers(error!(
+            VALIDATION,
+            "url", "Couldn't fetch data from the provided URL"
+        ))
+    })?;
     if resp.content_length() > Some(conf.effis.proxy_file_size) {
         error!(
             rate_limiter,

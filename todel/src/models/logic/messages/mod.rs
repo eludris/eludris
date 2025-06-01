@@ -1,6 +1,8 @@
 mod delete;
 mod edit;
 mod get;
+#[cfg(feature = "http")]
+mod populate_embeds;
 
 use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, Acquire, Postgres};

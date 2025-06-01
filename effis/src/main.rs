@@ -9,11 +9,11 @@ mod routes;
 
 #[cfg(test)]
 use std::sync::Once;
-use std::{env, fs, path::Path};
+use std::{env, fs, path::Path, time::Duration};
 
 use anyhow::Context;
 
-use reqwest::Client;
+use reqwest::{redirect::Policy, Client};
 use rocket::{
     data::{Limits, ToByteUnit},
     tokio::sync::Mutex,
@@ -98,7 +98,16 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
     Ok(rocket::custom(config)
         .manage(Mutex::new(IdGenerator::new()))
         .manage(conf)
-        .manage(Client::new())
+        .manage(
+            Client::builder()
+                .timeout(Duration::from_secs(10))
+                .redirect(Policy::limited(5))
+                .user_agent(concat!(
+                    "Mozilla/5.0 (compatible; eludris/",
+                    env!("CARGO_PKG_VERSION"),
+                    ";)"
+                )),
+        )
         .attach(DB::init())
         .attach(Cache::init())
         .attach(cors::Cors)
