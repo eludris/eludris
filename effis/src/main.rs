@@ -106,7 +106,9 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
                     "Mozilla/5.0 (compatible; eludris/",
                     env!("CARGO_PKG_VERSION"),
                     ";)"
-                )),
+                ))
+                .build()
+                .unwrap(),
         )
         .attach(DB::init())
         .attach(Cache::init())
