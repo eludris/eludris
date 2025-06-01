@@ -9,9 +9,7 @@ use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
 use crate::{
     ids::IdGenerator,
-    models::{
-        CustomEmbed, Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User,
-    },
+    models::{Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User},
 };
 
 impl MessageCreate {
