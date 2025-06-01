@@ -4,7 +4,7 @@ use rocket::serde::json::Json;
 use rocket::State;
 use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 use rocket_db_pools::Connection;
-use todel::http::{ClientIP, TokenAuth, DB};
+use todel::http::{TokenAuth, DB};
 use todel::ids::IdGenerator;
 use todel::models::{ErrorResponse, Message, MessageCreate, ServerPayload, SphereChannel};
 use todel::Conf;
@@ -37,9 +37,12 @@ pub async fn create_message(
     conf: &State<Conf>,
     id_generator: &State<Mutex<IdGenerator>>,
     session: TokenAuth,
-    ip: ClientIP,
 ) -> RateLimitedRouteResponse<Result<Json<Message>, ErrorResponse>> {
-    let mut rate_limiter = RateLimiter::new("create_message", ip, conf.inner());
+    let mut rate_limiter = RateLimiter::new(
+        "create_message",
+        format!("{}:{}", channel_id, session.0.user_id),
+        conf.inner(),
+    );
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     if !SphereChannel::has_member(channel_id, session.0.user_id, &mut db)
