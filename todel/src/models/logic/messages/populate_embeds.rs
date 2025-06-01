@@ -208,6 +208,17 @@ pub async fn generate_website_embed(url: &Url, client: &Client) -> Option<Embed>
                 image_height = Some(size.height as u32);
             }
         }
+        let mut description = metadata
+            .remove("og:description")
+            .or_else(|| metadata.remove("twitter:description"))
+            .or_else(|| metadata.remove("description"))
+            .map(|s| s.trim().to_owned());
+        if let Some(ref mut description) = &mut description {
+            if description.len() > 4096 {
+                description.truncate(4069);
+                description.push_str("...");
+            }
+        }
         return Some(Embed::Website {
             url: url.to_string(),
             name: metadata.remove("og:site_name").map(|s| s.trim().to_owned()),
@@ -217,11 +228,7 @@ pub async fn generate_website_embed(url: &Url, client: &Client) -> Option<Embed>
                 .or_else(|| metadata.remove("title"))
                 .or(title)
                 .map(|s| s.trim().to_owned()),
-            description: metadata
-                .remove("og:description")
-                .or_else(|| metadata.remove("twitter:description"))
-                .or_else(|| metadata.remove("description"))
-                .map(|s| s.trim().to_owned()),
+            description,
             colour: metadata.remove("theme-color").map(|s| s.trim().to_owned()),
             image,
             image_width,

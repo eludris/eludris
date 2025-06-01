@@ -43,14 +43,14 @@ pub enum Embed {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CustomEmbed {
-    content: String,
+    pub content: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    thumbnail: Option<String>,
+    pub thumbnail: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<u8>,
+    pub color: Option<u8>,
     #[serde(default = "custom_embed_default_border_colour")]
     #[serde(skip_serializing_if = "is_zero")]
-    border_colour: u8,
+    pub border_colour: u8,
 }
 
 fn is_zero(n: &u8) -> bool {

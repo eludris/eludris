@@ -36,6 +36,15 @@ impl MessageEdit {
                     "embeds", "Message can't contain more than 10 embeds"
                 ));
             }
+            for (i, embed) in embeds.iter().enumerate() {
+                if embed.content.len() > 8192 {
+                    return Err(error!(
+                        VALIDATION,
+                        format!("embed-{}.content", i),
+                        "The embed's content can't be over 8196 characters long"
+                    ));
+                }
+            }
         }
         Ok(())
     }

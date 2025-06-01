@@ -9,7 +9,9 @@ use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
 use crate::{
     ids::IdGenerator,
-    models::{Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User},
+    models::{
+        CustomEmbed, Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User,
+    },
 };
 
 impl MessageCreate {
@@ -42,6 +44,15 @@ impl MessageCreate {
                 VALIDATION,
                 "embeds", "Message can't contain more than 10 embeds"
             ));
+        }
+        for (i, embed) in self.embeds.iter().enumerate() {
+            if embed.content.len() > 8192 {
+                return Err(error!(
+                    VALIDATION,
+                    format!("embed-{}.content", i),
+                    "The embed's content can't be over 8196 characters long"
+                ));
+            }
         }
         if let Some(disguise) = &self.disguise {
             if let Some(name) = &disguise.name {
