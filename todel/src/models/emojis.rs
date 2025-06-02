@@ -11,6 +11,13 @@ pub struct Emoji {
 
 #[autodoc(category = "Emojis")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EmojiCreate {
+    pub file_id: u64,
+    pub name: String,
+}
+
+#[autodoc(category = "Emojis")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EmojiEdit {
     pub name: String,
 }
