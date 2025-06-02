@@ -18,7 +18,7 @@ pub struct EmojiEdit {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ReactionEmoji {
     Custom(Emoji),
-    Unicode,(String),
+    Unicode(String),
 }
 
 #[autodoc(category = "Emojis")]
