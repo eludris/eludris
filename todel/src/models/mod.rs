@@ -3,6 +3,7 @@
 mod categories;
 mod channels;
 mod embeds;
+mod emojis;
 mod files;
 mod gateway;
 mod info;
@@ -16,6 +17,7 @@ mod users;
 pub use categories::*;
 pub use channels::*;
 pub use embeds::*;
+pub use emojis::*;
 pub use files::*;
 pub use gateway::*;
 pub use info::*;
