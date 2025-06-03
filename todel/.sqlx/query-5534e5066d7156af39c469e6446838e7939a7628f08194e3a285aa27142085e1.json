@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT *\n            FROM reactions\n            WHERE message_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "emoji_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "unicode_emoji",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "message_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "user_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "5534e5066d7156af39c469e6446838e7939a7628f08194e3a285aa27142085e1"
+}
