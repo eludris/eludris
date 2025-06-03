@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[autodoc(category = "Emojis")]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Hash, Eq)]
 pub struct Emoji {
     pub id: u64,
     pub file_id: u64,
@@ -23,7 +23,7 @@ pub struct EmojiEdit {
 }
 
 #[autodoc(category = "Emojis")]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Hash, Eq)]
 pub enum ReactionEmoji {
     Custom(Emoji),
     Unicode(String),

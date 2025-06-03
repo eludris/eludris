@@ -1,8 +1,13 @@
+use std::collections::HashMap;
+
 use async_recursion::async_recursion;
 use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, types::Json, Postgres, QueryBuilder, Row};
 
-use crate::models::{Embed, ErrorResponse, File, Message, SphereChannel, Status, StatusType, User};
+use crate::models::{
+    Embed, Emoji, ErrorResponse, File, Message, Reaction, ReactionEmoji, SphereChannel, Status,
+    StatusType, User,
+};
 
 impl Message {
     #[allow(clippy::multiple_bound_locations)] // happens thanks to the `async_recursion` macro
@@ -101,8 +106,33 @@ impl Message {
                     .await?,
             );
         }
+        let mut reactions = HashMap::new();
+        for row in sqlx::query!(
+            "
+            SELECT *
+            FROM reactions
+            WHERE message_id = $1
+            ",
+            id as i64
+        )
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't fetch reactions for message {}: {}", id, err);
+            error!(SERVER, "Failed to fetch message data")
+        })? {
+            let emoji = if let Some(emoji) = row.emoji_id {
+                ReactionEmoji::Custom(Emoji::get(emoji as u64, db).await?)
+            } else {
+                ReactionEmoji::Unicode(row.unicode_emoji.unwrap())
+            };
+            reactions
+                .entry(emoji)
+                .or_insert(vec![])
+                .push(row.user_id as u64);
+        }
         Ok(Self {
-            id: row.id as u64,
+            id,
             author,
             content: row.content,
             reference,
@@ -110,6 +140,10 @@ impl Message {
             channel: SphereChannel::get(row.channel_id as u64, db).await?,
             attachments,
             embeds,
+            reactions: reactions
+                .into_iter()
+                .map(|(emoji, user_ids)| Reaction { emoji, user_ids })
+                .collect(),
         })
     }
 
@@ -231,6 +265,31 @@ impl Message {
             .into_iter()
             .map(|r| r.embed.0)
             .collect();
+            let mut reactions = HashMap::new();
+            for row in sqlx::query!(
+                "
+            SELECT *
+            FROM reactions
+            WHERE message_id = $1
+            ",
+                id as i64
+            )
+            .fetch_all(&mut **db)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch reactions for message {}: {}", id, err);
+                error!(SERVER, "Failed to fetch message data")
+            })? {
+                let emoji = if let Some(emoji) = row.emoji_id {
+                    ReactionEmoji::Custom(Emoji::get(emoji as u64, db).await?)
+                } else {
+                    ReactionEmoji::Unicode(row.unicode_emoji.unwrap())
+                };
+                reactions
+                    .entry(emoji)
+                    .or_insert(vec![])
+                    .push(row.user_id as u64);
+            }
             messages.push(Self {
                 id,
                 author,
@@ -240,6 +299,10 @@ impl Message {
                 channel: SphereChannel::get(row.get::<i64, _>("channel_id") as u64, db).await?,
                 attachments,
                 embeds,
+                reactions: reactions
+                    .into_iter()
+                    .map(|(emoji, user_ids)| Reaction { emoji, user_ids })
+                    .collect(),
             })
         }
         messages.reverse();
