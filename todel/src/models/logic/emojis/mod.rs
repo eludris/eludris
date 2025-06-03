@@ -1,3 +1,5 @@
+mod edit;
+
 use sqlx::{pool::PoolConnection, Postgres};
 
 use crate::{
