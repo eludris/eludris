@@ -69,3 +69,27 @@ impl Sphere {
         })
     }
 }
+
+impl Emoji {
+    pub async fn get(id: u64, db: &mut PoolConnection<Postgres>) -> Result<Self, ErrorResponse> {
+        sqlx::query!(
+            "
+            SELECT *
+            FROM emojis
+            WHERE is_deleted = FALSE
+            "
+        )
+        .fetch_one(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to get emoji into database {}: {}", id, err);
+            error!(SERVER, "Failed to get emoji")
+        })
+        .map(|r| Self {
+            id: r.id as u64,
+            file_id: r.file_id as u64,
+            name: r.name,
+            uploader_id: r.uploader_id as u64,
+        })
+    }
+}
