@@ -1,3 +1,4 @@
+mod delete;
 mod edit;
 
 use sqlx::{pool::PoolConnection, Postgres};
