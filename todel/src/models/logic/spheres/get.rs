@@ -4,11 +4,11 @@ use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, FromRow, Postgres, Row};
 
 use crate::models::{
-    Category, ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User,
+    Category, Emoji, ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User,
 };
 
 impl Sphere {
-    pub(crate) async fn populate_channels(
+    pub async fn populate_channels(
         &mut self,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
@@ -79,7 +79,7 @@ ORDER BY position
         Ok(())
     }
 
-    pub(crate) async fn populate_members<C: AsyncCommands>(
+    pub async fn populate_members<C: AsyncCommands>(
         &mut self,
         db: &mut PoolConnection<Postgres>,
         cache: &mut C,
@@ -136,6 +136,37 @@ WHERE sphere_id = $1
         Ok(())
     }
 
+    pub async fn populate_emojis(
+        &mut self,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
+        let emojis = sqlx::query!(
+            "
+            SELECT *
+            FROM emojis
+            WHERE sphere_id = $1
+              AND is_deleted = FALSE
+            ",
+            self.id as i64,
+        )
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to get sphere emojis for {}: {}", self.id, err);
+            error!(SERVER, "Failed to get sphere")
+        })?
+        .into_iter()
+        .map(|r| Emoji {
+            id: r.id as u64,
+            file_id: r.file_id as u64,
+            name: r.name,
+            uploader_id: r.uploader_id as u64,
+        })
+        .collect();
+        self.emojis = emojis;
+        Ok(())
+    }
+
     pub async fn get<C: AsyncCommands>(
         id: u64,
         db: &mut PoolConnection<Postgres>,
@@ -185,6 +216,7 @@ WHERE slug = $1
         .ok_or_else(|| error!(NOT_FOUND))?;
         sphere.populate_channels(db).await?;
         sphere.populate_members(db, cache).await?;
+        sphere.populate_emojis(db).await?;
         Ok(sphere)
     }
 
