@@ -293,6 +293,151 @@ async fn handle_event(
                 .await;
             }
         }
+        ServerPayload::EmojiCreate { sphere_id, emoji } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(tx, &ServerPayload::EmojiCreate { sphere_id, emoji }).await;
+            }
+        }
+        ServerPayload::EmojiUpdate {
+            sphere_id,
+            emoji_id,
+            data,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::EmojiUpdate {
+                        sphere_id,
+                        emoji_id,
+                        data,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::EmojiDelete {
+            sphere_id,
+            emoji_id,
+        } => {
+            if session.sphere_ids.contains(&sphere_id) {
+                send_payload(
+                    tx,
+                    &ServerPayload::EmojiDelete {
+                        sphere_id,
+                        emoji_id,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageReact {
+            channel_id,
+            message_id,
+            reaction,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageReact: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!("Couldn't fetch channel data for MessageReact: {}", err);
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageReact {
+                        channel_id,
+                        message_id,
+                        reaction,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageReactionDelete {
+            channel_id,
+            message_id,
+            user_id,
+            emoji,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageReactionDelete: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't fetch channel data for MessageReactionDelete: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageReactionDelete {
+                        channel_id,
+                        message_id,
+                        user_id,
+                        emoji,
+                    },
+                )
+                .await;
+            }
+        }
+        ServerPayload::MessageReactionClear {
+            channel_id,
+            message_id,
+        } => {
+            let mut db = match pool.acquire().await {
+                Ok(conn) => conn,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't acquire database connection for MessageReactionClear: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let channel = match SphereChannel::get(channel_id, &mut db).await {
+                Ok(channel) => channel,
+                Err(err) => {
+                    log::error!(
+                        "Couldn't fetch channel data for MessageReactionClear: {}",
+                        err
+                    );
+                    return;
+                }
+            };
+            if session.sphere_ids.contains(&channel.get_sphere_id()) {
+                send_payload(
+                    tx,
+                    &ServerPayload::MessageReactionClear {
+                        channel_id,
+                        message_id,
+                    },
+                )
+                .await;
+            }
+        }
         payload => {
             send_payload(tx, &payload).await;
         }
