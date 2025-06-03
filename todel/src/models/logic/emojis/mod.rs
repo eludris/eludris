@@ -13,7 +13,7 @@ impl EmojiCreate {
         if self.name.len() < 2 || self.name.len() > 32 {
             return Err(error!(
                 VALIDATION,
-                "name", "The user's username must be between 2 and 32 characters in length"
+                "name", "The emoji's name must be between 2 and 32 characters in length"
             ));
         }
         Ok(())
