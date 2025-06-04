@@ -29,6 +29,22 @@ pub enum ReactionEmoji {
     Unicode(String),
 }
 
+impl ReactionEmoji {
+    pub fn get_ref(&self) -> ReactionEmojiReference {
+        match self {
+            ReactionEmoji::Custom(emoji) => ReactionEmojiReference::Custom(emoji.id),
+            ReactionEmoji::Unicode(emoji) => ReactionEmojiReference::Unicode(emoji.clone()),
+        }
+    }
+}
+
+#[autodoc(category = "Emojis")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Hash, Eq)]
+pub enum ReactionEmojiReference {
+    Custom(u64),
+    Unicode(String),
+}
+
 #[autodoc(category = "Emojis")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Reaction {

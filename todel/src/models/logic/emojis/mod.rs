@@ -1,4 +1,6 @@
 mod delete;
+mod add_reaction;
+mod remove_reaction;
 mod edit;
 
 use sqlx::{pool::PoolConnection, Postgres};
