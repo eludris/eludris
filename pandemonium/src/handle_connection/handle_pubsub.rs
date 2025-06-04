@@ -333,7 +333,8 @@ async fn handle_event(
         ServerPayload::MessageReact {
             channel_id,
             message_id,
-            reaction,
+            user_id,
+            emoji,
         } => {
             let mut db = match pool.acquire().await {
                 Ok(conn) => conn,
@@ -358,7 +359,8 @@ async fn handle_event(
                     &ServerPayload::MessageReact {
                         channel_id,
                         message_id,
-                        reaction,
+                        user_id,
+                        emoji,
                     },
                 )
                 .await;

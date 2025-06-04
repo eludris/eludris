@@ -25,6 +25,8 @@ pub struct EmojiEdit {
 
 #[autodoc(category = "Emojis")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Hash, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(tag = "type", content = "emoji")]
 pub enum ReactionEmoji {
     Custom(Emoji),
     Unicode(String),
@@ -41,6 +43,8 @@ impl ReactionEmoji {
 
 #[autodoc(category = "Emojis")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Hash, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(tag = "type", content = "emoji")]
 pub enum ReactionEmojiReference {
     Custom(u64),
     Unicode(String),

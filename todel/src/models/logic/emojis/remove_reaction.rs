@@ -1,6 +1,6 @@
 use sqlx::{pool::PoolConnection, Postgres};
 
-use crate::models::{ErrorResponse, Message, ReactionEmojiReference};
+use crate::models::{Emoji, ErrorResponse, Message, ReactionEmoji, ReactionEmojiReference};
 
 impl Message {
     pub async fn remove_reaction(
@@ -8,7 +8,7 @@ impl Message {
         emoji: ReactionEmojiReference,
         user_id: u64,
         db: &mut PoolConnection<Postgres>,
-    ) -> Result<(), ErrorResponse> {
+    ) -> Result<ReactionEmoji, ErrorResponse> {
         let reaction = match self
             .reactions
             .iter_mut()
@@ -54,7 +54,13 @@ impl Message {
         if reaction.user_ids.is_empty() {
             self.reactions.retain(|i| i.emoji.get_ref() != emoji);
         }
-        Ok(())
+
+        let full_emoji = match emoji {
+            ReactionEmojiReference::Custom(id) => ReactionEmoji::Custom(Emoji::get(id, db).await?),
+            ReactionEmojiReference::Unicode(emoji) => ReactionEmoji::Unicode(emoji), // yikes
+        };
+
+        Ok(full_emoji)
     }
 
     pub async fn clear_reactions(
@@ -81,6 +87,8 @@ impl Message {
             log::error!("Failed to clear reactions for {}: {}", self.id, err);
             error!(SERVER, "Failed to clear reaction")
         })?;
+
+        self.reactions = vec![];
 
         Ok(())
     }

@@ -1,8 +1,8 @@
 use rocket::{http::Status, response::status::Custom, State};
-use rocket_db_pools::Connection;
+use rocket_db_pools::{deadpool_redis::redis::AsyncCommands, Connection};
 use todel::{
     http::{Cache, TokenAuth, DB},
-    models::{Emoji, ErrorResponse, Sphere},
+    models::{Emoji, ErrorResponse, ServerPayload, Sphere},
     Conf,
 };
 
@@ -42,6 +42,18 @@ pub async fn delete_emoji(
         .delete(&mut db)
         .await
         .map_err(|err| rate_limiter.add_headers(err))?;
+
+    cache
+        .publish::<&str, String, ()>(
+            "eludris-events",
+            serde_json::to_string(&ServerPayload::EmojiDelete {
+                sphere_id: sphere.id,
+                emoji_id,
+            })
+            .unwrap(),
+        )
+        .await
+        .unwrap();
 
     rate_limiter.wrap_response(Ok(Custom(Status::NoContent, ())))
 }

@@ -38,7 +38,7 @@ impl Message {
         emoji: ReactionEmojiReference,
         user_id: u64,
         db: &mut PoolConnection<Postgres>,
-    ) -> Result<(), ErrorResponse> {
+    ) -> Result<ReactionEmoji, ErrorResponse> {
         let reaction = self
             .reactions
             .iter_mut()
@@ -82,11 +82,11 @@ impl Message {
             Some(reaction) => reaction.user_ids.push(user_id),
             None => self.reactions.push({
                 Reaction {
-                    emoji: full_emoji,
+                    emoji: full_emoji.clone(),
                     user_ids: vec![user_id],
                 }
             }),
         }
-        Ok(())
+        Ok(full_emoji)
     }
 }

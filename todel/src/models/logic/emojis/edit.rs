@@ -17,7 +17,7 @@ impl EmojiEdit {
 impl Emoji {
     pub async fn edit(
         &mut self,
-        edit: EmojiEdit,
+        edit: &EmojiEdit,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
         sqlx::query!(

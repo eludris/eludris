@@ -2,8 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     Category, CategoryEdit, Embed, Emoji, EmojiEdit, InstanceInfo, MemberEdit, Message,
-    MessageEdit, Reaction, ReactionEmoji, Sphere, SphereChannel, SphereChannelEdit, SphereEdit,
-    Status, User,
+    MessageEdit, ReactionEmoji, Sphere, SphereChannel, SphereChannelEdit, SphereEdit, Status, User,
 };
 use crate::conf::RateLimitConf;
 
@@ -407,7 +406,8 @@ pub enum ServerPayload {
     MessageReact {
         channel_id: u64,
         message_id: u64,
-        reaction: Reaction,
+        user_id: u64,
+        emoji: ReactionEmoji,
     },
     MessageReactionDelete {
         channel_id: u64,
