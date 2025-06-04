@@ -17,7 +17,7 @@ pub async fn delete_emoji(
     mut db: Connection<DB>,
     session: TokenAuth,
 ) -> RateLimitedRouteResponse<Result<Custom<()>, ErrorResponse>> {
-    let mut rate_limiter = RateLimiter::new("edit_emoji", session.0.user_id, conf);
+    let mut rate_limiter = RateLimiter::new("delete_emoji", session.0.user_id, conf);
     rate_limiter.process_rate_limit(&mut cache).await?;
 
     let emoji = Emoji::get(emoji_id, &mut db)

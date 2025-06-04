@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT *\n            FROM emojis\n            WHERE is_deleted = FALSE\n            ",
+  "query": "\n            SELECT *\n            FROM emojis\n            WHERE id = $1\n            AND is_deleted = FALSE\n            ",
   "describe": {
     "columns": [
       {
@@ -35,7 +35,9 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Int8"
+      ]
     },
     "nullable": [
       false,
@@ -46,5 +48,5 @@
       false
     ]
   },
-  "hash": "8faffb2e088b5822e2e098575df611bb1655c834dd9403cd1c3c0b2af1278fc5"
+  "hash": "00bbcc571f2fd3aeaf5c5de2834cdbf02292713e3ea94867390d4d1bf74f8ff5"
 }

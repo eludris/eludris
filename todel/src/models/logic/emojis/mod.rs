@@ -82,8 +82,10 @@ impl Emoji {
             "
             SELECT *
             FROM emojis
-            WHERE is_deleted = FALSE
-            "
+            WHERE id = $1
+            AND is_deleted = FALSE
+            ",
+            id as i64
         )
         .fetch_one(&mut **db)
         .await

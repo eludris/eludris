@@ -25,6 +25,7 @@ impl Emoji {
             UPDATE emojis
             SET name = $1
             WHERE id = $2
+            AND is_deleted = FALSE
             ",
             edit.name,
             self.id as i64
