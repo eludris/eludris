@@ -71,6 +71,7 @@ impl Sphere {
             file_id: create.file_id,
             name: create.name,
             uploader_id,
+            sphere_id: self.id,
         })
     }
 }
@@ -95,6 +96,7 @@ impl Emoji {
             file_id: r.file_id as u64,
             name: r.name,
             uploader_id: r.uploader_id as u64,
+            sphere_id: r.sphere_id as u64,
         })
     }
 }

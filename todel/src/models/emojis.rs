@@ -7,6 +7,7 @@ pub struct Emoji {
     pub file_id: u64,
     pub name: String,
     pub uploader_id: u64,
+    pub sphere_id: u64,
 }
 
 #[autodoc(category = "Emojis")]

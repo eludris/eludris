@@ -1,12 +1,12 @@
 use sqlx::{pool::PoolConnection, Postgres};
 
-use crate::models::{ErrorResponse, Message, ReactionEmojiReference, User};
+use crate::models::{ErrorResponse, Message, ReactionEmojiReference};
 
 impl Message {
     pub async fn remove_reaction(
         &mut self,
         emoji: ReactionEmojiReference,
-        user: &User,
+        user_id: u64,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
         let reaction = match self
@@ -22,7 +22,7 @@ impl Message {
                 ));
             }
         };
-        if !reaction.user_ids.contains(&user.id) {
+        if !reaction.user_ids.contains(&user_id) {
             return Err(error!(
                 VALIDATION,
                 "user", "User isn't reacted with this emoji to this message"
@@ -34,13 +34,13 @@ impl Message {
                 "DELETE FROM reactions WHERE emoji_id = $1 AND message_id = $2 AND user_id = $3",
                 *emoji as i64,
                 self.id as i64,
-                user.id as i64
+                user_id as i64
             ),
             ReactionEmojiReference::Unicode(emoji) => sqlx::query!(
                 "DELETE FROM reactions WHERE unicode_emoji = $1 AND message_id = $2 AND user_id = $3",
                 emoji,
                 self.id as i64,
-                user.id as i64
+                user_id as i64
             ),
         }
         .execute(&mut **db)
@@ -50,7 +50,7 @@ impl Message {
             error!(SERVER, "Failed to remove reaction")
         })?;
 
-        reaction.user_ids.retain(|i| *i != user.id);
+        reaction.user_ids.retain(|i| *i != user_id);
         if reaction.user_ids.is_empty() {
             self.reactions.retain(|i| i.emoji.get_ref() != emoji);
         }

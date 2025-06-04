@@ -3,7 +3,7 @@ use std::{collections::HashMap, fs};
 use sqlx::{pool::PoolConnection, Postgres};
 
 use crate::models::{
-    Emoji, ErrorResponse, Message, Reaction, ReactionEmoji, ReactionEmojiReference, User,
+    Emoji, ErrorResponse, Message, Reaction, ReactionEmoji, ReactionEmojiReference,
 };
 
 impl ReactionEmojiReference {
@@ -36,7 +36,7 @@ impl Message {
     pub async fn add_reaction(
         &mut self,
         emoji: ReactionEmojiReference,
-        user: &User,
+        user_id: u64,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<(), ErrorResponse> {
         let reaction = self
@@ -44,7 +44,7 @@ impl Message {
             .iter_mut()
             .find(|e| e.emoji.get_ref() == emoji); // yikes
         if let Some(reaction) = &reaction {
-            if reaction.user_ids.contains(&user.id) {
+            if reaction.user_ids.contains(&user_id) {
                 return Err(error!(
                     VALIDATION,
                     "user", "User already reacted with this emoji to this message"
@@ -62,13 +62,13 @@ impl Message {
                 "INSERT INTO reactions(emoji_id, message_id, user_id) VALUES($1, $2, $3)",
                 emoji as i64,
                 self.id as i64,
-                user.id as i64
+                user_id as i64
             ),
             ReactionEmojiReference::Unicode(emoji) => sqlx::query!(
                 "INSERT INTO reactions(unicode_emoji, message_id, user_id) VALUES($1, $2, $3)",
                 emoji,
                 self.id as i64,
-                user.id as i64
+                user_id as i64
             ),
         }
         .execute(&mut **db)
@@ -79,11 +79,11 @@ impl Message {
         })?;
 
         match reaction {
-            Some(reaction) => reaction.user_ids.push(user.id),
+            Some(reaction) => reaction.user_ids.push(user_id),
             None => self.reactions.push({
                 Reaction {
                     emoji: full_emoji,
-                    user_ids: vec![self.id],
+                    user_ids: vec![user_id],
                 }
             }),
         }

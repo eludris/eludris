@@ -161,6 +161,7 @@ WHERE sphere_id = $1
             file_id: r.file_id as u64,
             name: r.name,
             uploader_id: r.uploader_id as u64,
+            sphere_id: self.id,
         })
         .collect();
         self.emojis = emojis;
