@@ -1,7 +1,7 @@
-mod delete;
 mod add_reaction;
-mod remove_reaction;
+mod delete;
 mod edit;
+mod remove_reaction;
 
 use sqlx::{pool::PoolConnection, Postgres};
 
