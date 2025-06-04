@@ -1,4 +1,5 @@
 pub mod channels;
+pub mod emojis;
 pub mod sessions;
 pub mod spheres;
 pub mod users;

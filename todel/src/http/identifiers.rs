@@ -3,7 +3,7 @@ use std::{convert::Infallible, fmt::Display};
 use rocket::request::FromParam;
 
 /// A channel identifier that could be either a numerical id or a string slug.
-#[autodoc("Spheres")]
+#[autodoc(category = "Spheres")]
 #[derive(Clone, Debug)]
 pub enum SphereIdentifier {
     ID(u64),
@@ -32,7 +32,7 @@ impl<'r> FromParam<'r> for SphereIdentifier {
 
 /// A user identifier that could be either a self reference (@me), a numerical id or a string
 /// username.
-#[autodoc("Users")]
+#[autodoc(category = "Users")]
 #[derive(Clone, Debug)]
 pub enum UserIdentifier {
     Me,

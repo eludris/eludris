@@ -90,6 +90,14 @@ impl RateLimiter {
             delete_message,
             leave_sphere,
             get_spheres,
+            create_emoji,
+            get_emoji,
+            guest_get_emoji,
+            edit_emoji,
+            delete_emoji,
+            add_reaction,
+            remove_reaction,
+            clear_reactions,
         );
         RateLimiter {
             key: format!("rate_limit:{}:{}", identifier, bucket),

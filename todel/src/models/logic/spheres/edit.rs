@@ -222,6 +222,7 @@ WHERE id = $2
             badges: sphere.badges,
             categories: vec![],
             members: vec![],
+            emojis: vec![],
         })
     }
 }

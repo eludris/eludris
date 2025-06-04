@@ -194,6 +194,7 @@ VALUES($1, $2, $3, $4, $5)
             channel,
             attachments,
             embeds: message.embeds.into_iter().map(Embed::Custom).collect(),
+            reactions: vec![],
         })
     }
 }

@@ -33,6 +33,7 @@ impl FromRow<'_, PgRow> for Sphere {
             badges: row.get::<i64, _>("badges") as u64,
             categories: vec![],
             members: vec![],
+            emojis: vec![],
         })
     }
 }
@@ -238,6 +239,7 @@ VALUES($1, $2, $2, $3, $4, 0)
                 })],
             }],
             members: vec![],
+            emojis: vec![],
         };
         let member = sphere.add_member(owner_id, db).await?;
         sphere.members.push(member);

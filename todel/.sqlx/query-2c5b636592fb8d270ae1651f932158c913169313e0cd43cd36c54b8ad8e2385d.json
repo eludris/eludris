@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nDELETE FROM emojis\nWHERE is_deleted = TRUE\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "2c5b636592fb8d270ae1651f932158c913169313e0cd43cd36c54b8ad8e2385d"
+}

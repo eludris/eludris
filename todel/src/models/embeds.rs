@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+#[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[serde(tag = "type")]
@@ -41,6 +42,7 @@ pub enum Embed {
     },
 }
 
+#[autodoc(category = "Messaging")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CustomEmbed {
     pub content: String,

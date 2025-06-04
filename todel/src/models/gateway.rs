@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Category, CategoryEdit, Embed, InstanceInfo, MemberEdit, Message, MessageEdit, Sphere,
-    SphereChannel, SphereChannelEdit, SphereEdit, Status, User,
+    Category, CategoryEdit, Embed, Emoji, EmojiEdit, InstanceInfo, MemberEdit, Message,
+    MessageEdit, ReactionEmoji, Sphere, SphereChannel, SphereChannelEdit, SphereEdit, Status, User,
 };
 use crate::conf::RateLimitConf;
 
@@ -389,6 +389,35 @@ pub enum ServerPayload {
         channel_id: u64,
         message_id: u64,
         embeds: Vec<Embed>,
+    },
+    EmojiCreate {
+        sphere_id: u64,
+        emoji: Emoji,
+    },
+    EmojiUpdate {
+        sphere_id: u64,
+        emoji_id: u64,
+        data: EmojiEdit,
+    },
+    EmojiDelete {
+        sphere_id: u64,
+        emoji_id: u64,
+    },
+    MessageReact {
+        channel_id: u64,
+        message_id: u64,
+        user_id: u64,
+        emoji: ReactionEmoji,
+    },
+    MessageReactionDelete {
+        channel_id: u64,
+        message_id: u64,
+        user_id: u64,
+        emoji: ReactionEmoji,
+    },
+    MessageReactionClear {
+        channel_id: u64,
+        message_id: u64,
     },
 }
 

@@ -1,6 +1,7 @@
 mod categories;
 mod channels;
 mod email;
+mod emojis;
 mod files;
 mod messages;
 mod meta;
