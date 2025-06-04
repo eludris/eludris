@@ -33,7 +33,6 @@ pub enum SphereChannelType {
     Voice,
 }
 
-#[cfg(feature = "logic")]
 impl SphereChannelType {
     pub(crate) fn get_channel_type(&self) -> ChannelType {
         match self {
@@ -72,7 +71,6 @@ pub enum SphereChannel {
     Voice(VoiceChannel),
 }
 
-#[cfg(feature = "logic")]
 impl SphereChannel {
     pub fn get_id(&self) -> u64 {
         match self {
