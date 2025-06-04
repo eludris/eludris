@@ -91,7 +91,8 @@ fn rocket() -> Result<Rocket<Build>, anyhow::Error> {
         .mount("/users", users::get_routes())
         .mount("/sessions", sessions::get_routes())
         .mount("/spheres", spheres::get_routes())
-        .mount("/channels", channels::get_routes()))
+        .mount("/channels", channels::get_routes())
+        .mount("/emojis", emojis::get_routes()))
 }
 
 #[rocket::main]

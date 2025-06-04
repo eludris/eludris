@@ -3,6 +3,7 @@ use rocket::Route;
 mod create;
 mod create_category;
 mod create_channel;
+mod create_emoji;
 mod delete_category;
 mod delete_channel;
 mod edit;
@@ -31,5 +32,6 @@ pub fn get_routes() -> Vec<Route> {
         get_member::get_member,
         edit_member::edit_member,
         get_spheres::get_spheres,
+        create_emoji::create_emoji,
     ]
 }
