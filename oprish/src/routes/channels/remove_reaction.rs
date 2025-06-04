@@ -9,7 +9,7 @@ use todel::{
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 #[autodoc("/channels", category = "Emojis")]
-#[delete("/<channel_id>/messages/<message_id>/emojis", data = "<emoji>")]
+#[delete("/<channel_id>/messages/<message_id>/reactions", data = "<emoji>")]
 pub async fn remove_reaction(
     emoji: Json<ReactionEmojiReference>,
     channel_id: u64,

@@ -124,6 +124,7 @@ WHERE members.id = $1
         for mut sphere in spheres {
             sphere.populate_channels(db).await?;
             sphere.populate_members(db, cache).await?;
+            sphere.populate_emojis(db).await?;
             populated.push(sphere)
         }
         Ok(populated)

@@ -9,7 +9,7 @@ use todel::{
 use crate::rate_limit::{RateLimitedRouteResponse, RateLimiter};
 
 #[autodoc("/channels", category = "Emojis")]
-#[post("/<channel_id>/messages/<message_id>/emojis", data = "<emoji>")]
+#[post("/<channel_id>/messages/<message_id>/reactions", data = "<emoji>")]
 pub async fn add_reaction(
     emoji: Json<ReactionEmojiReference>,
     channel_id: u64,
