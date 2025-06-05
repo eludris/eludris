@@ -51,7 +51,6 @@ pub const SIZES: [u32; 1] = [256];
 /// ```sh
 /// curl \
 ///   -F file=@trolley.mp4 \
-///   -F spoiler=true \
 ///   https://cdn.eludris.gay/attachments/
 /// ```
 #[cfg(feature = "http")]
@@ -59,7 +58,6 @@ pub const SIZES: [u32; 1] = [256];
 #[derive(Debug, FromForm)]
 pub struct FileUpload<'a> {
     pub file: TempFile<'a>,
-    pub spoiler: bool,
 }
 
 impl File {
@@ -69,7 +67,6 @@ impl File {
         bucket: String,
         id_generator: &mut IdGenerator,
         db: &mut PoolConnection<Postgres>,
-        spoiler: bool,
     ) -> Result<FileData, ErrorResponse> {
         if file.len() == 0 {
             return Err(error!(
@@ -115,7 +112,7 @@ AND bucket = $2
             fs::remove_file(path).await.unwrap();
             sqlx::query!(
                 "
-INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
+INSERT INTO files(id, file_id, name, content_type, hash, bucket, width, height)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ",
                 id as i64,
@@ -124,7 +121,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 content_type,
                 hash,
                 bucket,
-                spoiler,
                 width as Option<i32>,
                 height as Option<i32>,
             )
@@ -139,7 +135,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 content_type,
                 hash,
                 bucket,
-                spoiler,
                 width: width.map(|s| s as usize),
                 height: height.map(|s| s as usize),
             }
@@ -239,7 +234,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     content_type: mime,
                     hash,
                     bucket,
-                    spoiler,
                     width,
                     height,
                 })
@@ -248,7 +242,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             .unwrap()?;
             sqlx::query!(
                 "
-INSERT INTO files(id, file_id, name, content_type, hash, bucket, spoiler, width, height)
+INSERT INTO files(id, file_id, name, content_type, hash, bucket, width, height)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ",
                 file.id as i64,
@@ -257,7 +251,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 file.content_type,
                 file.hash,
                 file.bucket,
-                file.spoiler,
                 file.width.map(|s| s as i32),
                 file.height.map(|s| s as i32),
             )
@@ -446,7 +439,6 @@ AND bucket = $2
             content_type: r.content_type,
             hash: r.hash,
             bucket: r.bucket,
-            spoiler: r.spoiler,
             width: r.width.map(|s| s as usize),
             height: r.height.map(|s| s as usize),
         })
@@ -537,7 +529,6 @@ AND bucket = $2
             name: self.name.clone(),
             bucket: self.bucket.clone(),
             metadata,
-            spoiler: self.spoiler,
         }
     }
 }
