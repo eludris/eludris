@@ -1,3 +1,4 @@
+mod attachments;
 mod categories;
 mod channels;
 mod email;
