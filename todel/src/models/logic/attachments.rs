@@ -1,6 +1,4 @@
-use sqlx::{pool::PoolConnection, Postgres};
-
-use crate::models::{Attachment, AttachmentCreate, ErrorResponse, File};
+use crate::models::{AttachmentCreate, ErrorResponse};
 
 impl AttachmentCreate {
     pub fn validate(&mut self) -> Result<(), ErrorResponse> {
@@ -16,30 +14,5 @@ impl AttachmentCreate {
             }
         }
         Ok(())
-    }
-}
-
-impl Attachment {
-    pub async fn create(
-        mut attachment: AttachmentCreate,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Result<Self, ErrorResponse> {
-        attachment.validate()?;
-
-        let file = match File::get(attachment.file_id, "attachments", db).await {
-            Some(file) => file,
-            None => {
-                return Err(error!(
-                    VALIDATION,
-                    "file_id", "Attachment file doesn't exist"
-                ))
-            }
-        };
-
-        return Ok(Self {
-            file: file.get_file_data(),
-            description: attachment.description,
-            spoiler: attachment.spoiler,
-        });
     }
 }
