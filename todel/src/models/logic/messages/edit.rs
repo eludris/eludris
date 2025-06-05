@@ -119,7 +119,7 @@ impl Message {
         }
 
         // does this change break anything?
-        if attachments.len() > 0 {
+        if attachments.is_empty() {
             sqlx::query!(
                 "
                 DELETE FROM message_attachments
