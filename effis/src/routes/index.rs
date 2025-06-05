@@ -23,7 +23,6 @@ use crate::{
 /// ```sh
 /// curl \
 ///   -F file=@thang-big.png \
-///   -F spoiler=false \
 ///   https://cdn.eludris.gay/
 ///
 /// {
@@ -57,7 +56,6 @@ pub async fn upload_attachment<'a>(
         "attachments".to_string(),
         &mut *gen.inner().lock().await,
         &mut db,
-        upload.spoiler,
     )
     .await
     .map_err(|e| rate_limiter.add_headers(e))?;
