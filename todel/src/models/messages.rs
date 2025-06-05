@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
-use super::{CustomEmbed, Embed, FileData, Reaction, SphereChannel, User};
+use super::{Attachment, AttachmentCreate, CustomEmbed, Embed, Reaction, SphereChannel, User};
 
 /// The MessageCreate payload. This is used when you want to create a message using the REST API.
 ///
@@ -26,7 +26,7 @@ pub struct MessageCreate {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub content: Option<String>,
     #[serde(default)]
-    pub attachments: Vec<u64>,
+    pub attachments: Vec<AttachmentCreate>,
     #[serde(default)]
     pub embeds: Vec<CustomEmbed>,
     /// The ID of the message referenced by this message.
@@ -85,7 +85,7 @@ pub struct MessageEdit {
     )]
     pub content: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attachments: Option<Vec<u64>>,
+    pub attachments: Option<Vec<AttachmentCreate>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub embeds: Option<Vec<CustomEmbed>>,
 }
@@ -132,7 +132,7 @@ pub struct Message {
     /// The channel in which the message is sent.
     pub channel: SphereChannel,
     /// The attachments of this message.
-    pub attachments: Vec<FileData>,
+    pub attachments: Vec<Attachment>,
     /// The embeds of this message.
     pub embeds: Vec<Embed>,
     /// The reactions of this message.

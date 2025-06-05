@@ -9,7 +9,7 @@ use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
 use crate::{
     ids::IdGenerator,
-    models::{Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User},
+    models::{Attachment, Embed, ErrorResponse, File, Message, MessageCreate, SphereChannel, User},
 };
 
 impl MessageCreate {
@@ -102,20 +102,27 @@ impl Message {
             None => None,
         };
         let author = User::get(author_id, None, db, cache).await?;
-        let mut attachments = vec![];
-        for (i, attachment_id) in message.attachments.into_iter().enumerate() {
-            let file = match File::get(attachment_id, "attachments", db).await {
-                Some(file) => file,
-                None => {
-                    return Err(error!(
-                        VALIDATION,
-                        format!("attachments-{}", i),
-                        "File doesn't exist"
-                    ))
-                }
-            };
-            attachments.push(file.get_file_data());
+
+        // gather attachment files pre-transaction
+        // (consider if this should be in Attachment::create)
+        let mut attachment_files = vec![];
+        for (i, attachment_create) in message.attachments.into_iter().enumerate() {
+            attachment_create.validate()?;
+
+            let attachment_file =
+                match File::get(attachment_create.file_id, "attachments", db).await {
+                    Some(file) => file,
+                    None => {
+                        return Err(error!(
+                            VALIDATION,
+                            format!("attachments-{}", i),
+                            "File doesn't exist"
+                        ))
+                    }
+                };
+            attachment_files.push(attachment_file.get_file_data());
         }
+
         let mut transaction = db.begin().await.map_err(|err| {
             log::error!("Couldn't start message create transaction: {}", err);
             error!(SERVER, "Failed to create message")
@@ -142,26 +149,36 @@ VALUES($1, $2, $3, $4, $5)
             );
             error!(SERVER, "Failed to create message")
         })?;
-        for attachment in attachments.iter() {
+
+        let mut attachments = vec![];
+        for (i, attachment_create) in message.attachments.into_iter().enumerate() {
             sqlx::query!(
                 "
-                INSERT INTO message_attachments(message_id, attachment_id)
-                VALUES($1, $2)
+                INSERT INTO message_attachments(message_id, file_id, description, spoiler)
+                VALUES($1, $2, $3, $4)
                 ",
                 id as i64,
-                attachment.id as i64,
+                attachment_create.file_id as i64,
+                attachment_create.description as String,
+                attachment_create.spoiler as bool
             )
             .execute(&mut *transaction)
             .await
             .map_err(|err| {
                 log::error!(
-                    "Couldn't add message attachment {} to {}: {}",
-                    attachment.id,
+                    "Couldn't add message attachment for file_id {} to {}: {}",
+                    attachment_create.file_id,
                     id,
                     err
                 );
-                error!(SERVER, "Failed to create message")
+                error!(SERVER, "Failed to create message attachment")
             })?;
+
+            attachments.push(Attachment {
+                file: attachment_files[i],
+                description: attachment_create.description,
+                spoiler: attachment_create.spoiler,
+            });
         }
         for embed in message.embeds.iter() {
             sqlx::query!(

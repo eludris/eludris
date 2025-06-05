@@ -1,6 +1,6 @@
 use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
-use crate::models::{Embed, ErrorResponse, File, Message, MessageEdit};
+use crate::models::{Attachment, Embed, ErrorResponse, File, Message, MessageEdit};
 
 impl MessageEdit {
     pub fn validate(&mut self) -> Result<(), ErrorResponse> {
@@ -70,9 +70,9 @@ impl Message {
         }
 
         let mut attachments = vec![];
-        if let Some(attachment_ids) = &edit.attachments {
-            for (i, attachment_id) in attachment_ids.iter().enumerate() {
-                let file = match File::get(*attachment_id, "attachments", db).await {
+        if let Some(attachment_creates) = &edit.attachments {
+            for (i, attachment_create) in attachment_creates.iter().enumerate() {
+                let file = match File::get(attachment_create.file_id, "attachments", db).await {
                     Some(file) => file,
                     None => {
                         return Err(error!(
@@ -82,7 +82,11 @@ impl Message {
                         ))
                     }
                 };
-                attachments.push(file.get_file_data());
+                attachments.push(Attachment {
+                    file: file.get_file_data(),
+                    description: attachment_create.description,
+                    spoiler: attachment_create.spoiler,
+                });
             }
         }
 
@@ -135,18 +139,20 @@ impl Message {
             for attachment in attachments.iter() {
                 sqlx::query!(
                     "
-                INSERT INTO message_attachments(message_id, attachment_id)
-                VALUES($1, $2)
-                ",
-                    self.id as i64,
-                    attachment.id as i64,
+                    INSERT INTO message_attachments(message_id, file_id, description, spoiler)
+                    VALUES($1, $2, $3, $4)
+                    ",
+                    id as i64,
+                    attachment.file.id as u64,
+                    attachment.description as String,
+                    attachment.spoiler as bool
                 )
                 .execute(&mut *transaction)
                 .await
                 .map_err(|err| {
                     log::error!(
-                        "Couldn't edit message attachment {} to {}: {}",
-                        attachment.id,
+                        "Couldn't edit message attachment file {} to {}: {}",
+                        attachment.file.id,
                         self.id,
                         err
                     );
