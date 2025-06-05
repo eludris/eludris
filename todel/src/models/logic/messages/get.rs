@@ -70,7 +70,7 @@ impl Message {
         };
         let attachment_rows = sqlx::query!(
             "
-            SELECT *, 
+            SELECT * 
             FROM message_attachments
             WHERE message_id = $1
             ",
@@ -102,7 +102,7 @@ impl Message {
 
         let mut attachments = vec![];
         for attachment_row in attachment_rows {
-            let file = match File::get(attachment_row.file_id, "attachments", db).await {
+            let file = match File::get(attachment_row.file_id as u64, "attachments", db).await {
                 Some(file) => file,
                 None => {
                     return Err(error!(
@@ -241,7 +241,7 @@ impl Message {
             // not the most optimal way but whatever
             let attachment_rows = sqlx::query!(
                 "
-                SELECT *, 
+                SELECT * 
                 FROM message_attachments
                 WHERE message_id = $1
                 ",
@@ -256,7 +256,7 @@ impl Message {
 
             let mut attachments = vec![];
             for attachment_row in attachment_rows {
-                let file = match File::get(attachment_row.file_id, "attachments", db).await {
+                let file = match File::get(attachment_row.file_id as u64, "attachments", db).await {
                     Some(file) => file,
                     None => {
                         return Err(error!(

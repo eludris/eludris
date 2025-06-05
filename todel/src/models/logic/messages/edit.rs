@@ -70,8 +70,8 @@ impl Message {
         }
 
         let mut attachments = vec![];
-        if let Some(attachment_creates) = &edit.attachments {
-            for (i, attachment_create) in attachment_creates.iter().enumerate() {
+        if let Some(attachment_creates) = edit.attachments {
+            for (i, attachment_create) in attachment_creates.into_iter().enumerate() {
                 let file = match File::get(attachment_create.file_id, "attachments", db).await {
                     Some(file) => file,
                     None => {
@@ -118,7 +118,8 @@ impl Message {
             self.content = content;
         }
 
-        if edit.attachments.is_some() {
+        // does this change break anything?
+        if attachments.len() > 0 {
             sqlx::query!(
                 "
                 DELETE FROM message_attachments
@@ -142,10 +143,10 @@ impl Message {
                     INSERT INTO message_attachments(message_id, file_id, description, spoiler)
                     VALUES($1, $2, $3, $4)
                     ",
-                    id as i64,
-                    attachment.file.id as u64,
-                    attachment.description as String,
-                    attachment.spoiler as bool
+                    self.id as i64,
+                    attachment.file.id as i64,
+                    attachment.description,
+                    attachment.spoiler
                 )
                 .execute(&mut *transaction)
                 .await

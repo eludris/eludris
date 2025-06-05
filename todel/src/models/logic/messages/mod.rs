@@ -105,8 +105,8 @@ impl Message {
 
         // gather attachment files pre-transaction
         // (consider if this should be in Attachment::create)
-        let mut attachment_files = vec![];
-        for (i, attachment_create) in message.attachments.into_iter().enumerate() {
+        let mut attachments = vec![];
+        for (i, mut attachment_create) in message.attachments.into_iter().enumerate() {
             attachment_create.validate()?;
 
             let attachment_file =
@@ -120,7 +120,12 @@ impl Message {
                         ))
                     }
                 };
-            attachment_files.push(attachment_file.get_file_data());
+
+            attachments.push(Attachment {
+                file: attachment_file.get_file_data(),
+                description: attachment_create.description,
+                spoiler: attachment_create.spoiler,
+            });
         }
 
         let mut transaction = db.begin().await.map_err(|err| {
@@ -150,35 +155,28 @@ VALUES($1, $2, $3, $4, $5)
             error!(SERVER, "Failed to create message")
         })?;
 
-        let mut attachments = vec![];
-        for (i, attachment_create) in message.attachments.into_iter().enumerate() {
+        for attachment in attachments.iter() {
             sqlx::query!(
                 "
                 INSERT INTO message_attachments(message_id, file_id, description, spoiler)
                 VALUES($1, $2, $3, $4)
                 ",
                 id as i64,
-                attachment_create.file_id as i64,
-                attachment_create.description as String,
-                attachment_create.spoiler as bool
+                attachment.file.id as i64,
+                attachment.description.as_deref().unwrap_or(""),
+                attachment.spoiler
             )
             .execute(&mut *transaction)
             .await
             .map_err(|err| {
                 log::error!(
                     "Couldn't add message attachment for file_id {} to {}: {}",
-                    attachment_create.file_id,
+                    attachment.file.id,
                     id,
                     err
                 );
                 error!(SERVER, "Failed to create message attachment")
             })?;
-
-            attachments.push(Attachment {
-                file: attachment_files[i],
-                description: attachment_create.description,
-                spoiler: attachment_create.spoiler,
-            });
         }
         for embed in message.embeds.iter() {
             sqlx::query!(
