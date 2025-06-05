@@ -113,7 +113,7 @@ AND bucket = $2
             sqlx::query!(
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, width, height)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
                 ",
                 id as i64,
                 file_id as i64,
@@ -243,7 +243,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             sqlx::query!(
                 "
 INSERT INTO files(id, file_id, name, content_type, hash, bucket, width, height)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
                 ",
                 file.id as i64,
                 file.id as i64,

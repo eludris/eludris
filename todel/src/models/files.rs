@@ -87,7 +87,7 @@ pub struct File {
     pub name: String,
     pub content_type: String,
     pub hash: String,
-    pub bucket: String
+    pub bucket: String,
     pub width: Option<usize>,
     pub height: Option<usize>,
 }
