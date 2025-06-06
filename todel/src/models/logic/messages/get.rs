@@ -5,8 +5,8 @@ use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, types::Json, Postgres, QueryBuilder, Row};
 
 use crate::models::{
-    Attachment, Embed, Emoji, ErrorResponse, File, Message, Reaction, ReactionEmoji, SphereChannel,
-    Status, StatusType, User,
+    Attachment, Embed, Emoji, ErrorResponse, File, Message, MessageDisguise, Reaction,
+    ReactionEmoji, SphereChannel, Status, StatusType, User,
 };
 
 impl Message {
@@ -143,12 +143,28 @@ impl Message {
                 .or_insert(vec![])
                 .push(row.user_id as u64);
         }
+        let mut disguise = None;
+        if let Some(row) = sqlx::query!(
+            "SELECT * FROM message_disguise WHERE message_id = $1",
+            id as i64
+        )
+        .fetch_optional(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't fetch disguise for message {}: {}", id, err);
+            error!(SERVER, "Failed to fetch message data")
+        })? {
+            disguise = Some(MessageDisguise {
+                name: row.author,
+                avatar: row.avatar,
+            });
+        }
         Ok(Self {
             id,
             author,
             content: row.content,
             reference,
-            disguise: None,
+            disguise,
             channel: SphereChannel::get(row.channel_id as u64, db).await?,
             attachments,
             embeds,
@@ -314,12 +330,28 @@ impl Message {
                     .or_insert(vec![])
                     .push(row.user_id as u64);
             }
+            let mut disguise = None;
+            if let Some(row) = sqlx::query!(
+                "SELECT * FROM message_disguise WHERE message_id = $1",
+                id as i64
+            )
+            .fetch_optional(&mut **db)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't fetch disguise for message {}: {}", id, err);
+                error!(SERVER, "Failed to fetch message data")
+            })? {
+                disguise = Some(MessageDisguise {
+                    name: row.author,
+                    avatar: row.avatar,
+                });
+            }
             messages.push(Self {
                 id,
                 author,
                 content: row.get("content"),
                 reference,
-                disguise: None,
+                disguise,
                 channel: SphereChannel::get(row.get::<i64, _>("channel_id") as u64, db).await?,
                 attachments,
                 embeds,

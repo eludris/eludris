@@ -195,6 +195,25 @@ VALUES($1, $2, $3, $4, $5)
             })?;
         }
 
+        // bodge
+        if let Some(disguise) = &message.disguise {
+            sqlx::query!(
+                "
+                INSERT INTO message_disguise(message_id, author, avatar)
+                VALUES($1, $2, $3)
+                ",
+                id as i64,
+                disguise.name,
+                disguise.avatar,
+            )
+            .execute(&mut *transaction)
+            .await
+            .map_err(|err| {
+                log::error!("Couldn't add message disguise to {}: {}", id, err);
+                error!(SERVER, "Failed to create message")
+            })?;
+        }
+
         transaction.commit().await.map_err(|err| {
             log::error!("Couldn't commit message create transaction: {}", err);
             error!(SERVER, "Failed to create message")
