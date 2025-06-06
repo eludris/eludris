@@ -109,17 +109,16 @@ impl Message {
         for (i, mut attachment_create) in message.attachments.into_iter().enumerate() {
             attachment_create.validate()?;
 
-            let attachment_file =
-                match File::get(attachment_create.file_id, "attachments", db).await {
-                    Some(file) => file,
-                    None => {
-                        return Err(error!(
-                            VALIDATION,
-                            format!("attachments-{}", i),
-                            "File doesn't exist"
-                        ))
-                    }
-                };
+            let attachment_file = match File::get(attachment_create.file_id, "attachments", db)
+                .await
+            {
+                Some(file) => file,
+                None => return Err(error!(
+                    VALIDATION,
+                    format!("attachments-{}", i),
+                    "Attachment's file must be a valid file that exists in the attachments bucket"
+                )),
+            };
 
             attachments.push(Attachment {
                 file: attachment_file.get_file_data(),

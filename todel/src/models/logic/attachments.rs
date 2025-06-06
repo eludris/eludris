@@ -9,7 +9,7 @@ impl AttachmentCreate {
             } else if description.len() > 256 {
                 return Err(error!(
                     VALIDATION,
-                    "description", "Attachment description has to be less than 256 characters."
+                    "description", "Attachment description cannot be longer than 256 characters"
                 ));
             }
         }

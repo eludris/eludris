@@ -145,7 +145,7 @@ pub async fn download_file<'a>(
 /// {
 ///   "id": 2198189244420,
 ///   "name": "trolley.mp4",
-///   "bucket": "attachments"
+///   "bucket": "attachments",
 ///   "metadata": {
 ///     "type": "video",
 ///     "width": 576,

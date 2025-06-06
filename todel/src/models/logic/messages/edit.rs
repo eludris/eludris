@@ -78,7 +78,7 @@ impl Message {
                         return Err(error!(
                             VALIDATION,
                             format!("attachments-{}", i),
-                            "File doesn't exist"
+                            "Attachment's file must be a valid file that exists in the attachments bucket"
                         ))
                     }
                 };
@@ -118,8 +118,7 @@ impl Message {
             self.content = content;
         }
 
-        // does this change break anything?
-        if attachments.is_empty() {
+        if !attachments.is_empty() {
             sqlx::query!(
                 "
                 DELETE FROM message_attachments
