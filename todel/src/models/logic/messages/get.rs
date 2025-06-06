@@ -5,8 +5,8 @@ use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, types::Json, Postgres, QueryBuilder, Row};
 
 use crate::models::{
-    Embed, Emoji, ErrorResponse, File, Message, Reaction, ReactionEmoji, SphereChannel, Status,
-    StatusType, User,
+    Attachment, Embed, Emoji, ErrorResponse, File, Message, Reaction, ReactionEmoji, SphereChannel,
+    Status, StatusType, User,
 };
 
 impl Message {
@@ -68,9 +68,9 @@ impl Message {
             },
             None => None,
         };
-        let attachment_ids = sqlx::query!(
+        let attachment_rows = sqlx::query!(
             "
-            SELECT attachment_id
+            SELECT * 
             FROM message_attachments
             WHERE message_id = $1
             ",
@@ -99,13 +99,25 @@ impl Message {
         .into_iter()
         .map(|r| r.embed.0)
         .collect();
+
         let mut attachments = vec![];
-        for attachment_id in attachment_ids {
-            attachments.push(
-                File::fetch_file_data(attachment_id.attachment_id as u64, "attachments", db)
-                    .await?,
-            );
+        for attachment_row in attachment_rows {
+            let file = match File::get(attachment_row.file_id as u64, "attachments", db).await {
+                Some(file) => file,
+                None => {
+                    return Err(error!(
+                        VALIDATION,
+                        "attachment-file", "Attachment file has vanished..."
+                    ))
+                }
+            };
+            attachments.push(Attachment {
+                file: file.get_file_data(),
+                description: attachment_row.description,
+                spoiler: attachment_row.spoiler,
+            });
         }
+
         let mut reactions = HashMap::new();
         for row in sqlx::query!(
             "
@@ -227,9 +239,9 @@ impl Message {
                 None => None,
             };
             // not the most optimal way but whatever
-            let attachment_ids = sqlx::query!(
+            let attachment_rows = sqlx::query!(
                 "
-                SELECT attachment_id
+                SELECT * 
                 FROM message_attachments
                 WHERE message_id = $1
                 ",
@@ -239,15 +251,27 @@ impl Message {
             .await
             .map_err(|err| {
                 log::error!("Couldn't fetch message attachments {}: {}", id, err);
-                error!(SERVER, "Failed to fetch channel history")
+                error!(SERVER, "Failed to fetch message data")
             })?;
+
             let mut attachments = vec![];
-            for attachment_id in attachment_ids {
-                attachments.push(
-                    File::fetch_file_data(attachment_id.attachment_id as u64, "attachments", db)
-                        .await?,
-                );
+            for attachment_row in attachment_rows {
+                let file = match File::get(attachment_row.file_id as u64, "attachments", db).await {
+                    Some(file) => file,
+                    None => {
+                        return Err(error!(
+                            VALIDATION,
+                            "attachment-file", "Attachment file has vanished..."
+                        ))
+                    }
+                };
+                attachments.push(Attachment {
+                    file: file.get_file_data(),
+                    description: attachment_row.description,
+                    spoiler: attachment_row.spoiler,
+                });
             }
+
             let embeds = sqlx::query!(
                 r#"
             SELECT embed as "embed: Json<Embed>"

@@ -27,20 +27,8 @@ pub struct FileData {
     pub name: String,
     /// The bucket the file is stored in.
     pub bucket: String,
-    /// Whether the file is marked as a spoiler.
-    #[serde(default = "spoiler_default")]
-    #[serde(skip_serializing_if = "is_false")]
-    pub spoiler: bool,
     /// The [`FileMetadata`] of the file.
     pub metadata: FileMetadata,
-}
-
-fn is_false(value: &bool) -> bool {
-    !value
-}
-
-fn spoiler_default() -> bool {
-    false
 }
 
 /// The enum representing all the possible Effis supported file metadatas.
@@ -100,7 +88,6 @@ pub struct File {
     pub content_type: String,
     pub hash: String,
     pub bucket: String,
-    pub spoiler: bool,
     pub width: Option<usize>,
     pub height: Option<usize>,
 }

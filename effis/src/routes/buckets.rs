@@ -23,14 +23,12 @@ use crate::{
 /// ```sh
 /// curl \
 ///   -F file=@trolley.mp4 \
-///   -F spoiler=true \
 ///   https://cdn.eludris.gay/attachments/
 ///
 /// {
 ///   "id": 2198189244420,
 ///   "name": "trolley.mp4",
 ///   "bucket": "attachments",
-///   "spoiler": true,
 ///   "metadata": {
 ///     "type": "video",
 ///     "width": 576,
@@ -60,7 +58,6 @@ pub async fn upload_file<'a>(
         bucket.to_string(),
         &mut *gen.inner().lock().await,
         &mut db,
-        upload.spoiler,
     )
     .await
     .map_err(|e| rate_limiter.add_headers(e))?;
@@ -149,7 +146,6 @@ pub async fn download_file<'a>(
 ///   "id": 2198189244420,
 ///   "name": "trolley.mp4",
 ///   "bucket": "attachments",
-///   "spoiler": true,
 ///   "metadata": {
 ///     "type": "video",
 ///     "width": 576,

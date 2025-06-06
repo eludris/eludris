@@ -1,6 +1,6 @@
 use sqlx::{pool::PoolConnection, Acquire, Postgres};
 
-use crate::models::{Embed, ErrorResponse, File, Message, MessageEdit};
+use crate::models::{Attachment, Embed, ErrorResponse, File, Message, MessageEdit};
 
 impl MessageEdit {
     pub fn validate(&mut self) -> Result<(), ErrorResponse> {
@@ -69,20 +69,27 @@ impl Message {
             ));
         }
 
+        // store here to avoid relying on side effects later
+        let had_attachments = edit.attachments.is_some();
+
         let mut attachments = vec![];
-        if let Some(attachment_ids) = &edit.attachments {
-            for (i, attachment_id) in attachment_ids.iter().enumerate() {
-                let file = match File::get(*attachment_id, "attachments", db).await {
+        if let Some(attachment_creates) = edit.attachments {
+            for (i, attachment_create) in attachment_creates.into_iter().enumerate() {
+                let file = match File::get(attachment_create.file_id, "attachments", db).await {
                     Some(file) => file,
                     None => {
                         return Err(error!(
                             VALIDATION,
                             format!("attachments-{}", i),
-                            "File doesn't exist"
+                            "Attachment's file must be a valid file that exists in the attachments bucket"
                         ))
                     }
                 };
-                attachments.push(file.get_file_data());
+                attachments.push(Attachment {
+                    file: file.get_file_data(),
+                    description: attachment_create.description,
+                    spoiler: attachment_create.spoiler,
+                });
             }
         }
 
@@ -114,7 +121,7 @@ impl Message {
             self.content = content;
         }
 
-        if edit.attachments.is_some() {
+        if had_attachments {
             sqlx::query!(
                 "
                 DELETE FROM message_attachments
@@ -135,18 +142,20 @@ impl Message {
             for attachment in attachments.iter() {
                 sqlx::query!(
                     "
-                INSERT INTO message_attachments(message_id, attachment_id)
-                VALUES($1, $2)
-                ",
+                    INSERT INTO message_attachments(message_id, file_id, description, spoiler)
+                    VALUES($1, $2, $3, $4)
+                    ",
                     self.id as i64,
-                    attachment.id as i64,
+                    attachment.file.id as i64,
+                    attachment.description,
+                    attachment.spoiler
                 )
                 .execute(&mut *transaction)
                 .await
                 .map_err(|err| {
                     log::error!(
-                        "Couldn't edit message attachment {} to {}: {}",
-                        attachment.id,
+                        "Couldn't edit message attachment file {} to {}: {}",
+                        attachment.file.id,
                         self.id,
                         err
                     );
