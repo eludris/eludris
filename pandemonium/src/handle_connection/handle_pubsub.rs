@@ -210,7 +210,7 @@ async fn handle_event(
                 send_payload(tx, &ServerPayload::SphereUpdate { data, sphere_id }).await;
             }
         }
-        ServerPayload::MemberUpdate {
+        ServerPayload::SphereMemberUpdate {
             data,
             user_id,
             sphere_id,
@@ -218,7 +218,7 @@ async fn handle_event(
             if session.sphere_ids.contains(&sphere_id) {
                 send_payload(
                     tx,
-                    &ServerPayload::MemberUpdate {
+                    &ServerPayload::SphereMemberUpdate {
                         data,
                         user_id,
                         sphere_id,

@@ -371,7 +371,7 @@ pub enum ServerPayload {
         data: SphereEdit,
         sphere_id: u64,
     },
-    MemberUpdate {
+    SphereMemberUpdate {
         data: MemberEdit,
         user_id: u64,
         sphere_id: u64,
