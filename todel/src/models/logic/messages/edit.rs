@@ -69,6 +69,9 @@ impl Message {
             ));
         }
 
+        // store here to avoid relying on side effects later
+        let had_attachments = edit.attachments.is_some();
+
         let mut attachments = vec![];
         if let Some(attachment_creates) = edit.attachments {
             for (i, attachment_create) in attachment_creates.into_iter().enumerate() {
@@ -118,7 +121,7 @@ impl Message {
             self.content = content;
         }
 
-        if !attachments.is_empty() {
+        if had_attachments {
             sqlx::query!(
                 "
                 DELETE FROM message_attachments
