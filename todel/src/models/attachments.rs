@@ -25,16 +25,7 @@ pub struct AttachmentCreate {
     pub description: Option<String>,
     /// Whether the attachment is marked as a spoiler.
     #[serde(default = "spoiler_default")]
-    #[serde(skip_serializing_if = "is_false")]
     pub spoiler: bool,
-}
-
-fn is_false(value: &bool) -> bool {
-    !value
-}
-
-fn spoiler_default() -> bool {
-    false
 }
 
 /// The Attachment payload. This is returned alongside `Message` when you're provided information about a
@@ -65,5 +56,14 @@ fn spoiler_default() -> bool {
 pub struct Attachment {
     pub file: FileData,
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "is_false")]
     pub spoiler: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+    !value
+}
+
+fn spoiler_default() -> bool {
+    false
 }
