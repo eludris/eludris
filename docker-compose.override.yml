@@ -19,6 +19,9 @@ services:
       - type: bind
         source: static
         target: /static
+      - type: bind
+        source: ./files
+        target: /files
     build:
       context: .
       dockerfile: oprish/Dockerfile
@@ -35,10 +38,6 @@ services:
     extends:
       service: oprish
     depends_on: ["oprish"]
-    volumes:
-      - type: bind
-        source: ./files
-        target: /files
     build:
       dockerfile: effis/Dockerfile
 
