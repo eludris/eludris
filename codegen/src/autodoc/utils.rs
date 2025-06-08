@@ -155,13 +155,8 @@ pub fn get_field_infos<'a, T: Iterator<Item = &'a Field>>(
         let mut name = field
             .ident
             .as_ref()
-            .ok_or_else(|| {
-                Error::new(
-                    field.span(),
-                    "Cannot generate documentation for tuple struct fields",
-                )
-            })?
-            .to_string();
+            .map(|i| i.to_string())
+            .unwrap_or_else(|| "inner".to_string());
         let mut r#type = get_type(&field.ty)?;
         let doc = get_doc(&field.attrs)?;
         let mut flattened = false;
