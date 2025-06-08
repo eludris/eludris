@@ -19,7 +19,7 @@ const remarkAutolinkReferenceEntries = () => {
   return (tree) => {
     const text = toMarkdown(tree, { extensions: [gfmTableToMarkdown()] });
     return fromMarkdown(
-      text.replace(/\\\[`(.+?)`\]/gm, (_, p1) => {
+      text.replace(/\\\[` ?(.+?) ?`\]/gm, (_, p1) => {
         const item = AUTODOC_ENTRIES.items.find((entry) => entry.endsWith(`/${p1}.json`));
         if (!item) {
           return p1;

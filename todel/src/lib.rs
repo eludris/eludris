@@ -6,6 +6,7 @@ extern crate lazy_static;
 #[macro_use]
 pub extern crate todel_codegen;
 
+pub mod bitflag;
 pub mod conf;
 #[cfg(feature = "http")]
 pub mod http;

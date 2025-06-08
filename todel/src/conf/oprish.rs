@@ -58,9 +58,9 @@ macro_rules! oprish_ratelimits {
         #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
         pub struct OprishRateLimits {
             $(
-                #[doc = "Rate Limits for the"]
+                #[doc = "Rate Limits for the [`"]
                 #[doc = $bucket_str]
-                #[doc = "route."]
+                #[doc = "`] route."]
                 #[serde(default = $bucket_str)]
                 pub $bucket: RateLimitConf,
             )+
