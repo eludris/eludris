@@ -19,7 +19,7 @@ macro_rules! bitflag {
             $(#[doc = $doc])*
         )+
         #[derive(Debug, Clone, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
-        pub struct $name(u128);
+        pub struct $name(u64);
 
         impl $name {
             pub fn empty() -> Self {
@@ -30,11 +30,11 @@ macro_rules! bitflag {
                 Self($((1 << $shift) |)+ 0)
             }
 
-            pub fn from_bits(bits: u128) -> Self {
+            pub fn from_bits(bits: u64) -> Self {
                 Self(bits)
             }
 
-            pub fn bits(&self) -> u128 {
+            pub fn bits(&self) -> u64 {
                 self.0
             }
 
@@ -51,17 +51,17 @@ macro_rules! bitflag {
             fn bitand(self, rhs: Self) -> Self::Output { Self(self.0 & rhs.0) }
         }
 
-        impl std::ops::BitAnd<u128> for $name {
+        impl std::ops::BitAnd<u64> for $name {
             type Output = Self;
-            fn bitand(self, rhs: u128) -> Self::Output { Self(self.0 & rhs) }
+            fn bitand(self, rhs: u64) -> Self::Output { Self(self.0 & rhs) }
         }
 
         impl std::ops::BitAndAssign for $name {
             fn bitand_assign(&mut self, rhs: Self) { self.0 &= rhs.0; }
         }
 
-        impl std::ops::BitAndAssign<u128> for $name {
-            fn bitand_assign(&mut self, rhs: u128) { self.0 &= rhs; }
+        impl std::ops::BitAndAssign<u64> for $name {
+            fn bitand_assign(&mut self, rhs: u64) { self.0 &= rhs; }
         }
 
         impl std::ops::BitOr for $name {
@@ -69,9 +69,9 @@ macro_rules! bitflag {
             fn bitor(self, rhs: Self) -> Self::Output { Self(self.0 | rhs.0) }
         }
 
-        impl std::ops::BitOr<u128> for $name {
+        impl std::ops::BitOr<u64> for $name {
             type Output = Self;
-            fn bitor(self, rhs: u128) -> Self::Output { Self(self.0 | rhs) }
+            fn bitor(self, rhs: u64) -> Self::Output { Self(self.0 | rhs) }
         }
 
         impl std::ops::BitOrAssign for $name {
@@ -80,8 +80,8 @@ macro_rules! bitflag {
             }
         }
 
-        impl std::ops::BitOrAssign<u128> for $name {
-            fn bitor_assign(&mut self, rhs: u128) {
+        impl std::ops::BitOrAssign<u64> for $name {
+            fn bitor_assign(&mut self, rhs: u64) {
                 self.0 |= rhs;
             }
         }
@@ -93,9 +93,9 @@ macro_rules! bitflag {
             }
         }
 
-        impl std::ops::BitXor<u128> for $name {
+        impl std::ops::BitXor<u64> for $name {
             type Output = Self;
-            fn bitxor(self, rhs: u128) -> Self::Output {
+            fn bitxor(self, rhs: u64) -> Self::Output {
                 Self(self.0 ^ rhs)
             }
         }
@@ -106,8 +106,8 @@ macro_rules! bitflag {
             }
         }
 
-        impl std::ops::BitXorAssign<u128> for $name {
-            fn bitxor_assign(&mut self, rhs: u128) {
+        impl std::ops::BitXorAssign<u64> for $name {
+            fn bitxor_assign(&mut self, rhs: u64) {
                 self.0 ^= rhs;
             }
         }
