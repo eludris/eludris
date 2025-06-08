@@ -22,6 +22,11 @@ macro_rules! bitflag {
         pub struct $name(u64);
 
         impl $name {
+        $(
+            #[allow(non_snake_case, dead_code)]
+            const $flag: Self = $name(1 << $shift);
+        )+
+
             pub fn empty() -> Self {
                 Self(0)
             }
@@ -38,12 +43,9 @@ macro_rules! bitflag {
                 self.0
             }
 
-        $(
-            #[allow(non_snake_case)]
-            pub fn $flag(&self) -> bool {
-                (self.0 & (1 << $shift)) == (1 << $shift)
+            pub fn has(&self, other: Self) -> bool {
+                self.0 & other.0 == other.0
             }
-        )+
         }
 
         impl std::ops::BitAnd for $name {
