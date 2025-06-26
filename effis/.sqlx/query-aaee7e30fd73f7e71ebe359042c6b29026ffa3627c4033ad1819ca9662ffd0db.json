@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n         UPDATE members\n         SET sphere_banner = $1\n         WHERE id = $2\n         AND sphere_id = $3\n                         ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "aaee7e30fd73f7e71ebe359042c6b29026ffa3627c4033ad1819ca9662ffd0db"
+}

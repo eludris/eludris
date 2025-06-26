@@ -223,6 +223,7 @@ WHERE id = $2
             categories: vec![],
             members: vec![],
             emojis: vec![],
+            roles: vec![],
         })
     }
 }

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nINSERT INTO meta(secret)\nVALUES($1)\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "72d1098107fc80bee8cbe8293f18dd96a61471e0c48e8d0c9dea709d959c378f"
+}

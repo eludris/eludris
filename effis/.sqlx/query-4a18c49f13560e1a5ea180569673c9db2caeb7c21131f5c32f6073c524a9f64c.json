@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO message_disguise(message_id, author, avatar)\n                VALUES($1, $2, $3)\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4a18c49f13560e1a5ea180569673c9db2caeb7c21131f5c32f6073c524a9f64c"
+}

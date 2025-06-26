@@ -2,9 +2,9 @@ ALTER TABLE channels DROP COLUMN default_permissions;
 
 CREATE TABLE IF NOT EXISTS roles (
   id BIGINT PRIMARY KEY,
-  sphere_id BIGINT,
-  position INT,
-  name VARCHAR(32),
+  sphere_id BIGINT NOT NULL,
+  position INT NOT NULL DEFAULT 0,
+  name VARCHAR(32) NOT NULL,
   allowed BIGINT NOT NULL DEFAULT 0,
   denied BIGINT NOT NULL DEFAULT 0,
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,

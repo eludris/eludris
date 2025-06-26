@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nDELETE FROM users\nWHERE verified = FALSE\nAND $1 - (id >> 16) > 604800000 -- seven days\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d4131cfc2246292039d30fdae1849cb13420f140a898353f2abbbc93028f6c55"
+}

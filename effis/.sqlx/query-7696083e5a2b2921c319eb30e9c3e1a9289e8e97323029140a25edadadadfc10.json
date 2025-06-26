@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nDELETE FROM users\nWHERE username = $1\nOR email= $2\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7696083e5a2b2921c319eb30e9c3e1a9289e8e97323029140a25edadadadfc10"
+}

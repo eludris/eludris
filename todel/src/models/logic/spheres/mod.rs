@@ -5,17 +5,13 @@ mod members;
 mod remove_member;
 
 use regex::Regex;
-use sqlx::{
-    pool::PoolConnection,
-    postgres::{any::AnyConnectionBackend, PgRow},
-    FromRow, Postgres, Row,
-};
+use sqlx::{pool::PoolConnection, postgres::PgRow, Acquire, FromRow, Postgres, Row};
 
 use crate::{
     ids::IdGenerator,
     models::{
         Category, ChannelType, ErrorResponse, File, Sphere, SphereChannel, SphereCreate,
-        TextChannel,
+        SpherePermissions, SphereRole, TextChannel,
     },
 };
 
@@ -34,6 +30,7 @@ impl FromRow<'_, PgRow> for Sphere {
             categories: vec![],
             members: vec![],
             emojis: vec![],
+            roles: vec![],
         })
     }
 }
@@ -156,7 +153,7 @@ WHERE owner_id = $1
             return Err(error!(VALIDATION, "spheres", "User exceeded sphere limit"));
         }
         let sphere_id = id_generator.generate();
-        db.begin().await.map_err(|err| {
+        let mut transaction = db.begin().await.map_err(|err| {
             log::error!("Couldn't create a new sphere transaction: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
@@ -174,20 +171,20 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8)
         .bind(&sphere.description)
         .bind(sphere.icon.map(|i| i as i64))
         .bind(sphere.banner.map(|b| b as i64))
-        .execute(&mut **db)
+        .execute(&mut *transaction)
         .await
         .map_err(|err| {
             log::error!("Couldn't create a new sphere: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
-        sqlx::query(
+        sqlx::query!(
             "
 INSERT INTO categories(id, sphere_id, name, position)
 VALUES($1, $1, 'uncategorised', 0)
             ",
+            sphere_id as i64,
         )
-        .bind(sphere_id as i64)
-        .execute(&mut **db)
+        .execute(&mut *transaction)
         .await
         .map_err(|err| {
             log::error!("Couldn't create default sphere category: {}", err);
@@ -202,15 +199,28 @@ VALUES($1, $2, $2, $3, $4, 0)
         )
         .bind(channel_id as i64)
         .bind(sphere_id as i64)
-        .bind(ChannelType::Text)
+        .bind(ChannelType::Text) // idk how to make this work with query!
         .bind("general")
-        .execute(&mut **db)
+        .execute(&mut *transaction)
         .await
         .map_err(|err| {
             log::error!("Couldn't create default sphere channel: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
-        db.commit().await.map_err(|err| {
+        sqlx::query!(
+            "
+INSERT INTO roles(id, sphere_id, position, name)
+VALUES($1, $1, 0, 'everyone')
+            ",
+            sphere_id as i64,
+        )
+        .execute(&mut *transaction)
+        .await
+        .map_err(|err| {
+            log::error!("Couldn't create default sphere channel: {}", err);
+            error!(SERVER, "Failed to create sphere")
+        })?;
+        transaction.commit().await.map_err(|err| {
             log::error!("Couldn't commit new sphere transaction: {}", err);
             error!(SERVER, "Failed to create sphere")
         })?;
@@ -240,6 +250,14 @@ VALUES($1, $2, $2, $3, $4, 0)
             }],
             members: vec![],
             emojis: vec![],
+            roles: vec![SphereRole {
+                id: sphere_id,
+                sphere_id,
+                position: 0,
+                name: "everyone".to_string(),
+                allowed_permissions: SpherePermissions::empty(),
+                denied_permissions: SpherePermissions::empty(),
+            }],
         };
         let member = sphere.add_member(owner_id, db).await?;
         sphere.members.push(member);

@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    INSERT INTO message_attachments(message_id, file_id, description, spoiler)\n                    VALUES($1, $2, $3, $4)\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "745d95e2009923d1afb6c48669f34dc75326dbb2151a7649bbf20182f7b1c8bd"
+}

@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO emojis(id, sphere_id, name, file_id, uploader_id)\n            VALUES($1, $2, $3, $4, $5)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Varchar",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1a1b203765576f0276284027c92f0611b2272741ed1f3e7bfa7ed1885ccd0f3d"
+}

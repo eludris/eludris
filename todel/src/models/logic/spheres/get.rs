@@ -4,7 +4,8 @@ use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, FromRow, Postgres, Row};
 
 use crate::models::{
-    Category, Emoji, ErrorResponse, Member, Sphere, SphereChannel, Status, StatusType, User,
+    Category, Emoji, ErrorResponse, Member, Sphere, SphereChannel, SpherePermissions, SphereRole,
+    Status, StatusType, User,
 };
 
 impl Sphere {
@@ -165,6 +166,39 @@ WHERE sphere_id = $1
         })
         .collect();
         self.emojis = emojis;
+        Ok(())
+    }
+
+    pub async fn populate_roles(
+        &mut self,
+        db: &mut PoolConnection<Postgres>,
+    ) -> Result<(), ErrorResponse> {
+        let roles = sqlx::query!(
+            "
+            SELECT *
+            FROM roles
+            WHERE sphere_id = $1
+              AND is_deleted = FALSE
+            ",
+            self.id as i64,
+        )
+        .fetch_all(&mut **db)
+        .await
+        .map_err(|err| {
+            log::error!("Failed to get sphere roles for {}: {}", self.id, err);
+            error!(SERVER, "Failed to get sphere")
+        })?
+        .into_iter()
+        .map(|r| SphereRole {
+            id: r.id as u64,
+            sphere_id: self.id,
+            position: r.position as u32,
+            name: r.name,
+            allowed_permissions: SpherePermissions::from_bits(r.allowed as u64),
+            denied_permissions: SpherePermissions::from_bits(r.denied as u64),
+        })
+        .collect();
+        self.roles = roles;
         Ok(())
     }
 
