@@ -59,7 +59,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: install
-          args: sqlx-cli --version 0.7.3
+          args: sqlx-cli
 
       - name: Wait For Database
         run: |
