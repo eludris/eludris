@@ -6,6 +6,7 @@ mod emojis;
 mod files;
 mod messages;
 mod meta;
+mod roles;
 mod sessions;
 mod spheres;
 mod users;

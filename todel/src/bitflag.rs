@@ -24,15 +24,17 @@ macro_rules! bitflag {
         impl $name {
         $(
             #[allow(non_snake_case, dead_code)]
-            const $flag: Self = $name(1 << $shift);
+            pub const $flag: Self = $name(1 << $shift);
         )+
+
+            pub const MAX: Self = $name($(1 << $shift )|+);
 
             pub fn empty() -> Self {
                 Self(0)
             }
 
             pub fn all() -> Self {
-                Self($((1 << $shift) |)+ 0)
+                Self($((1 << $shift) )|+)
             }
 
             pub fn from_bits(bits: u64) -> Self {

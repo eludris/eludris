@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nINSERT INTO categories(id, sphere_id, name, position)\nVALUES($1, $1, 'uncategorised', 0)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5e6b420ec5e1fc38a2335d930ba9567f46200c1591e3bc2a1e4d39f8db15a505"
+}
