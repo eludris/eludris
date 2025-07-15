@@ -32,7 +32,7 @@ pub async fn create_emoji(
     .map_err(|err| rate_limiter.add_headers(err))?;
 
     let emoji = sphere
-        .add_emoji(
+        .create_emoji(
             emoji.into_inner(),
             session.0.user_id,
             &mut *id_generator.lock().await,

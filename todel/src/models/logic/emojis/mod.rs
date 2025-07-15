@@ -23,7 +23,7 @@ impl EmojiCreate {
 }
 
 impl Sphere {
-    pub async fn add_emoji(
+    pub async fn create_emoji(
         &self,
         create: EmojiCreate,
         uploader_id: u64,
