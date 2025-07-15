@@ -255,6 +255,7 @@ VALUES($1, $1, 0, 'everyone')
                 sphere_id,
                 position: 0,
                 name: "everyone".to_string(),
+                colour: 0xFFFFFF,
                 allowed_permissions: SpherePermissions::empty(),
                 denied_permissions: SpherePermissions::empty(),
             }],

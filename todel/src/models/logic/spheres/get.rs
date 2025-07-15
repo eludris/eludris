@@ -194,6 +194,7 @@ WHERE sphere_id = $1
             sphere_id: self.id,
             position: r.position as u32,
             name: r.name,
+            colour: r.colour as u32,
             allowed_permissions: SpherePermissions::from_bits(r.allowed as u64),
             denied_permissions: SpherePermissions::from_bits(r.denied as u64),
         })
