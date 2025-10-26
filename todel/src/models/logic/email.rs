@@ -154,7 +154,7 @@ impl Emailer {
             .await
             .map_err(|err| {
                 log::error!("Failed to send email: {}", err);
-                error!(SERVER, "Could not send verification email")
+                error!(SERVER, "Could not send email")
             })?;
         Ok(())
     }
