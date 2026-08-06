@@ -1,7 +1,32 @@
 use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
+use crate::models::SphereRole;
+
 use super::User;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MemberBase {
+    /// The underlying User for this member.
+    pub user: User,
+    /// The sphere to which this member belongs.
+    pub sphere_id: u64,
+    /// The sphere-specific nickname of this member.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub nickname: Option<String>,
+    /// The sphere-specific avatar of this member.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sphere_avatar: Option<u64>,
+    /// The sphere-specific banner of this member.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sphere_banner: Option<u64>,
+    /// The sphere-specific bio of this member.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sphere_bio: Option<String>,
+    /// The sphere-specific status of this member.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sphere_status: Option<String>,
+}
 
 /// The Member payload. This represents a [`User`] in a sphere.
 ///
@@ -24,25 +49,29 @@ use super::User;
 #[autodoc(category = "Members")]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Member {
-    /// The underlying User for this member.
-    pub user: User,
-    /// The sphere to which this member belongs.
-    pub sphere_id: u64,
-    /// The sphere-specific nickname of this member.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub nickname: Option<String>,
-    /// The sphere-specific avatar of this member.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sphere_avatar: Option<u64>,
-    /// The sphere-specific banner of this member.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sphere_banner: Option<u64>,
-    /// The sphere-specific bio of this member.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sphere_bio: Option<String>,
-    /// The sphere-specific status of this member.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sphere_status: Option<String>,
+    #[serde(flatten)]
+    pub data: MemberBase,
+    /// The roles this member has in this sphere.
+    pub roles: Vec<SphereRole>,
+}
+
+#[autodoc(category = "Members")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PartialMember {
+    #[serde(flatten)]
+    pub data: MemberBase,
+    /// The ids of the roles this member has in this sphere.
+    pub role_ids: Vec<u64>,
+}
+
+#[cfg(feature = "logic")]
+impl Member {
+    pub fn into_partial(self) -> PartialMember {
+        PartialMember {
+            data: self.data,
+            role_ids: self.roles.into_iter().map(|r| r.id).collect(),
+        }
+    }
 }
 
 /// The MemberEdit payload.

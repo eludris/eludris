@@ -1,6 +1,6 @@
 use sqlx::{pool::PoolConnection, Postgres};
 
-use crate::models::{ErrorResponse, Member, Sphere, User};
+use crate::models::{ErrorResponse, Member, MemberBase, Sphere, User};
 
 impl Sphere {
     pub async fn add_member(
@@ -50,14 +50,18 @@ impl Sphere {
             log::error!("Couldn't insert member into sphere {}: {}", self.id, err);
             error!(SERVER, "Failed to join sphere")
         })?;
+        // TODO: give the member the default role
         Ok(Member {
-            sphere_id: self.id,
-            user: User::get_unfiltered(user_id, db).await?,
-            nickname: None,
-            sphere_avatar: None,
-            sphere_banner: None,
-            sphere_bio: None,
-            sphere_status: None,
+            data: MemberBase {
+                sphere_id: self.id,
+                user: User::get_unfiltered(user_id, db).await?,
+                nickname: None,
+                sphere_avatar: None,
+                sphere_banner: None,
+                sphere_bio: None,
+                sphere_status: None,
+            },
+            roles: vec![],
         })
     }
 }

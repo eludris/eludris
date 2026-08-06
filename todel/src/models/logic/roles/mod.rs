@@ -123,7 +123,7 @@ impl SphereRole {
         .fetch_one(&mut **db)
         .await
         .map_err(|err| {
-            log::error!("Failed to get role into database {}: {}", id, err);
+            log::error!("Failed to get role from database {}: {}", id, err);
             error!(SERVER, "Failed to get role")
         })
         .map(|r| Self {

@@ -3,7 +3,9 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 use serde_with::rust::double_option;
 
-use super::{Category, Emoji, Member, SphereRole};
+use crate::models::PartialMember;
+
+use super::{Category, Emoji, SphereRole};
 
 /// The different types a sphere can be.
 #[autodoc(category = "Spheres")]
@@ -112,7 +114,7 @@ pub struct Sphere {
     /// The categories that this sphere contains.
     pub categories: Vec<Category>,
     /// The members that are inside this sphere.
-    pub members: Vec<Member>,
+    pub members: Vec<PartialMember>,
     /// The emojis that this sphere has.
     pub emojis: Vec<Emoji>,
     /// The roles that this sphere has.

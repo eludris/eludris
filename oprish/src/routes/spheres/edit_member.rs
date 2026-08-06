@@ -68,12 +68,12 @@ pub async fn edit_member(
         }
     }
     .map_err(|err| rate_limiter.add_headers(err))?;
-    if session.0.user_id != member.user.id && session.0.user_id != sphere.owner_id {
+    if session.0.user_id != member.data.user.id && session.0.user_id != sphere.owner_id {
         error!(rate_limiter, FORBIDDEN);
     }
     rate_limiter.wrap_response(Ok(Json(
         Member::edit(
-            member.user.id,
+            member.data.user.id,
             sphere.id,
             edit.into_inner(),
             &mut db,

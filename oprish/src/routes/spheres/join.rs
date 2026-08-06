@@ -59,7 +59,7 @@ pub async fn join_sphere(
         .publish::<&str, String, ()>(
             "eludris-events",
             serde_json::to_string(&ServerPayload::SphereMemberJoin {
-                user: member.user,
+                user: member.data.user,
                 sphere_id: sphere.id,
             })
             .unwrap(),

@@ -261,7 +261,7 @@ VALUES($1, $1, 0, 'everyone')
             }],
         };
         let member = sphere.add_member(owner_id, db).await?;
-        sphere.members.push(member);
+        sphere.members.push(member.into_partial());
         Ok(sphere)
     }
 

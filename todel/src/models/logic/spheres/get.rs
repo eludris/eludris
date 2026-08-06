@@ -4,8 +4,8 @@ use redis::AsyncCommands;
 use sqlx::{pool::PoolConnection, FromRow, Postgres, Row};
 
 use crate::models::{
-    Category, Emoji, ErrorResponse, Member, Sphere, SphereChannel, SpherePermissions, SphereRole,
-    Status, StatusType, User,
+    Category, Emoji, ErrorResponse, MemberBase, PartialMember, Sphere, SphereChannel,
+    SpherePermissions, SphereRole, Status, StatusType, User,
 };
 
 impl Sphere {
@@ -123,14 +123,17 @@ WHERE sphere_id = $1
                     text: None,
                 }
             }
-            members.push(Member {
-                user,
-                sphere_id: self.id,
-                nickname: row.get("nickname"),
-                sphere_avatar: row.get::<Option<i64>, _>("sphere_avatar").map(|a| a as u64),
-                sphere_banner: row.get::<Option<i64>, _>("sphere_banner").map(|a| a as u64),
-                sphere_bio: row.get("sphere_bio"),
-                sphere_status: row.get("sphere_status"),
+            members.push(PartialMember {
+                data: MemberBase {
+                    user,
+                    sphere_id: self.id,
+                    nickname: row.get("nickname"),
+                    sphere_avatar: row.get::<Option<i64>, _>("sphere_avatar").map(|a| a as u64),
+                    sphere_banner: row.get::<Option<i64>, _>("sphere_banner").map(|a| a as u64),
+                    sphere_bio: row.get("sphere_bio"),
+                    sphere_status: row.get("sphere_status"),
+                },
+                role_ids: vec![],
             })
         }
         self.members = members;

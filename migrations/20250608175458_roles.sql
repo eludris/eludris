@@ -22,6 +22,15 @@ CREATE TABLE IF NOT EXISTS channel_permission_overrides (
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS member_roles (
+  sphere_id BIGINT NOT NULL,
+  role_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
+  FOREIGN KEY (sphere_id) REFERENCES spheres(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 INSERT INTO roles (id, sphere_id, name, position)
 SELECT id, id, 'everyone', 0
 FROM spheres;
