@@ -38,7 +38,7 @@ pub struct ProxyResponse {
 /// ```
 #[autodoc(category = "Proxy")]
 #[get("/proxy?<url>")]
-pub async fn proxy<'a>(
+pub async fn proxy(
     url: String,
     ip: ClientIP,
     mut cache: Connection<Cache>,

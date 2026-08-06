@@ -151,7 +151,7 @@ pub async fn download_attachment<'a>(
 /// ```
 #[autodoc(category = "Files")]
 #[get("/<id>/data")]
-pub async fn get_attachment_data<'a>(
+pub async fn get_attachment_data(
     id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,

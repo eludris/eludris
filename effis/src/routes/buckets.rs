@@ -155,8 +155,8 @@ pub async fn download_file<'a>(
 /// ```
 #[autodoc(category = "Files")]
 #[get("/<bucket>/<id>/data")]
-pub async fn get_file_data<'a>(
-    bucket: &'a str,
+pub async fn get_file_data(
+    bucket: &str,
     id: u64,
     ip: ClientIP,
     mut cache: Connection<Cache>,

@@ -117,7 +117,7 @@ pub async fn download_static_file<'a>(
     }))
 }
 
-async fn get_file(name: &str) -> Result<StaticFile, ErrorResponse> {
+async fn get_file(name: &str) -> Result<StaticFile<'_>, ErrorResponse> {
     let path = Path::new(name)
         .file_name()
         .map(Path::new)

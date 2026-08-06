@@ -415,11 +415,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8)
         })
     }
 
-    pub async fn get<'a>(
-        id: u64,
-        bucket: &'a str,
-        db: &mut PoolConnection<Postgres>,
-    ) -> Option<Self> {
+    pub async fn get(id: u64, bucket: &str, db: &mut PoolConnection<Postgres>) -> Option<Self> {
         sqlx::query!(
             "
 SELECT *
@@ -487,9 +483,9 @@ AND bucket = $2
         })
     }
 
-    pub async fn fetch_file_data<'a>(
+    pub async fn fetch_file_data(
         id: u64,
-        bucket: &'a str,
+        bucket: &str,
         db: &mut PoolConnection<Postgres>,
     ) -> Result<FileData, ErrorResponse> {
         Self::get(id, bucket, db)
