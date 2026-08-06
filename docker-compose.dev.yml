@@ -1,0 +1,31 @@
+# This is a docker compose to just spin up the required databases
+# to work on eludris so that you don't have to dirty your precious
+# operating system with scary open source bloatware.
+#
+# You're welcome!
+version: "3"
+
+x-restart-policy:
+  &restart-policy
+  restart: unless-stopped
+
+services:
+  keydb:
+    <<: *restart-policy
+    image: eqalpha/keydb
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./keydb:/data"
+
+  postgresql:
+    <<: *restart-policy
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: eludris
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./pgdata:/var/lib/postgresql/data"
