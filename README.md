@@ -4,7 +4,7 @@
   <a href="https://discord.gg/vV6v2DhWQB"><img src="https://shields.io/discord/980412957060137001?style=for-the-badge&logo=discord&labelColor=363934&label=Discord%20Server&color=363934" /></a>
   <a href="https://reddit.com/r/eludris"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Reddit&logo=reddit&logoColor=ff5700&color=121212&labelColor=121212" /></a>
   <a href="https://twitter.com/eludris"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Twitter&logo=twitter&color=15202b&labelColor=15202b" /></a>
-  <a href="https://devs.eludris.com"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Docs&logo=mdbook&color=211233&labelColor=211233" /></a>
+  <a href="https://devs.eludris.net"><img src="https://img.shields.io/static/v1?&label=%20&style=for-the-badge&message=Docs&logo=mdbook&color=211233&labelColor=211233" /></a>
   <a href="https://github.com/eludris/eludris/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/eludris/eludris/ci.yml?label=checks&labelColor=333&logo=github&style=for-the-badge" /></a>
 </p>
 
@@ -16,4 +16,4 @@ such as Discord™ and Reddit™.
 Eludris tries to combine the best parts of other popular social media platforms
 such as Discord, Reddit, Twitter and so on while not being one or the other.
 
-For more detailed info please visit our [docs](https://devs.eludris.com)
+For more detailed info please visit our [docs](https://devs.eludris.net)

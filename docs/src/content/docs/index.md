@@ -19,7 +19,7 @@ Eludris is a user-centric Discord x Reddit mesh-like social media platform that
 values privacy through [End-To-End Encryption](https://en.wikipedia.org/wiki/End-to-end_encryption)
 where you can build a community that feels like your own.
 
-To use Eludris, you can use the [official web client](https://app.eludris.com).
+To use Eludris, you can use the [official web client](https://app.eludris.net).
 
 One advantage that Eludris offers is that it allows and encourages people to make
 their own clients, toolings, bots, API wrappers and so on. Eludris facilitates
